@@ -92,9 +92,32 @@
 | `aputure-f10-fresnel-help` | F10 Fresnel（含与 600d Pro 组合 lux） | https://help.aputure.com/migration/en/modifiers/f10-fresnel |
 | `godox-qt-spec-jp` | Godox QT III 日文规格表（GN / 尺寸 / 重量） | https://bo-wwwphotologijp.ecbeing.biz/pdf/godox%20qt%20spec.pdf |
 
+
+| `aputure-storm-family` | Aputure STORM Family 对照表（输出/功耗/尺寸/重量） | https://aputure.com/en-US/product-families/storm |
+| `aputure-storm-80c-help` | STORM 80c Tech Specs & Photometrics | https://help.aputure.com/en/storm-80c/technical-specifications-and-photometrics |
+| `aputure-storm-400x-help` | STORM 400x Tech Specs & Photometrics | https://help.aputure.com/en/storm-400x/technical-specifications-and-photometrics |
+| `aputure-storm-700x-help` | STORM 700x Tech Specs & Photometrics | https://help.aputure.com/en/storm-700x/technical-specifications-and-photometrics |
+| `aputure-storm-1000c-help` | STORM 1000c Tech Specs & Photometrics | https://help.aputure.com/en/storm-1000c/technical-specifications-and-photometrics |
+| `aputure-storm-1200x-help` | STORM 1200x Tech Specs & Photometrics | https://help.aputure.com/en/storm-1200x-technical-specifications-and-photometrics |
+| `amaran-ray-specs-help` | amaran Ray 60c/120c/360c/660c Specs 对照 | https://help.amarancreators.com/en/amaran-ray/specifications |
+| `amaran-ray-360c-page` | amaran Ray 360c 产品页 | https://amarancreators.com/pages/amaran-ray-360c |
+| `amaran-ray-360c-onesheet` | amaran Ray 360c One Sheet（照度表） | https://img.shop.o-video.cz/files/amaranRay360c_OneSheet_2025-10-28a_fast_d85a55.pdf |
+| `amaran-ray-660c-manual` | amaran Ray 660c Manual / photometrics | https://www.lensrentals.com/product-assets/589f4fba-ea8f-45d2-9de0-c2c330104e54/amaran-ray-660c-manual.pdf |
+| `aputure-ls300d-ii-page` | LS 300d II 产品页 | https://aputure.com/en-US/products/ls-300d-ii |
+| `aputure-ls300x-page` | LS 300x 产品页 Photometrics | https://aputure.com/en-US/products/ls-300x |
+| `aputure-ls600c-pro-ii-help` | LS 600c Pro II Photometrics | https://help.aputure.com/en/ls-600c-pro-ii/technical-specifications-and-photometrics |
+| `aputure-nova-p-help` | Nova P300c / P600c Photometrics | https://help.aputure.com/en/nova-p600c-p300c/photometrics-technical-specifications |
+
 ## 本批补充说明（2026-10-29）
 
 - **Aputure LED lux**：产品页 / Help Center Photometrics 表；条件含修饰器与 CCT。
 - **Godox 影室 MS/SK/QT/DP**：GN 与尺寸来自 *Photography Lighting Catalogue EN*；QT IIIM 重量另核日文规格表。
 - **Knowled M600D / SL300II**：目录宣传照度（约 3 m / 1 m），非实验室证书。
 - **Profoto**：按用户要求最后补。
+
+### 信息源策略（Aputure 扩写）
+
+1. **第一优先**：`help.aputure.com` / `help.amarancreators.com` Photometrics 与 Specs 页。
+2. **家族对照**：`aputure.com/.../storm` 汇总表（反光罩 5600K@3m、功耗、外形）。
+3. **产品页 / One Sheet**：Ray 360c 等新品照度表。
+4. **经销商 PDF**（Lensrentals / 日文租赁站）：仅作官方表镜像交叉核对，不单独当唯一出处。

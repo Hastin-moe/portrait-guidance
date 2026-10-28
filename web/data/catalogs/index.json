@@ -30,7 +30,7 @@
       "file": "aputure-lights.json",
       "brand": "Aputure",
       "kind": "lights",
-      "count": 6
+      "count": 21
     },
     {
       "file": "aputure-modifiers.json",
@@ -43,7 +43,8 @@
   "schema_doc": "docs/gear-catalog/SCHEMA.md",
   "next": [
     "Profoto lights+modifiers full photometrics (last)",
-    "Godox VL / SL Bi / AD-S modifiers fill",
-    "amaran 100d S / Aputure STORM 400x / 700x"
-  ]
+    "Aputure INFINIBAR / MT Pro / Spotlight / more Nova",
+    "amaran Ace / 100d S / Cob panels"
+  ],
+  "sources_note": "Aputure: storm family page + help.aputure.com; amaran: help.amarancreators.com Ray specs + product pages"
 }
