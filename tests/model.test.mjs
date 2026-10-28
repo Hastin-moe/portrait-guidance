@@ -345,7 +345,7 @@ test("light elements reserve measured exitLux / faceLux", () => {
   assert.equal(e.faceLux, "");
   assert.equal(e.luxMeter, "");
   assert.equal(e.luxNote, "");
-  const p = M.createProject("lux");
+  const p = M.blankProject("lux");
   p.layout.setups[0].elements.push({ id: "L1", kind: "light", x: 1, y: 1, rot: 0, beam: 60 });
   M.normalize(p);
   const L = p.layout.setups[0].elements[0];
