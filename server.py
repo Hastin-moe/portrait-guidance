@@ -381,16 +381,48 @@ def make_server(data: Path, port: int):
     return ThreadingHTTPServer(("127.0.0.1", port), Handler)
 
 
+def is_our_server(port: int) -> bool:
+    """端口上是否已是本程序（首页含 portrait-guidance）。"""
+    import urllib.error
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=1.5) as resp:
+            body = resp.read().decode("utf-8", "replace")
+        return "portrait-guidance" in body
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="人像策划指导 portrait-guidance")
     ap.add_argument("--data", default=str(Path.home() / "Documents" / "portrait-guidance"), help="数据目录")
     ap.add_argument("--port", type=int, default=8766)
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--exact-port", action="store_true", help="端口被占用时直接报错，不换端口")
     a = ap.parse_args(argv)
+    data = Path(a.data).expanduser()
+    srv = None
     try:
-        srv = make_server(Path(a.data).expanduser(), a.port)
+        srv = make_server(data, a.port)
     except OSError:
-        srv = make_server(Path(a.data).expanduser(), 0)      # 端口被占用时换一个
+        if a.exact_port:
+            print(f"端口 {a.port} 已被占用。", file=sys.stderr)
+            return 1
+        if is_our_server(a.port):
+            url = f"http://127.0.0.1:{a.port}/"
+            print("人像策划指导已经在运行，已为你打开窗口")
+            if not a.no_browser:
+                webbrowser.open(url)
+            return 0
+        for p in range(8767, 8786):
+            try:
+                srv = make_server(data, p)
+                break
+            except OSError:
+                continue
+        if srv is None:
+            print("端口 8766–8785 均不可用。", file=sys.stderr)
+            return 1
     url = f"http://127.0.0.1:{srv.server_address[1]}/"
     print(f"人像策划指导 {VERSION} 已启动：{url}\n数据目录：{a.data}\n关闭这个窗口即可退出。")
     if not a.no_browser:
@@ -399,7 +431,8 @@ def main(argv=None):
         srv.serve_forever()
     except KeyboardInterrupt:
         pass
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main() or 0)

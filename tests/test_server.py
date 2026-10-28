@@ -107,6 +107,16 @@ class ServerTest(unittest.TestCase):
         st, _ = self.req("GET", "/static/../server.py", token=False)
         self.assertEqual(st, 404)
 
+    def test_main_reuses_running_instance(self):
+        port = self.srv.server_address[1]
+        code = server.main(["--port", str(port), "--no-browser", "--data", self.tmp.name])
+        self.assertEqual(code, 0)
+
+    def test_main_exact_port_fails_when_busy(self):
+        port = self.srv.server_address[1]
+        code = server.main(["--port", str(port), "--no-browser", "--exact-port", "--data", self.tmp.name])
+        self.assertEqual(code, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
