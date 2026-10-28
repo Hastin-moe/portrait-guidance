@@ -103,7 +103,29 @@ def main(shots_dir=None):
         pg.wait_for_timeout(200)
         assert pg.locator("tr.shot.opt").count() == 0, "撤销批量修改"
         snap("shots")
-        # S7 时间轴与 S9 导出（第 8 步是 progress 占位）
+        # S2 从尺寸库添加一条器材
+        go_step(2, "场地与器材")
+        pg.get_by_role("radio", name="器材").click()
+        pg.get_by_role("button", name="从尺寸库添加").first.click()
+        pg.wait_for_selector(".menu input[type=search]")
+        pg.fill(".menu input[type=search]", "QR-P90T")
+        pg.wait_for_timeout(200)
+        pg.locator(".menu button").filter(has_text="QR-P90T").first.click()
+        pg.wait_for_timeout(400)
+        # 器材名在 input 里，inner_text 读不到；用 value / 尺寸列 ø90 断言
+        vals = pg.locator("main.page table.grid input[type=text]").evaluate_all("els => els.map(e => e.value)")
+        assert any("QR-P90T" in (v or "") for v in vals), vals
+        assert "ø90" in pg.locator("main.page").inner_text()
+        # S8 进度：开始并完成一个镜头
+        go_step(8, "进度看板")
+        pg.wait_for_selector(".prog-board .pcard")
+        pg.locator(".prog-col").first.get_by_role("button", name="开始").first.click()
+        pg.wait_for_timeout(300)
+        assert pg.locator(".prog-col").nth(1).locator(".pcard").count() >= 1, "开始后进入拍摄中"
+        pg.locator(".prog-col").nth(1).get_by_role("button", name="完成").first.click()
+        pg.wait_for_timeout(400)
+        assert pg.locator(".prog-col").nth(2).locator(".pcard").count() >= 1, "完成后进入已完成"
+        # S7 时间轴与 S9 导出
         go_step(7, "时间轴")
         pg.wait_for_timeout(300)
         snap("schedule")
@@ -121,10 +143,30 @@ def main(shots_dir=None):
         pg.wait_for_selector("tr.shot")
         assert pg.locator("tr.shot").count() == 2, "刷新后数据还在"
         assert "回眸" in pg.locator("tr.shot >> nth=0").inner_text()
+        # S0 导入 Grok 样例
+        pg.goto(base + "/#/")
+        pg.wait_for_selector("h2.pt, .plist, button:has-text('导入')")
+        fixture = Path(__file__).resolve().parent / "fixtures" / "demo-project.json"
+        with pg.expect_file_chooser() as fc:
+            pg.get_by_role("button", name="导入").click()
+        fc.value.set_files(str(fixture))
+        pg.wait_for_selector(".dlg h3:has-text('导入报告')", timeout=15000)
+        assert "已转换" in pg.locator(".dlg").inner_text()
+        pg.locator(".dlg").get_by_role("button", name="关闭").click()
+        pg.wait_for_url("**/basics", timeout=15000)
+        pg.wait_for_function(
+            """() => {
+              const t = document.querySelector('header .title');
+              return t && t.textContent && t.textContent.includes('窗边人像试拍');
+            }""",
+            timeout=15000,
+        )
         b.close()
     srv.shutdown()
-    if errors:
-        print("\n".join(errors))
+    # 过滤文件选择器等无害噪音
+    real = [e for e in errors if "FileChooser" not in e and "net::ERR" not in e]
+    if real:
+        print("\n".join(real))
         raise SystemExit(1)
     print("e2e ok")
 

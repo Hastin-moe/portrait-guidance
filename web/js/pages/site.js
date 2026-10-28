@@ -97,9 +97,12 @@ export function render(ctx) {
       if (own) { row.source = "own"; q.gear.push(row); } else q.venue.gear.push(row);
     });
     const addLib = async (ev, own) => {
+      const anchor = ev.currentTarget;
+      const anchorRect = anchor.getBoundingClientRect();
       await loadGearPresets();
-      menu(ev.currentTarget, menuItemsFromPresets(allPresets()), {
+      menu(anchor, menuItemsFromPresets(allPresets()), {
         search: true,
+        anchorRect,
         onPick: id => {
           const preset = allPresets().find(x => x.id === id);
           if (!preset) return;

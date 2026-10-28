@@ -89,7 +89,7 @@ export function promptDlg(title, { value = "", placeholder = "", ok = t("common.
 }
 
 // ---------- 菜单（单选 / 多选，可搜索） ----------
-export function menu(anchor, items, { multi = false, selected = [], search = false, onPick, onAdd = null, addLabel = "" } = {}) {
+export function menu(anchor, items, { multi = false, selected = [], search = false, onPick, onAdd = null, addLabel = "", anchorRect = null } = {}) {
   document.querySelectorAll(".menu").forEach(m => m.remove());
   const sel = new Set(selected);
   const box = h("div.menu", { role: "listbox" });
@@ -118,9 +118,11 @@ export function menu(anchor, items, { multi = false, selected = [], search = fal
   const esc = e => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
   render();
   document.body.append(box);
-  const r = anchor.getBoundingClientRect();
-  const top = Math.min(r.bottom + 4, innerHeight - Math.min(320, box.offsetHeight) - 8);
-  box.style.left = Math.min(r.left, innerWidth - box.offsetWidth - 8) + "px";
+  // anchorRect：异步打开前先量好，避免 await 后节点被换掉导致定位到视口外
+  const r = anchorRect || (anchor && anchor.isConnected ? anchor.getBoundingClientRect() : { left: 12, bottom: 48, top: 12, width: 0, height: 0 });
+  const mh = Math.min(320, box.offsetHeight || 320);
+  const top = Math.min(r.bottom + 4, Math.max(8, innerHeight - mh - 8));
+  box.style.left = Math.max(8, Math.min(r.left, innerWidth - (box.offsetWidth || 180) - 8)) + "px";
   box.style.top = Math.max(8, top) + "px";
   setTimeout(() => { document.addEventListener("mousedown", outside, true); document.addEventListener("keydown", esc, true); inp2focus(); }, 0);
   return close;

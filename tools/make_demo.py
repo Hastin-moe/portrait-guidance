@@ -43,8 +43,19 @@ def main():
     looks = [{"id": "lk-mia-1", "name": "白衬衫"}, {"id": "lk-mia-2", "name": "米色针织"}]
     p.update({
         "overview": {"theme": "上午的窗光落在室内，人物安静、松弛，画面低饱和、偏暖。", "keywords": ["窗光", "柔和", "低饱和"], "client": "", "purpose": "作品集"},
-        "mood": [{"id": f"m{i}", "file": f, "note": n, "tags": [], "x": 5 + 15 * i, "y": 10 + 8 * (i % 3)} for i, (f, n) in enumerate(zip(files, ["窗边逆光", "冷调对比", "暖色肤色", "暗部层次", "柔和高光", "绿植点缀"]))],
-        "time": {"date": "2026-11-08", "start": "10:00", "end": "13:00", "venueFrom": "09:00", "venueTo": "13:30", "makeupMin": 60, "setupMin": 30, "bufferMin": 10},
+        "mood": [
+            {"id": f"m{i}", "file": f, "note": n, "tags": [], "source": src, "url": url,
+             "x": 5 + 15 * i, "y": 10 + 8 * (i % 3)}
+            for i, (f, n, src, url) in enumerate(zip(
+                files,
+                ["窗边逆光", "冷调对比", "暖色肤色", "暗部层次", "柔和高光", "绿植点缀"],
+                ["x", "xhs", "web", "own", "ai", ""],
+                ["https://x.com/example/status/1", "https://www.xiaohongshu.com/explore/abc",
+                 "https://example.com/ref", "", "", ""],
+            ))
+        ],
+        "time": {"date": "2026-11-08", "start": "10:00", "end": "13:00", "timezone": "Asia/Shanghai",
+                 "venueFrom": "09:00", "venueTo": "13:30", "makeupMin": 60, "setupMin": 30, "bufferMin": 10},
         "people": [
             {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00", "looks": looks},
             {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
@@ -55,7 +66,11 @@ def main():
                   "gear": [{"id": "vg1", "type": "light", "model": "Godox AD600", "qty": 2}, {"id": "vg2", "type": "modifier", "model": "120 cm 抛物线柔光箱", "qty": 1},
                            {"id": "vg3", "type": "reflector", "model": "五合一反光板", "qty": 2}]},
         "gear": [{"id": "og1", "type": "camera", "model": "Sony A7C II", "qty": 1, "source": "own"}, {"id": "og2", "type": "lens", "model": "85mm F1.4", "qty": 1, "source": "own"},
-                 {"id": "og3", "type": "light", "model": "Aputure 60x", "qty": 1, "source": "rent"}],
+                 {"id": "og3", "type": "light", "model": "Aputure 60x", "qty": 1, "source": "rent"},
+                 {"id": "og4", "type": "modifier", "model": "Godox QR-P90T", "qty": 1, "source": "own",
+                  "presetId": "godox-qr-p90t", "shape": "circle", "diameterCm": 90, "depthCm": 42.7, "widthCm": "", "heightCm": ""},
+                 {"id": "og5", "type": "absorb", "model": "聚苯板 240×120", "qty": 1, "source": "own",
+                  "presetId": "polyboard-240x120", "shape": "rect", "widthCm": 240, "heightCm": 120, "depthCm": 5, "diameterCm": ""}],
         "props": [{"id": "pr1", "name": "白纱窗帘", "qty": 1, "size": "2.6 m", "source": "own", "owner": "小唐", "status": "ready"},
                   {"id": "pr2", "name": "藤编椅", "qty": 1, "size": "", "source": "venue", "owner": "", "status": "ready"},
                   {"id": "pr3", "name": "陶瓷杯", "qty": 2, "size": "", "source": "own", "owner": "", "status": "todo"}],
@@ -65,7 +80,8 @@ def main():
                             {"id": "wn2", "kind": "window", "x": 4.6, "y": 0.1, "rot": 0, "w": 1.6, "h": 0.15}],
                    "setups": [
                        {"id": "A", "name": "A", "elements": [
-                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "120 cm 柔光箱", "power": "1/4", "ref": "v:vg1"},
+                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "", "modifierRef": "o:og4", "power": "1/4", "ref": "v:vg1"},
+                           {"id": "a-bd1", "kind": "board", "x": 6.5, "y": 1.2, "rot": 90, "w": 2.4, "h": 0.05, "ref": "o:og5"},
                            {"id": "a-c1", "kind": "camera", "x": 6.2, "y": 3.6, "rot": 205, "focal": 85},
                            {"id": "a-p1", "kind": "person", "x": 3.2, "y": 1.4, "rot": 160, "ref": "mia"},
                            {"id": "a-pr1", "kind": "prop", "x": 3.4, "y": 0.5, "rot": 0, "w": 2.6, "h": 0.2, "ref": "pr1"}]},
@@ -82,11 +98,16 @@ def main():
             {"id": "sc2", "name": "沙发", "setupId": "B", "cameraId": "b-c1", "personIds": ["mia", "emma"], "lookIds": ["lk-mia-2", "lk-emma-1"]},
         ],
         "shots": [
-            {"id": "s1", "sceneId": "sc1", "order": 0, "size": "half", "focal": 50, "poseId": "pose-lean", "cue": "", "props": ["pr1"], "refs": [files[0]], "minutes": 15, "priority": "must", "notes": ""},
-            {"id": "s2", "sceneId": "sc1", "order": 1, "size": "close", "focal": 85, "poseId": "pose-back", "cue": "", "props": [], "refs": [files[2], files[4]], "minutes": 10, "priority": "must", "notes": ""},
-            {"id": "s3", "sceneId": "sc1", "order": 2, "size": "half", "focal": 35, "poseId": "pose-chin", "cue": "", "props": ["pr3"], "refs": [], "minutes": 10, "priority": "opt", "lookIds": ["lk-emma-1"], "notes": ""},
-            {"id": "s4", "sceneId": "sc2", "order": 0, "size": "full", "focal": 35, "poseId": "pose-sit", "cue": "", "props": ["pr2"], "refs": [files[3]], "minutes": 20, "priority": "must", "notes": ""},
-            {"id": "s5", "sceneId": "sc2", "order": 1, "size": "half", "focal": 50, "poseId": "", "cue": "侧光读书，书页挡住下半张脸", "props": [], "refs": [files[5]], "minutes": 15, "priority": "opt", "personIds": ["emma"], "lookIds": ["lk-emma-1"], "notes": ""},
+            {"id": "s1", "sceneId": "sc1", "order": 0, "size": "half", "focal": 50, "poseId": "pose-lean", "cue": "", "props": ["pr1"], "refs": [files[0]], "minutes": 15, "priority": "must", "notes": "",
+             "status": "done", "startedAt": "2026-11-08T10:02:00+08:00", "completedAt": "2026-11-08T10:14:00+08:00"},
+            {"id": "s2", "sceneId": "sc1", "order": 1, "size": "close", "focal": 85, "poseId": "pose-back", "cue": "", "props": [], "refs": [files[2], files[4]], "minutes": 10, "priority": "must", "notes": "",
+             "status": "done", "startedAt": "2026-11-08T10:16:00+08:00", "completedAt": "2026-11-08T10:25:00+08:00"},
+            {"id": "s3", "sceneId": "sc1", "order": 2, "size": "half", "focal": 35, "poseId": "pose-chin", "cue": "", "props": ["pr3"], "refs": [], "minutes": 10, "priority": "opt", "lookIds": ["lk-emma-1"], "notes": "",
+             "status": "planned", "startedAt": "", "completedAt": ""},
+            {"id": "s4", "sceneId": "sc2", "order": 0, "size": "full", "focal": 35, "poseId": "pose-sit", "cue": "", "props": ["pr2"], "refs": [files[3]], "minutes": 20, "priority": "must", "notes": "",
+             "status": "planned", "startedAt": "", "completedAt": ""},
+            {"id": "s5", "sceneId": "sc2", "order": 1, "size": "half", "focal": 50, "poseId": "", "cue": "侧光读书，书页挡住下半张脸", "props": [], "refs": [files[5]], "minutes": 15, "priority": "opt", "personIds": ["emma"], "lookIds": ["lk-emma-1"], "notes": "",
+             "status": "planned", "startedAt": "", "completedAt": ""},
         ],
     })
     st.write_json(st.projects / pid / "project.json", p)
