@@ -22,6 +22,7 @@ const DYN = {
   "gear.src.": ["own", "rent", "venue"], "prop.": ["todo", "ready"],
   "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty"],
   "mood.src.": ["none", "x", "xhs", "web", "ai", "own"],
+  "prog.col": ["Planned", "Shooting", "Done", "Skipped"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
   "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],
   "sch.buf.": ["light", "look"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop"],

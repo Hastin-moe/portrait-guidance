@@ -26,6 +26,52 @@ export function fmtDur(min) {
   return { h, m };
 }
 
+/** 某时刻在指定 IANA 时区相对 UTC 的偏移（分钟） */
+export function tzOffsetMinutes(date = new Date(), tz = "Asia/Shanghai") {
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(date).filter(x => x.type !== "literal").map(x => [x.type, x.value]));
+  const asUtc = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  return Math.round((asUtc - date.getTime()) / 60000);
+}
+
+/** 当前时刻写成带该时区偏移的 ISO，如 2026-11-08T10:02:13+08:00 */
+export function nowIso(tz = "Asia/Shanghai") {
+  const d = new Date();
+  const off = tzOffsetMinutes(d, tz);
+  const sign = off >= 0 ? "+" : "-";
+  const abs = Math.abs(off);
+  const oh = String(Math.floor(abs / 60)).padStart(2, "0");
+  const om = String(abs % 60).padStart(2, "0");
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(d).filter(x => x.type !== "literal").map(x => [x.type, x.value]));
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}${sign}${oh}:${om}`;
+}
+
+/** ISO（可带偏移）→ 该时区墙钟 `YYYY-MM-DD HH:MM:SS` */
+export function isoToWall(iso, tz = "Asia/Shanghai") {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(d).filter(x => x.type !== "literal").map(x => [x.type, x.value]));
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+/** 拍摄日 + 分钟数 → 墙钟（秒为 00） */
+export function wallFromMin(dateStr, min) {
+  if (!dateStr || min == null) return "";
+  return `${dateStr} ${fmtMin(min)}:00`;
+}
+
 // ---------- 项目骨架 ----------
 export function blankProject(name = "") {
   return normalize({ name });
@@ -65,6 +111,11 @@ export function normalize(p) {
   if (!p.layout.setups.some(s => s.id === p.layout.activeSetup)) p.layout.activeSetup = p.layout.setups[0].id;
   p.scenes = Array.isArray(p.scenes) ? p.scenes : [];
   p.shots = Array.isArray(p.shots) ? p.shots : [];
+  for (const s of p.shots) {
+    if (!s.status) s.status = "planned";
+    if (s.startedAt == null) s.startedAt = "";
+    if (s.completedAt == null) s.completedAt = "";
+  }
   p.schedule = d(p.schedule, { locks: {} });
   p.schedule.locks = p.schedule.locks || {};
   p.ui = d(p.ui, { columns: ["no", "ref", "size", "model", "pose", "min", "pri", "check"], collapsed: {} });
@@ -288,6 +339,54 @@ export function schedule(p) {
   }
   return { start: Math.max(start, avail.from), end, items, avail, overMin, cuttable, conflicts,
     mustMin: mustMin + bufMin, optMin, bufMin, totalMin: end - Math.max(start, avail.from) };
+}
+
+/**
+ * 导出分镜时间窗（Photo-cull 归组用）。labels 提供已翻译字段：
+ * { poseName(id), sizeLabel(size), setupName(id), cameraName(setupId,camId),
+ *   personName(id), lookName(id), propName(id), lightFallback }
+ */
+export function timeWindows(p, labels = {}) {
+  const tz = p.time.timezone || "Asia/Shanghai";
+  const date = p.time.date || "";
+  const sch = schedule(p);
+  const nos = shotNumbers(p);
+  const L = {
+    poseName: labels.poseName || (() => ""),
+    sizeLabel: labels.sizeLabel || (s => s || ""),
+    setupName: labels.setupName || (() => ""),
+    cameraName: labels.cameraName || (() => ""),
+    personName: labels.personName || (() => ""),
+    lookName: labels.lookName || (() => ""),
+    propName: labels.propName || (() => ""),
+  };
+  const windows = [];
+  for (const it of sch.items) {
+    if (it.type !== "shot") continue;
+    const shot = p.shots.find(s => s.id === it.shotId);
+    if (!shot || (shot.status || "planned") === "skipped") continue;
+    const r = resolveShot(p, shot);
+    const start = shot.startedAt ? isoToWall(shot.startedAt, tz) : wallFromMin(date, it.start);
+    const end = shot.completedAt ? isoToWall(shot.completedAt, tz) : wallFromMin(date, it.end);
+    const wardrobe = (r.lookIds || []).map(id => {
+      const look = lookById(p, id);
+      return look ? `${L.personName(look.personId)} · ${L.lookName(id)}` : L.lookName(id);
+    }).filter(Boolean).join("、");
+    windows.push({
+      shot_id: nos.get(shot.id) || shot.id,
+      title: L.poseName(shot.poseId) || (shot.notes || "").split("\n")[0] || "",
+      start, end,
+      framing: L.sizeLabel(shot.size),
+      focal_length: shot.focal ? `${shot.focal}mm` : "",
+      action: shot.cue || "",
+      light: L.setupName(r.setupId),
+      props: (shot.props || []).map(L.propName).filter(Boolean).join("、"),
+      wardrobe,
+      camera_id: L.cameraName(r.setupId, r.cameraId),
+      notes: shot.notes || "",
+    });
+  }
+  return { timezone: tz, camera_offsets_seconds: {}, windows };
 }
 
 // ---------- 检查（F37） ----------

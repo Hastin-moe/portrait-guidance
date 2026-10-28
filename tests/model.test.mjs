@@ -30,6 +30,39 @@ test("time helpers", () => {
   assert.equal(M.toMin("bad"), null);
 });
 
+test("nowIso and wall clock helpers", () => {
+  const iso = M.nowIso("Asia/Shanghai");
+  assert.match(iso, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+  assert.equal(M.wallFromMin("2026-11-08", 615), "2026-11-08 10:15:00");
+  const wall = M.isoToWall("2026-11-08T10:15:00+08:00", "Asia/Shanghai");
+  assert.equal(wall, "2026-11-08 10:15:00");
+});
+
+test("timeWindows uses actual times and skips skipped shots", () => {
+  const { p, shots } = sample();
+  shots[0].status = "done";
+  shots[0].startedAt = "2026-11-08T10:02:00+08:00";
+  shots[0].completedAt = "2026-11-08T10:12:00+08:00";
+  shots[1].status = "skipped";
+  const tw = M.timeWindows(p, {
+    poseName: () => "回眸",
+    sizeLabel: () => "特写",
+    setupName: () => "布光 A",
+    cameraName: () => "机位 1",
+    personName: () => "林夏",
+    lookName: () => "白衬衫",
+    propName: () => "",
+  });
+  assert.equal(tw.timezone, "Asia/Shanghai");
+  assert.ok(tw.windows.length >= 1);
+  assert.equal(tw.windows[0].start, "2026-11-08 10:02:00");
+  assert.equal(tw.windows[0].end, "2026-11-08 10:12:00");
+  assert.ok(!tw.windows.some(w => w.shot_id && shots[1] && false));
+  const ids = tw.windows.map(w => w.shot_id);
+  const nos = M.shotNumbers(p);
+  assert.ok(!ids.includes(nos.get(shots[1].id)));
+});
+
 test("normalize fills defaults and keeps one setup", () => {
   const p = M.normalize({});
   assert.equal(p.layout.setups.length, 1);
