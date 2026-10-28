@@ -4,7 +4,7 @@
   "kind": "lights",
   "updated": "2026-10-29",
   "unit": "cm",
-  "notes": "神牛闪光灯 / LED / 户外电源套装。光电参数来自 Godox 官网产品页、Tech Specs PDF 与英文摄影照明目录；照度为厂商标称 lux。AD100Pro II 官方未公布 GN。",
+  "notes": "神牛 AD 户外 + 影室 MS/SK/QT/DP + Knowled/SL LED。光电参数来自官网目录与 Tech Specs；照度为厂商标称。",
   "items": [
     {
       "id": "godox-ad100pro-ii",
@@ -489,6 +489,595 @@
       "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
       "refs": [
         "godox-continuous-catalogue-en"
+      ]
+    },
+    {
+      "id": "godox-ms200v",
+      "brand": "Godox",
+      "model": "MS200V",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox MS200V（200Ws 影室）",
+      "shape": "circle",
+      "diameter_cm": 12.6,
+      "height_cm": 16.7,
+      "depth_cm": 28.3,
+      "weight_kg": 1.3,
+      "mount": "Bowens S",
+      "power_ws": 200,
+      "guide_number_m": {
+        "value": 53,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5800±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.3,
+        "note": "220V; 110V 0.1–1.8s"
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "5.0–10.0 (1/32–1/1)",
+      "modeling": "LED 10W, 5–100%",
+      "hss": false,
+      "wireless": "Godox 2.4G X built-in",
+      "confidence": "high",
+      "notes": "V = LED modeling",
+      "source": "Godox Photography Lighting Catalogue EN — MS200V/MS300V",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-ms300v",
+      "brand": "Godox",
+      "model": "MS300V",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox MS300V（300Ws 影室）",
+      "shape": "circle",
+      "diameter_cm": 12.6,
+      "height_cm": 16.7,
+      "depth_cm": 28.3,
+      "weight_kg": 1.3,
+      "mount": "Bowens S",
+      "power_ws": 300,
+      "guide_number_m": {
+        "value": 58,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5800±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.3,
+        "note": "220V; 110V 0.1–1.8s"
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "5.0–10.0 (1/32–1/1)",
+      "modeling": "LED 10W, 5–100%",
+      "hss": false,
+      "wireless": "Godox 2.4G X built-in",
+      "confidence": "high",
+      "notes": "V = LED modeling",
+      "source": "Godox Photography Lighting Catalogue EN — MS200V/MS300V",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-sk300iiv",
+      "brand": "Godox",
+      "model": "SK300IIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox SK300IIV（300Ws）",
+      "shape": "circle",
+      "diameter_cm": 13.7,
+      "height_cm": 20.6,
+      "depth_cm": 35.0,
+      "weight_kg": 2.0,
+      "mount": "Bowens S",
+      "power_ws": 300,
+      "guide_number_m": {
+        "value": 58,
+        "iso": 100,
+        "with": "catalogue"
+      },
+      "cct_flash_k": "5700±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.5
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "modeling": "LED 10W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — SK300IIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-sk400iiv",
+      "brand": "Godox",
+      "model": "SK400IIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox SK400IIV（400Ws）",
+      "shape": "circle",
+      "diameter_cm": 13.7,
+      "height_cm": 23.2,
+      "depth_cm": 39.0,
+      "weight_kg": 2.1,
+      "mount": "Bowens S",
+      "power_ws": 400,
+      "guide_number_m": {
+        "value": 65,
+        "iso": 100,
+        "with": "catalogue"
+      },
+      "cct_flash_k": "5700±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.5
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "modeling": "LED 10W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — SK400IIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-qt400iiim",
+      "brand": "Godox",
+      "model": "QT400IIIM",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox QT400IIIM（400Ws 高速影室）",
+      "shape": "rect",
+      "width_cm": 39.2,
+      "height_cm": 17.6,
+      "depth_cm": 14.3,
+      "weight_kg": 2.96,
+      "mount": "Bowens S",
+      "power_ws": 400,
+      "guide_number_m": {
+        "value": 65,
+        "iso": 100,
+        "with": "highlight / standard reflector"
+      },
+      "flash_duration_t01": "HSS/speed to 1/29600 s t0.1",
+      "recycle_s": {
+        "min": 0.01,
+        "max": 0.9
+      },
+      "cct_flash_k": "5600±200 (stable color mode)",
+      "power_steps": "1/256–1/1",
+      "modeling": "LED 40W, 1–100%",
+      "hss": true,
+      "wireless": "Godox 2.4G X, ~50m, 32ch / 16 groups",
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — QT IIIM + JP QT spec sheet",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "godox-qt-spec-jp",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-qt600iiim",
+      "brand": "Godox",
+      "model": "QT600IIIM",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox QT600IIIM（600Ws 高速影室）",
+      "shape": "rect",
+      "width_cm": 39.2,
+      "height_cm": 17.6,
+      "depth_cm": 14.3,
+      "weight_kg": 3.33,
+      "mount": "Bowens S",
+      "power_ws": 600,
+      "guide_number_m": {
+        "value": 76,
+        "iso": 100,
+        "with": "highlight / standard reflector"
+      },
+      "flash_duration_t01": "HSS/speed to 1/26100 s t0.1",
+      "recycle_s": {
+        "min": 0.01,
+        "max": 0.9
+      },
+      "cct_flash_k": "5600±200 (stable color mode)",
+      "power_steps": "1/256–1/1",
+      "modeling": "LED 40W, 1–100%",
+      "hss": true,
+      "wireless": "Godox 2.4G X, ~50m, 32ch / 16 groups",
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — QT IIIM + JP QT spec sheet",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "godox-qt-spec-jp",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-qt1200iiim",
+      "brand": "Godox",
+      "model": "QT1200IIIM",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox QT1200IIIM（1200Ws 高速影室）",
+      "shape": "rect",
+      "width_cm": 55.0,
+      "height_cm": 17.6,
+      "depth_cm": 14.3,
+      "weight_kg": 4.26,
+      "mount": "Bowens S",
+      "power_ws": 1200,
+      "guide_number_m": {
+        "value": 105,
+        "iso": 100,
+        "with": "highlight / standard reflector"
+      },
+      "flash_duration_t01": "HSS/speed to 1/23400 s t0.1",
+      "recycle_s": {
+        "min": 0.01,
+        "max": 0.9
+      },
+      "cct_flash_k": "5600±200 (stable color mode)",
+      "power_steps": "1/256–1/1",
+      "modeling": "LED 40W, 1–100%",
+      "hss": true,
+      "wireless": "Godox 2.4G X, ~50m, 32ch / 16 groups",
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — QT IIIM + JP QT spec sheet",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "godox-qt-spec-jp",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-dp400iiiv",
+      "brand": "Godox",
+      "model": "DP400IIIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox DP400IIIV（400Ws）",
+      "shape": "circle",
+      "diameter_cm": 12.5,
+      "height_cm": 21.5,
+      "depth_cm": 38.0,
+      "weight_kg": 2.54,
+      "mount": "Bowens S",
+      "power_ws": 400,
+      "guide_number_m": {
+        "value": 87,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5600±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.0
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "4.0–10.0 (1/64–1/1)",
+      "modeling": "LED 30W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — DP IIIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-dp600iiiv",
+      "brand": "Godox",
+      "model": "DP600IIIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox DP600IIIV（600Ws）",
+      "shape": "circle",
+      "diameter_cm": 12.5,
+      "height_cm": 21.5,
+      "depth_cm": 38.0,
+      "weight_kg": 2.69,
+      "mount": "Bowens S",
+      "power_ws": 600,
+      "guide_number_m": {
+        "value": 106,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5600±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.0
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "4.0–10.0 (1/64–1/1)",
+      "modeling": "LED 30W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — DP IIIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-dp800iiiv",
+      "brand": "Godox",
+      "model": "DP800IIIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox DP800IIIV（800Ws）",
+      "shape": "circle",
+      "diameter_cm": 12.5,
+      "height_cm": 21.5,
+      "depth_cm": 41.0,
+      "weight_kg": 3.0,
+      "mount": "Bowens S",
+      "power_ws": 800,
+      "guide_number_m": {
+        "value": 126,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5600±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.0
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "4.0–10.0 (1/64–1/1)",
+      "modeling": "LED 30W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — DP IIIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-dp1000iiiv",
+      "brand": "Godox",
+      "model": "DP1000IIIV",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Godox DP1000IIIV（1000Ws）",
+      "shape": "circle",
+      "diameter_cm": 12.5,
+      "height_cm": 21.5,
+      "depth_cm": 41.0,
+      "weight_kg": 3.14,
+      "mount": "Bowens S",
+      "power_ws": 1000,
+      "guide_number_m": {
+        "value": 140,
+        "iso": 100,
+        "with": "high effective reflector"
+      },
+      "cct_flash_k": "5600±200",
+      "recycle_s": {
+        "min": 0.1,
+        "max": 1.0
+      },
+      "flash_duration_t01": "1/2000–1/800 s",
+      "power_steps": "4.0–10.0 (1/64–1/1)",
+      "modeling": "LED 30W",
+      "hss": false,
+      "confidence": "high",
+      "source": "Godox Photography Lighting Catalogue EN — DP IIIV",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-photo-catalogue-en",
+        "method-guide-number"
+      ]
+    },
+    {
+      "id": "godox-m200d",
+      "brand": "Godox",
+      "model": "M200D",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox Knowled M200D",
+      "shape": "rect",
+      "width_cm": 42.5,
+      "height_cm": 23.2,
+      "depth_cm": 14.1,
+      "weight_kg": 3.34,
+      "mount": "Bowens S",
+      "power_w": 230,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "dimming": "0–100%, 4 curves",
+      "confidence": "high",
+      "notes": "灯体尺寸；另有控制器约 270×124×132 mm / 2.74 kg。",
+      "source": "Godox Continuous Lighting Catalogue — M200D",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "godox-m300d",
+      "brand": "Godox",
+      "model": "M300D",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox Knowled M300D",
+      "shape": "rect",
+      "width_cm": 42.5,
+      "height_cm": 23.2,
+      "depth_cm": 14.1,
+      "weight_kg": 3.34,
+      "mount": "Bowens S",
+      "power_w": 330,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "dimming": "0–100%, 4 curves",
+      "confidence": "high",
+      "source": "Godox Continuous Lighting Catalogue — M300D",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "godox-m600d",
+      "brand": "Godox",
+      "model": "M600D",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox Knowled M600D",
+      "shape": "rect",
+      "mount": "Bowens S",
+      "power_w": 600,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "illuminance": [
+        {
+          "lux": 17500,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "pro reflector",
+          "note": "catalogue ~9.8 ft"
+        },
+        {
+          "lux": 40100,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "FLS10 Fresnel",
+          "note": "catalogue ~9.8 ft"
+        }
+      ],
+      "confidence": "high",
+      "source": "Godox Continuous Lighting Catalogue — M600D",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "godox-sl150ii",
+      "brand": "Godox",
+      "model": "SL150II",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox SL150II",
+      "shape": "rect",
+      "width_cm": 34.0,
+      "height_cm": 20.0,
+      "depth_cm": 16.0,
+      "mount": "Bowens S",
+      "power_w": 150,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "confidence": "high",
+      "source": "Godox Continuous Lighting Catalogue — SL150II",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en"
+      ]
+    },
+    {
+      "id": "godox-sl200ii",
+      "brand": "Godox",
+      "model": "SL200II",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox SL200II",
+      "shape": "rect",
+      "width_cm": 36.7,
+      "height_cm": 20.0,
+      "depth_cm": 16.0,
+      "mount": "Bowens S",
+      "power_w": 200,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "confidence": "high",
+      "source": "Godox Continuous Lighting Catalogue — SL200II",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en"
+      ]
+    },
+    {
+      "id": "godox-sl300ii",
+      "brand": "Godox",
+      "model": "SL300II",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Godox SL300II",
+      "shape": "rect",
+      "mount": "Bowens S",
+      "power_w": 300,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 97,
+      "illuminance": [
+        {
+          "lux": 99300,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "standard reflector"
+        }
+      ],
+      "confidence": "high",
+      "source": "Godox Continuous Lighting Catalogue — SL300II",
+      "source_url": "https://godox.com/Downloads/Godox_Continuous_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-continuous-catalogue-en",
+        "method-led-lux"
       ]
     }
   ]

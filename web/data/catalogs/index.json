@@ -6,7 +6,7 @@
       "file": "godox-lights.json",
       "brand": "Godox",
       "kind": "lights",
-      "count": 12
+      "count": 29
     },
     {
       "file": "godox-modifiers.json",
@@ -25,14 +25,25 @@
       "brand": "Broncolor",
       "kind": "modifiers",
       "count": 17
+    },
+    {
+      "file": "aputure-lights.json",
+      "brand": "Aputure",
+      "kind": "lights",
+      "count": 6
+    },
+    {
+      "file": "aputure-modifiers.json",
+      "brand": "Aputure",
+      "kind": "modifiers",
+      "count": 6
     }
   ],
   "references": "docs/gear-catalog/REFERENCES.md",
   "schema_doc": "docs/gear-catalog/SCHEMA.md",
   "next": [
-    "Profoto lights+modifiers full photometrics",
-    "Aputure / amaran continuous lux tables",
-    "Godox studio MS/SK/QT monolights one-by-one",
-    "Godox AD200Pro II / ML60II Bi illuminance table fill gaps"
+    "Profoto lights+modifiers full photometrics (last)",
+    "Godox VL / SL Bi / AD-S modifiers fill",
+    "amaran 100d S / Aputure STORM 400x / 700x"
   ]
 }

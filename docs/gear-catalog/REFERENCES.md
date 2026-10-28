@@ -71,3 +71,30 @@
 3. **LED F160 相对光效表**：同一灯头换修饰器时的相对 f-stop（`bron-led-f160-photometry`）；用于比较光效器材效率，**不是**闪光绝对照度。
 4. **Godox LED lux**：ML100Bi / SL60II* 等为厂商标称 lux@距离（`godox-ml100bi-za`、`godox-continuous-catalogue-en`）。
 5. **Godox 闪光 GN**：AD 系列多为「efficient reflector · ISO 100 · 米」；AD100Pro II 官方 Tech Specs **未公布 GN**。
+
+
+## Aputure / amaran
+
+| id | 文献 | URL |
+|---|---|---|
+| `aputure-ls600d-pro-page` | LS 600d Pro 产品页 Photometrics | https://aputure.com/en-US/products/ls-600d-pro |
+| `aputure-ls600c-pro-help` | LS 600c Pro Photometrics & Tech Specs | https://help.aputure.com/en/ls600c-pro/photometrics-technical-specifications |
+| `aputure-ls1200d-pro-help` | LS 1200d Pro Photometrics | https://help.aputure.com/en/ls1200d-pro/photometrics-technical-specifications-ls-1200d-pro |
+| `aputure-storm-xt52-page` | STORM XT52 产品页 Photometrics | https://aputure.com/en-US/products/storm-xt52 |
+| `aputure-storm-xt52-manual` | STORM XT52 Manual V1.0 | https://docs.aputure.com/hubfs/Knowledge%20Base/Aputure/STORM%20XT52/Documents/STORM%20XT52%20Manual%20V1.0.pdf |
+| `amaran-150c-300c-help` | amaran 150c & 300c Photometrics | https://help.aputure.com/en/amaran-150c-300c/photometrics-technical-specifications |
+| `aputure-light-dome-iii-page` | Light Dome III | https://aputure.com/en-US/products/light-dome-iii |
+| `aputure-quick-dome-90-page` | Quick Dome 90（含 STORM 700x 照度表） | https://aputure.com/en-US/products/quick-dome-90 |
+| `aputure-quick-dome-databook` | Quick Domes Data Book 2025-10-30 | https://docs.aputure.com/hubfs/Knowledge%20Base/Aputure/Modifiers/Quick%20Dome/Aputure_Quick_Domes_Data_Book_2025-10-30a.pdf |
+| `aputure-light-dome-mini-ii-help` | Light Dome Mini II | https://help.aputure.com/en/modifiers/light-dome-mini-ii |
+| `aputure-light-dome-150-help` | Light Dome 150 | https://help.aputure.com/en/modifiers/light-dome-150 |
+| `aputure-lantern-90-help` | Lantern 90 | https://help.aputure.com/en/modifiers/lantern-90 |
+| `aputure-f10-fresnel-help` | F10 Fresnel（含与 600d Pro 组合 lux） | https://help.aputure.com/migration/en/modifiers/f10-fresnel |
+| `godox-qt-spec-jp` | Godox QT III 日文规格表（GN / 尺寸 / 重量） | https://bo-wwwphotologijp.ecbeing.biz/pdf/godox%20qt%20spec.pdf |
+
+## 本批补充说明（2026-10-29）
+
+- **Aputure LED lux**：产品页 / Help Center Photometrics 表；条件含修饰器与 CCT。
+- **Godox 影室 MS/SK/QT/DP**：GN 与尺寸来自 *Photography Lighting Catalogue EN*；QT IIIM 重量另核日文规格表。
+- **Knowled M600D / SL300II**：目录宣传照度（约 3 m / 1 m），非实验室证书。
+- **Profoto**：按用户要求最后补。

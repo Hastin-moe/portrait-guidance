@@ -1,0 +1,497 @@
+{
+  "schema": "portrait-guidance.gear-catalog/v1",
+  "brand": "Aputure",
+  "kind": "lights",
+  "updated": "2026-10-29",
+  "unit": "cm",
+  "notes": "Aputure Light Storm / STORM + amaran COB。照度为官方 Photometrics 表（厂商标称 lux）。STORM XT52 即原 Electro Storm 量级旗舰点光源。",
+  "items": [
+    {
+      "id": "aputure-ls-600d-pro",
+      "brand": "Aputure",
+      "model": "LS 600d Pro",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Aputure LS 600d Pro",
+      "shape": "rect",
+      "width_cm": 30.8,
+      "height_cm": 15.6,
+      "depth_cm": 15.0,
+      "weight_kg": 4.64,
+      "mount": "Bowens S",
+      "power_w": 600,
+      "power_draw_w": 720,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600,
+        "tolerance_k": 200
+      },
+      "cri": 96,
+      "tlci": 96,
+      "cqs": 94,
+      "ssi_d56": 72,
+      "dimming": "0.1–100% stepless",
+      "illuminance": [
+        {
+          "lux": 22150,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 2600,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 1020,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 98500,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector"
+        },
+        {
+          "lux": 8500,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector"
+        },
+        {
+          "lux": 3000,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector"
+        },
+        {
+          "lux": 89200,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel flood 45°"
+        },
+        {
+          "lux": 11440,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel flood 45°"
+        },
+        {
+          "lux": 224200,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel spot 15°"
+        },
+        {
+          "lux": 29300,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel spot 15°"
+        }
+      ],
+      "yoke_dims_cm": {
+        "width": 30.8,
+        "height": 25.0,
+        "depth": 45.6
+      },
+      "control_box_cm": {
+        "width": 32.4,
+        "height": 17.9,
+        "depth": 14.3
+      },
+      "control_box_kg": 5.8,
+      "confidence": "high",
+      "notes": "灯头尺寸不含摇架；含摇架约 4.64 kg。产品页称已被 STORM 400x 接替，规格仍常用。",
+      "source": "Aputure LS 600d Pro product page Photometrics",
+      "source_url": "https://aputure.com/en-US/products/ls-600d-pro",
+      "refs": [
+        "aputure-ls600d-pro-page",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "aputure-ls-600c-pro",
+      "brand": "Aputure",
+      "model": "LS 600c Pro",
+      "category": "led",
+      "subcategory": "full_color_led",
+      "label": "Aputure LS 600c Pro",
+      "shape": "rect",
+      "width_cm": 30.2,
+      "height_cm": 22.2,
+      "depth_cm": 15.0,
+      "weight_kg": 5.86,
+      "mount": "Bowens S",
+      "power_w": 600,
+      "power_draw_w": 720,
+      "cct_k": {
+        "min": 2300,
+        "max": 10000
+      },
+      "cri": 95,
+      "tlci": 98,
+      "ssi_d56": 74,
+      "dimming": "0–100%",
+      "illuminance": [
+        {
+          "lux": 16450,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 1937,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 51100,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 5020,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 25500,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel flood"
+        },
+        {
+          "lux": 3320,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel flood"
+        },
+        {
+          "lux": 57300,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel spot"
+        },
+        {
+          "lux": 7440,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "F10 Fresnel spot"
+        }
+      ],
+      "yoke_dims_cm": {
+        "width": 45.3,
+        "height": 26.7,
+        "depth": 15.0
+      },
+      "control_box_cm": {
+        "width": 36.6,
+        "height": 19.7,
+        "depth": 15.6
+      },
+      "control_box_kg": 5.21,
+      "confidence": "high",
+      "source": "Aputure Help — LS 600c Pro Photometrics & Technical Specifications",
+      "source_url": "https://help.aputure.com/en/ls600c-pro/photometrics-technical-specifications",
+      "refs": [
+        "aputure-ls600c-pro-help",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "aputure-ls-1200d-pro",
+      "brand": "Aputure",
+      "model": "LS 1200d Pro",
+      "category": "led",
+      "subcategory": "daylight_led",
+      "label": "Aputure LS 1200d Pro",
+      "shape": "rect",
+      "width_cm": 33.2,
+      "height_cm": 23.2,
+      "depth_cm": 21.6,
+      "weight_kg": 8.95,
+      "mount": "Bowens S",
+      "power_w": 1200,
+      "power_draw_w": 1440,
+      "cct_k": {
+        "min": 5600,
+        "max": 5600
+      },
+      "cri": 96,
+      "tlci": 98,
+      "cqs": 95,
+      "ssi_d56": 73,
+      "illuminance": [
+        {
+          "lux": 6380,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 2802,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 83100,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector Narrow"
+        },
+        {
+          "lux": 28340,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector Narrow"
+        },
+        {
+          "lux": 22400,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector Medium"
+        },
+        {
+          "lux": 13010,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "Hyper Reflector Wide"
+        }
+      ],
+      "yoke_dims_cm": {
+        "width": 33.2,
+        "height": 33.1,
+        "depth": 54.4
+      },
+      "control_box_cm": {
+        "width": 20.0,
+        "height": 16.1,
+        "depth": 33.6
+      },
+      "control_box_kg": 5.8,
+      "confidence": "high",
+      "source": "Aputure Help — LS 1200d Pro Photometrics",
+      "source_url": "https://help.aputure.com/en/ls1200d-pro/photometrics-technical-specifications-ls-1200d-pro",
+      "refs": [
+        "aputure-ls1200d-pro-help",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "aputure-storm-xt52",
+      "brand": "Aputure",
+      "model": "STORM XT52",
+      "category": "led",
+      "subcategory": "tunable_white_led",
+      "label": "Aputure STORM XT52",
+      "shape": "rect",
+      "width_cm": 55.0,
+      "height_cm": 35.3,
+      "depth_cm": 36.2,
+      "weight_kg": 27.8,
+      "mount": "Aputure Mount (XT52 reflectors)",
+      "power_w": 4800,
+      "power_draw_w": 6000,
+      "cct_k": {
+        "min": 2500,
+        "max": 10000
+      },
+      "cri": 96,
+      "tlci": 96,
+      "ssi_d56": 88,
+      "beam_deg": 93,
+      "illuminance": [
+        {
+          "lux": 22080,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 8420,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 124400,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "35° reflector"
+        },
+        {
+          "lux": 41900,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "35° reflector"
+        },
+        {
+          "lux": 222000,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "25° reflector"
+        },
+        {
+          "lux": 68400,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "50° reflector"
+        }
+      ],
+      "control_box_cm": {
+        "width": 41.1,
+        "height": 16.0,
+        "depth": 38.8
+      },
+      "control_box_kg": 13.4,
+      "ip_rating": "IP65",
+      "confidence": "high",
+      "notes": "S2 旧 id `aputure-electro-storm-xt52` 指向同机；灯头重量不含摇架约 27.8 kg。满功率需 180–240 V。",
+      "aliases": [
+        "aputure-electro-storm-xt52"
+      ],
+      "source": "Aputure STORM XT52 product page + Manual V1.0",
+      "source_url": "https://aputure.com/en-US/products/storm-xt52",
+      "refs": [
+        "aputure-storm-xt52-page",
+        "aputure-storm-xt52-manual",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "amaran-150c",
+      "brand": "amaran",
+      "model": "150c",
+      "category": "led",
+      "subcategory": "full_color_led",
+      "label": "amaran 150c",
+      "shape": "rect",
+      "width_cm": 25.0,
+      "height_cm": 15.5,
+      "depth_cm": 14.2,
+      "weight_kg": 2.56,
+      "mount": "Bowens S",
+      "power_w": 150,
+      "power_draw_w": 180,
+      "cct_k": {
+        "min": 2500,
+        "max": 7500,
+        "tolerance_k": 300
+      },
+      "cri": 95,
+      "tlci": 95,
+      "luminous_flux_lm": 11196,
+      "illuminance": [
+        {
+          "lux": 5300,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 629,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 15610,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 1322,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 16510,
+          "distance_m": 1,
+          "cct_k": 7500,
+          "modifier": "LS 600 Hyper Reflector",
+          "note": "product page peak @1m with hyper"
+        }
+      ],
+      "confidence": "high",
+      "source": "Aputure Help — amaran 150c & 300c Photometrics",
+      "source_url": "https://help.aputure.com/en/amaran-150c-300c/photometrics-technical-specifications",
+      "refs": [
+        "amaran-150c-300c-help",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "amaran-300c",
+      "brand": "amaran",
+      "model": "300c",
+      "category": "led",
+      "subcategory": "full_color_led",
+      "label": "amaran 300c",
+      "shape": "rect",
+      "width_cm": 25.0,
+      "height_cm": 15.5,
+      "depth_cm": 14.2,
+      "weight_kg": 2.63,
+      "mount": "Bowens S",
+      "power_w": 300,
+      "power_draw_w": 360,
+      "cct_k": {
+        "min": 2500,
+        "max": 7500,
+        "tolerance_k": 300
+      },
+      "cri": 95,
+      "tlci": 95,
+      "luminous_flux_lm": 19389,
+      "illuminance": [
+        {
+          "lux": 9370,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 1140,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "bare"
+        },
+        {
+          "lux": 26580,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 2351,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "LS 600 Hyper Reflector"
+        },
+        {
+          "lux": 43600,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "Fresnel 2X spot"
+        }
+      ],
+      "confidence": "high",
+      "source": "Aputure Help — amaran 150c & 300c Photometrics",
+      "source_url": "https://help.aputure.com/en/amaran-150c-300c/photometrics-technical-specifications",
+      "refs": [
+        "amaran-150c-300c-help",
+        "method-led-lux"
+      ]
+    }
+  ]
+}

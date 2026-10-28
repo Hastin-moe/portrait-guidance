@@ -386,8 +386,9 @@
       "depth_cm": 60,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Aputure 官方：Built Ø89.0×60.0 cm（已被 Quick Dome 90 接替，尺寸同代）",
-      "source_url": "https://aputure.com/en-US/products/light-dome-iii"
+      "source": "Aputure Light Dome III product page",
+      "source_url": "https://aputure.com/en-US/products/light-dome-iii",
+      "notes": "产品页称已被 Quick Dome 90 接替；开口尺寸相同。"
     },
     {
       "id": "aputure-quick-dome-90",
@@ -401,7 +402,7 @@
       "depth_cm": 60,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Aputure Quick Dome Data Book 2025-10-30：Built ø89.0×60.0 cm",
+      "source": "Aputure Quick Dome 90 product page + Data Book 2025-10-30",
       "source_url": "https://aputure.com/en-US/products/quick-dome-90"
     },
     {
@@ -416,7 +417,7 @@
       "depth_cm": 29,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Aputure Help：Φ550×290 mm",
+      "source": "Aputure Help — Light Dome Mini II Φ550×290 mm",
       "source_url": "https://help.aputure.com/en/modifiers/light-dome-mini-ii"
     },
     {
@@ -431,7 +432,7 @@
       "depth_cm": 80,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Aputure Help：Built Φ150×80 cm",
+      "source": "Aputure Help — Light Dome 150 Built Φ150×80 cm",
       "source_url": "https://help.aputure.com/en/modifiers/light-dome-150"
     },
     {
@@ -716,6 +717,38 @@
       "confidence": "high",
       "source": "broncolor Softboxes / Octabox listing",
       "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "aputure-lantern-90",
+      "brand": "Aputure",
+      "model": "Lantern 90",
+      "category": "modifier",
+      "subcategory": "lantern",
+      "label": "Aputure Lantern 90",
+      "shape": "circle",
+      "diameter_cm": 90,
+      "depth_cm": 70,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "Aputure Help — Lantern 90",
+      "source_url": "https://help.aputure.com/en/modifiers/lantern-90",
+      "notes": "展开 90×90×70 cm。"
+    },
+    {
+      "id": "aputure-f10-fresnel",
+      "brand": "Aputure",
+      "model": "F10 Fresnel",
+      "category": "modifier",
+      "subcategory": "fresnel",
+      "label": "Aputure F10 Fresnel",
+      "shape": "circle",
+      "diameter_cm": 25.0,
+      "depth_cm": 17.2,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "Aputure Help — F10 Fresnel",
+      "source_url": "https://help.aputure.com/migration/en/modifiers/f10-fresnel",
+      "notes": "透镜 ø250 mm；展开（15°）深度约 25.0 cm，收拢（45°）约 17.2 cm。"
     }
   ]
 }

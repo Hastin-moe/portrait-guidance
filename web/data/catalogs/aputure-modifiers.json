@@ -1,0 +1,204 @@
+{
+  "schema": "portrait-guidance.gear-catalog/v1",
+  "brand": "Aputure",
+  "kind": "modifiers",
+  "updated": "2026-10-29",
+  "unit": "cm",
+  "notes": "Bowens 柔光/灯笼/菲涅尔。Quick Dome 90 照度表为搭配 STORM 700x 的厂商标称。",
+  "items": [
+    {
+      "id": "aputure-light-dome-iii",
+      "brand": "Aputure",
+      "model": "Light Dome III",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Aputure Light Dome III ø89cm",
+      "shape": "circle",
+      "diameter_cm": 89,
+      "depth_cm": 60,
+      "weight_kg": 2.24,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "includes": [
+        "1.5-stop diffusion",
+        "2.5-stop diffusion",
+        "40° grid",
+        "bag"
+      ],
+      "confidence": "high",
+      "notes": "产品页称已被 Quick Dome 90 接替；开口尺寸相同。",
+      "source": "Aputure Light Dome III product page",
+      "source_url": "https://aputure.com/en-US/products/light-dome-iii",
+      "refs": [
+        "aputure-light-dome-iii-page"
+      ]
+    },
+    {
+      "id": "aputure-quick-dome-90",
+      "brand": "Aputure",
+      "model": "Quick Dome 90",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Aputure Quick Dome 90",
+      "shape": "circle",
+      "diameter_cm": 89,
+      "depth_cm": 60,
+      "weight_kg": 1.4,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "includes": [
+        "1-stop / 2-stop diffusion",
+        "inner baffle",
+        "40° grid",
+        "bag"
+      ],
+      "illuminance": [
+        {
+          "lux": 2910,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "STORM 700x + 1-stop diff, no grid"
+        },
+        {
+          "lux": 2432,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "STORM 700x + 1-stop diff + grid"
+        },
+        {
+          "lux": 1771,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "STORM 700x + 2-stop diff, no grid"
+        },
+        {
+          "lux": 1053,
+          "distance_m": 5,
+          "cct_k": 5600,
+          "modifier": "STORM 700x + 1-stop diff, no grid"
+        }
+      ],
+      "confidence": "high",
+      "source": "Aputure Quick Dome 90 product page + Data Book 2025-10-30",
+      "source_url": "https://aputure.com/en-US/products/quick-dome-90",
+      "refs": [
+        "aputure-quick-dome-90-page",
+        "aputure-quick-dome-databook",
+        "method-led-lux"
+      ]
+    },
+    {
+      "id": "aputure-light-dome-mini-ii",
+      "brand": "Aputure",
+      "model": "Light Dome Mini II",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Aputure Light Dome Mini II ø55cm",
+      "shape": "circle",
+      "diameter_cm": 55,
+      "depth_cm": 29,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "Aputure Help — Light Dome Mini II Φ550×290 mm",
+      "source_url": "https://help.aputure.com/en/modifiers/light-dome-mini-ii",
+      "refs": [
+        "aputure-light-dome-mini-ii-help"
+      ]
+    },
+    {
+      "id": "aputure-light-dome-150",
+      "brand": "Aputure",
+      "model": "Light Dome 150",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Aputure Light Dome 150",
+      "shape": "circle",
+      "diameter_cm": 150,
+      "depth_cm": 80,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "Aputure Help — Light Dome 150 Built Φ150×80 cm",
+      "source_url": "https://help.aputure.com/en/modifiers/light-dome-150",
+      "refs": [
+        "aputure-light-dome-150-help"
+      ]
+    },
+    {
+      "id": "aputure-lantern-90",
+      "brand": "Aputure",
+      "model": "Lantern 90",
+      "category": "modifier",
+      "subcategory": "lantern",
+      "label": "Aputure Lantern 90",
+      "shape": "circle",
+      "diameter_cm": 90,
+      "depth_cm": 70,
+      "weight_kg": 2.59,
+      "mount": "Bowens S",
+      "includes": [
+        "1-stop diffusion",
+        "skirt",
+        "bag"
+      ],
+      "confidence": "high",
+      "notes": "展开 90×90×70 cm。",
+      "source": "Aputure Help — Lantern 90",
+      "source_url": "https://help.aputure.com/en/modifiers/lantern-90",
+      "refs": [
+        "aputure-lantern-90-help"
+      ]
+    },
+    {
+      "id": "aputure-f10-fresnel",
+      "brand": "Aputure",
+      "model": "F10 Fresnel",
+      "category": "modifier",
+      "subcategory": "fresnel",
+      "label": "Aputure F10 Fresnel",
+      "shape": "circle",
+      "diameter_cm": 25.0,
+      "depth_cm": 17.2,
+      "weight_kg": 3.85,
+      "beam_deg": {
+        "min": 15,
+        "max": 45
+      },
+      "mount": "Bowens S",
+      "illuminance": [
+        {
+          "lux": 11440,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "with LS 600d Pro, flood 45°"
+        },
+        {
+          "lux": 29300,
+          "distance_m": 3,
+          "cct_k": 5600,
+          "modifier": "with LS 600d Pro, spot 15°"
+        },
+        {
+          "lux": 89200,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "with LS 600d Pro, flood 45°"
+        },
+        {
+          "lux": 224200,
+          "distance_m": 1,
+          "cct_k": 5600,
+          "modifier": "with LS 600d Pro, spot 15°"
+        }
+      ],
+      "confidence": "high",
+      "notes": "透镜 ø250 mm；展开（15°）深度约 25.0 cm，收拢（45°）约 17.2 cm。",
+      "source": "Aputure Help — F10 Fresnel",
+      "source_url": "https://help.aputure.com/migration/en/modifiers/f10-fresnel",
+      "refs": [
+        "aputure-f10-fresnel-help",
+        "aputure-ls600d-pro-page",
+        "method-led-lux"
+      ]
+    }
+  ]
+}
