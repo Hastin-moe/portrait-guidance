@@ -1,0 +1,88 @@
+// 各页面共用的表单件和显示件。
+import { h, field, toast } from "../ui.js";
+import { t } from "../i18n.js";
+import { S, commit, readonly, refresh } from "../store.js";
+import * as M from "../model.js";
+
+// 文本 / 数字输入：打字时 soft 提交（不重绘页面），离开输入框时整页刷新
+export function inp(get, set, { type = "text", placeholder = "", group, min, max, step, list, cls = "" } = {}) {
+  const g = group || ("in:" + Math.random());
+  const el = h("input" + cls, { type, value: get() ?? "", placeholder, min, max, step, list, disabled: readonly() || null,
+    oninput: e => commit(p => set(p, type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value), { soft: true, group: g }),
+    onchange: () => refresh() });
+  return el;
+}
+export function area(get, set, { placeholder = "", rows = 3 } = {}) {
+  const g = "ta:" + Math.random();
+  return h("textarea", { rows, placeholder, disabled: readonly() || null,
+    oninput: e => commit(p => set(p, e.target.value), { soft: true, group: g }), onchange: () => refresh() }, get() ?? "");
+}
+export function sel(options, value, onChange, { allowEmpty = true, emptyLabel = "—" } = {}) {
+  return h("select", { disabled: readonly() || null, onchange: e => onChange(e.target.value) },
+    allowEmpty ? h("option", { value: "" }, emptyLabel) : null,
+    options.map(([v, l]) => h("option", { value: v, selected: String(v) === String(value) || null }, l)));
+}
+export const fld = field;
+
+// 标签输入：回车或逗号加一个
+export function tagsInput(tags, onChange, placeholder) {
+  const box = h("div.chips", { style: { border: "1px solid var(--line)", borderRadius: "8px", padding: "4px 6px", background: "var(--panel)" } });
+  const draw = () => {
+    box.replaceChildren(
+      ...tags.map((tg, i) => h("span.chip.plain", tg, readonly() ? null : h("button.x", { "aria-label": t("common.remove"), onclick: () => { tags.splice(i, 1); onChange([...tags]); } }, "×"))),
+      readonly() ? null : h("input", { type: "text", placeholder, style: { border: 0, flex: 1, minWidth: "120px", padding: "3px" },
+        onkeydown: e => {
+          if ((e.key === "Enter" || e.key === "," || e.key === "，" || e.key === "、") && e.target.value.trim()) {
+            e.preventDefault(); onChange([...tags, e.target.value.trim()]);
+          } else if (e.key === "Backspace" && !e.target.value && tags.length) onChange(tags.slice(0, -1));
+        } }));
+  };
+  draw();
+  return box;
+}
+
+export function chip(label, { onClick, inherit = false, broken = false, onRemove, title } = {}) {
+  return h("span.chip" + (inherit ? ".inherit" : "") + (broken ? ".broken" : ""), { title: title || label, onclick: onClick, tabindex: onClick ? 0 : null,
+    onkeydown: onClick ? e => { if (e.key === "Enter") onClick(e); } : null },
+    label, onRemove && !readonly() ? h("button.x", { "aria-label": t("common.remove"), onclick: e => { e.stopPropagation(); onRemove(); } }, "×") : null);
+}
+
+// ---------- 名称 ----------
+export const personName = (p, id) => (M.personById(p, id) || {}).name || t("common.missing");
+export const lookName = (p, id) => { const l = M.lookById(p, id); return l ? `${l.personName} · ${l.name}` : t("common.missing"); };
+export const setupName = (p, id, lang) => { const s = M.setupById(p, id); return s ? `${t("layout.setup", null, lang)} ${s.name}` : (id ? t("common.missing", null, lang) : ""); };
+export const cameraName = (p, setupId, camId, lang) => {
+  const s = M.setupById(p, setupId);
+  if (!s || !camId) return "";
+  let n = 0;
+  for (const e of s.elements) if (e.kind === "camera") { n++; if (e.id === camId) return `${t("el.camera", null, lang)} ${n}`; }
+  return t("common.missing", null, lang);
+};
+export const poseById = id => S.poses.find(x => x.id === id);
+export const poseName = id => { const x = poseById(id); return x ? x.name : (id ? t("common.missing") : ""); };
+export const sceneName = (p, sc, lang) => `${t("shots.scene", null, lang)} ${String(p.scenes.indexOf(sc) + 1).padStart(2, "0")}${sc.name ? " · " + sc.name : ""}`;
+
+// ---------- 检查结果 ----------
+export function checkText(p, c, lang) {
+  const nos = M.shotNumbers(p);
+  const params = { ...c };
+  if (c.page === "shots" && c.id) params.shot = nos.get(c.id) || "";
+  if (c.code === "lockConflict") params.shot = nos.get(c.id) || "";
+  if (c.code === "gearOver") { const g = M.gearByKey(p, c.id); params.gear = g ? g.model || t("gear.type." + g.type) : ""; params.setup = (M.setupById(p, c.setupId) || {}).name || ""; }
+  if (c.code === "unbound") params.setup = (M.setupById(p, c.setupId) || {}).name || "";
+  return t("chk." + c.code, params, lang);
+}
+
+export function issuesList(p, list, go) {
+  if (!list.length) return h("p.mut.small", "✓ " + t("chk.none"));
+  return h("ul.issues-list", list.map(c => h("li", { onclick: () => go(c.page, c.page === "shots" ? { focus: c.id } : c.page === "layout" ? { setup: c.setupId, selected: c.id } : {}) },
+    h("span." + c.level, c.level === "error" ? "●" : c.level === "warn" ? "▲" : "ℹ"), h("span", checkText(p, c)))));
+}
+
+export function needsDate(p) { return !p.time.date; }
+
+export function emptyState(title, body, ...actions) {
+  return h("div.empty", h("b", title), body ? h("div", body) : null, actions.length ? h("div.row", actions) : null);
+}
+
+export function warnReadonly() { if (readonly()) { toast(t("final.locked")); return true; } return false; }

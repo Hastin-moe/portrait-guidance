@@ -1,0 +1,125 @@
+"""浏览器冒烟测试：从空数据目录开始，走一遍新建项目 → 填信息 → 布置图 → 分镜 → 时间表 → 导出。
+
+需要 Playwright（pip install playwright && playwright install chromium）。
+用法：python3 tests/e2e_smoke.py
+"""
+import sys
+import tempfile
+import threading
+from pathlib import Path
+
+from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import server  # noqa: E402
+
+
+def main(shots_dir=None):
+    tmp = tempfile.TemporaryDirectory()
+    srv = server.make_server(Path(tmp.name), 0)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}"
+    errors = []
+    with sync_playwright() as pw:
+        b = pw.chromium.launch()
+        pg = b.new_page(viewport={"width": 1440, "height": 900})
+        pg.on("pageerror", lambda e: errors.append("pageerror: " + str(e)))
+        pg.on("console", lambda m: errors.append("console: " + m.text) if m.type == "error" else None)
+        snap = lambda name: shots_dir and pg.screenshot(path=f"{shots_dir}/e2e-{name}.png")
+        pg.goto(base + "/")
+        pg.get_by_role("button", name="＋ 新建项目").first.click()
+        pg.fill(".dlg input", "测试项目")
+        pg.click(".dlg button.primary")
+        pg.wait_for_url("**/overview")
+        pg.fill("textarea", "窗光下的安静人像")
+        pg.keyboard.press("Tab")
+        pg.fill(".chips input", "窗光"); pg.keyboard.press("Enter")
+        # 时间与人员
+        pg.click("nav.steps a:nth-child(2)")
+        pg.fill("input[type=date]", "2026-11-08")
+        pg.get_by_role("button", name="＋ 添加模特").click()
+        pg.get_by_role("button", name="＋ 添加模特").click()
+        # 场地
+        pg.click("nav.steps a:nth-child(3)")
+        inputs = pg.locator("input[type=text]")
+        inputs.nth(0).fill("白棚")
+        pg.locator("input[type=number]").nth(0).fill("8")
+        pg.locator("input[type=number]").nth(1).fill("6")
+        pg.keyboard.press("Tab")
+        pg.get_by_role("button", name="＋ 添加器材").click()
+        pg.locator("table.grid input[type=text]").first.fill("Godox AD600")
+        pg.keyboard.press("Tab")
+        # 布置图：加灯（从器材清单单击放入）、机位、人物
+        pg.click("nav.steps a:nth-child(5)")
+        snap("layout0")
+        pg.click(".palette button.bindable >> nth=0")
+        pg.click(".palette button:has-text('机位')")
+        pg.click(".palette button.bindable:has-text('模特 1')")
+        # 拖动刚放下的人物（已选中），再按 R 旋转；右侧面板里的坐标和朝向应随之变化
+        xin = lambda: pg.locator("aside.panel input[type=number]").nth(0).input_value()
+        rin = lambda: pg.locator("aside.panel input[type=number]").nth(2).input_value()
+        x0 = float(xin())
+        el = pg.locator("g.el").last
+        bb = el.bounding_box()
+        cx, cy = bb["x"] + bb["width"] / 2, bb["y"] + bb["height"] / 2
+        pg.mouse.move(cx, cy); pg.mouse.down(); pg.mouse.move(cx + 80, cy + 40, steps=5); pg.mouse.up()
+        pg.wait_for_timeout(200)
+        assert float(xin()) > x0, "拖动后 X 变大"
+        pg.keyboard.press("r")
+        pg.wait_for_timeout(200)
+        assert rin() == "15", "R 旋转 15°"
+        snap("layout")
+        # 分镜：按布光方案生成场景，加两个镜头
+        pg.click("nav.steps a:nth-child(6)")
+        pg.get_by_role("button", name="按布光方案生成场景").click()
+        pg.get_by_role("button", name="＋ 新镜头").click()
+        pg.keyboard.press("Meta+n") if sys.platform == "darwin" else pg.keyboard.press("Control+n")
+        pg.wait_for_timeout(200)
+        assert pg.locator("tr.shot").count() == 2, "两个镜头"
+        # ⌘K 动作库：新建一个动作并选用
+        pg.click("tr.shot >> nth=0")
+        pg.keyboard.press("Control+k")
+        pg.get_by_role("button", name="＋ 新建动作").click()
+        pg.fill(".dlg >> nth=1 >> input", "回眸")
+        pg.click(".dlg >> nth=1 >> button.primary")
+        pg.wait_for_timeout(200)
+        assert "回眸" in pg.locator("tr.shot >> nth=0").inner_text()
+        # 多选 + 批量改优先级
+        pg.click("tr.shot >> nth=1", modifiers=["Shift"])
+        pg.get_by_role("button", name="改优先级").click()
+        pg.click(".menu button:has-text('可选')")
+        assert pg.locator("tr.shot.opt").count() == 2
+        # 撤销
+        pg.click("main.page h2")
+        pg.keyboard.press("Control+z")
+        pg.wait_for_timeout(200)
+        assert pg.locator("tr.shot.opt").count() == 0, "撤销批量修改"
+        snap("shots")
+        # 时间表与导出
+        pg.click("nav.steps a:nth-child(7)")
+        pg.wait_for_timeout(300)
+        snap("schedule")
+        assert pg.locator(".gantt .bar").count() >= 2
+        pg.click("nav.steps a:nth-child(8)")
+        pg.select_option(".opts select", "ja")
+        pg.wait_for_timeout(200)
+        assert "ショットリスト" in pg.locator(".doc").inner_text()
+        snap("export")
+        # 等自动保存完，再刷新确认数据已写入
+        pg.wait_for_timeout(1800)
+        assert pg.inner_text("[data-save]") == "已保存"
+        pg.reload(); pg.wait_for_timeout(800)
+        pg.click("nav.steps a:nth-child(6)")
+        pg.wait_for_selector("tr.shot")
+        assert pg.locator("tr.shot").count() == 2, "刷新后数据还在"
+        assert "回眸" in pg.locator("tr.shot >> nth=0").inner_text()
+        b.close()
+    srv.shutdown()
+    if errors:
+        print("\n".join(errors))
+        raise SystemExit(1)
+    print("e2e ok")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1] if len(sys.argv) > 1 else None)
