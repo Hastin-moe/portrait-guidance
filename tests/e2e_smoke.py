@@ -45,14 +45,15 @@ def main(shots_dir=None):
         go_step(3, "模特与样图")
         pg.get_by_role("button", name="＋ 添加模特").click()
         pg.get_by_role("button", name="＋ 添加模特").click()
-        # S2 场地与器材（T3 前仍映射 venue.js）
+        # S2 场地与器材（场地标签填尺寸；器材标签加灯）
         go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")
         inputs.nth(0).fill("白棚")
         pg.locator("input[type=number]").nth(0).fill("8")
         pg.locator("input[type=number]").nth(1).fill("6")
         pg.keyboard.press("Tab")
-        pg.get_by_role("button", name="＋ 添加器材").click()
+        pg.get_by_role("radio", name="器材").click()
+        pg.get_by_role("button", name="＋ 添加器材").first.click()
         pg.locator("table.grid input[type=text]").first.fill("Godox AD600")
         pg.keyboard.press("Tab")
         # S6 场地图：加灯、机位、人物

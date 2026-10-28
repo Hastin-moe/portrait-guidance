@@ -153,6 +153,8 @@ export default {
   "basics.tz": ["时区", "Time zone", "タイムゾーン", "시간대"],
   "basics.tip": ["项目名、主题说明和拍摄日期是必填项。地点与 S2 共用同一份数据。", "Name, concept and date are required. Location shares data with Venue & gear.", "名前・テーマ・撮影日は必須。場所は会場と機材と同じデータです。", "이름·주제·촬영일은 필수입니다. 장소는 공간과 장비와 같은 데이터입니다."],
   "basics.modelsHint": ["模特在「模特与样图」里添加；到场时间会自动算上他们。", "Add models in Models & references; call times include them automatically.", "モデルは「モデルと参考画像」で追加。入り時間に自動で入ります。", "모델은 ‘모델과 참고 이미지’에서 추가합니다. 도착 시각에 자동 반영됩니다."],
+  "site.sub": ["场地尺寸、条件与器材道具清单。", "Venue size, conditions, and gear & props.", "会場サイズ・条件と機材・小道具。", "공간 크기·조건과 장비·소품."],
+  "site.tabVenue": ["场地", "Venue", "会場", "공간"],
   "models.sub": ["模特造型与情绪板参考图。", "Model looks and mood-board references.", "モデルのルックとムードボード。", "모델 룩과 무드보드 참고 이미지."],
   "models.tip": ["选中模特或图片可在右侧编辑。每位模特至少一套造型。", "Select a model or image to edit. Each model needs at least one look.", "モデルか画像を選ぶと右側で編集。モデルごとにルックが 1 つ以上必要です。", "모델이나 이미지를 고르면 오른쪽에서 편집합니다. 모델마다 룩이 하나 이상 필요합니다."],
   "mood.source": ["来源", "Source", "出典", "출처"],

@@ -5,7 +5,7 @@ import { t, setLang, getLang, LANGS } from "./i18n.js";
 import { h, menu, modal, confirmDlg, promptDlg, toast, isTyping } from "./ui.js";
 import * as P0 from "./pages/projects.js";
 import * as PBasics from "./pages/basics.js";
-import * as PSite from "./pages/venue.js";       // T3 换成 site.js
+import * as PSite from "./pages/site.js";
 import * as PModels from "./pages/models.js";
 import * as PPoses from "./pages/poses.js";
 import * as PShots from "./pages/shots.js";
