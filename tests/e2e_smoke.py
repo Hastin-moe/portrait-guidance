@@ -40,12 +40,12 @@ def main(shots_dir=None):
         pg.fill("textarea", "窗光下的安静人像")
         pg.keyboard.press("Tab")
         pg.fill(".chips input", "窗光"); pg.keyboard.press("Enter")
-        # S3 模特与样图（T1 暂映射 time.js：日期 + 模特）
-        go_step(3, "模特与样图")
         pg.fill("input[type=date]", "2026-11-08")
+        # S3 模特与样图
+        go_step(3, "模特与样图")
         pg.get_by_role("button", name="＋ 添加模特").click()
         pg.get_by_role("button", name="＋ 添加模特").click()
-        # S2 场地与器材（T1 暂映射 venue.js）
+        # S2 场地与器材（T3 前仍映射 venue.js）
         go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")
         inputs.nth(0).fill("白棚")

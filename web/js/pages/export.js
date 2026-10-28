@@ -54,7 +54,12 @@ export function buildDoc(p, L, o) {
       h("table", h("tr", h("th", T("ov.keywords")), h("td", p.overview.keywords.join("、") || "—")),
         p.overview.client ? h("tr", h("th", T("ov.client")), h("td", p.overview.client)) : null,
         p.overview.purpose ? h("tr", h("th", T("ov.purpose")), h("td", p.overview.purpose)) : null),
-      p.mood.length ? h("div.moodgrid", p.mood.slice(0, 16).map(m => h("img", { src: fileUrl(m.file), alt: m.note || "" }))) : null));
+      p.mood.length ? h("div.moodgrid", p.mood.slice(0, 16).map(m => {
+        const src = m.source ? T("mood.src." + m.source) : "";
+        return h("div", { style: { textAlign: "center" } },
+          h("img", { src: fileUrl(m.file), alt: m.note || "" }),
+          src ? h("div", { style: { fontSize: "11px", color: "#74726c", marginTop: "4px" } }, src) : null);
+      })) : null));
   }
   if (sec.schedule !== false && p.shots.length) {
     const calls = M.callTimes(p);

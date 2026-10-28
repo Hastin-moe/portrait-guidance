@@ -39,7 +39,12 @@ export function normalize(p) {
   p.status = p.status || "draft";                 // draft | pending | final
   p.overview = d(p.overview, { theme: "", keywords: [], client: "", purpose: "" });
   p.mood = Array.isArray(p.mood) ? p.mood : [];
-  p.time = d(p.time, { date: "", start: "09:00", end: "17:00", venueFrom: "", venueTo: "", makeupMin: 60, setupMin: 30, bufferMin: 10 });
+  for (const m of p.mood) {
+    if (m.source == null) m.source = "";
+    if (m.url == null) m.url = "";
+  }
+  p.time = d(p.time, { date: "", start: "09:00", end: "17:00", venueFrom: "", venueTo: "", makeupMin: 60, setupMin: 30, bufferMin: 10, timezone: "Asia/Shanghai" });
+  if (!p.time.timezone) p.time.timezone = "Asia/Shanghai";
   p.people = Array.isArray(p.people) ? p.people : [];
   for (const x of p.people) {
     x.kind = x.kind || "model";

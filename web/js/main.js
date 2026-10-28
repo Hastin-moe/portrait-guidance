@@ -4,9 +4,9 @@ import * as M from "./model.js";
 import { t, setLang, getLang, LANGS } from "./i18n.js";
 import { h, menu, modal, confirmDlg, promptDlg, toast, isTyping } from "./ui.js";
 import * as P0 from "./pages/projects.js";
-import * as PBasics from "./pages/overview.js";   // T1 暂用；T2 换成 basics.js
-import * as PSite from "./pages/venue.js";       // T1 暂用；T3 换成 site.js
-import * as PModels from "./pages/time.js";      // T1 暂用；T4 换成 models.js
+import * as PBasics from "./pages/basics.js";
+import * as PSite from "./pages/venue.js";       // T3 换成 site.js
+import * as PModels from "./pages/models.js";
 import * as PPoses from "./pages/poses.js";
 import * as PShots from "./pages/shots.js";
 import * as PLayout from "./pages/layout.js";

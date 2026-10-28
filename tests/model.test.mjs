@@ -35,6 +35,10 @@ test("normalize fills defaults and keeps one setup", () => {
   assert.equal(p.layout.setups.length, 1);
   assert.equal(p.layout.activeSetup, p.layout.setups[0].id);
   assert.deepEqual(p.overview.keywords, []);
+  assert.equal(p.time.timezone, "Asia/Shanghai");
+  const withMood = M.normalize({ mood: [{ id: "m1", file: "a.jpg" }] });
+  assert.equal(withMood.mood[0].source, "");
+  assert.equal(withMood.mood[0].url, "");
 });
 
 test("shots inherit from scene unless overridden", () => {
