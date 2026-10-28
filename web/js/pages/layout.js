@@ -243,7 +243,15 @@ export function render(ctx) {
         fld(t("layout.modifierRef"), sel(modOpts, e.modifierRef || "", v => commit(q => {
           const el = findEl(q, e.id).e; el.modifierRef = v;
         }), { emptyLabel: t("layout.noModifier") })),
-        !e.modifierRef ? fld(t("layout.modifier"), inp(() => e.modifier, (q, v) => { findEl(q, e.id).e.modifier = v; }, { placeholder: t("layout.modifierPh") })) : null] : null,
+        !e.modifierRef ? fld(t("layout.modifier"), inp(() => e.modifier, (q, v) => { findEl(q, e.id).e.modifier = v; }, { placeholder: t("layout.modifierPh") })) : null,
+        h("h4", t("layout.luxTitle")),
+        h("p.small.mut", t("layout.luxHelp")),
+        h("div.grid2",
+          fld(t("layout.exitLux") + " (lux)", upd("exitLux", "number")),
+          fld(t("layout.faceLux") + " (lux)", upd("faceLux", "number"))),
+        fld(t("layout.luxMeter"), inp(() => e.luxMeter, (q, v) => { findEl(q, e.id).e.luxMeter = v; }, { placeholder: t("layout.luxMeterPh") })),
+        fld(t("layout.luxNote"), inp(() => e.luxNote, (q, v) => { findEl(q, e.id).e.luxNote = v; }, { placeholder: t("layout.luxNotePh") })),
+      ] : null,
       e.kind === "board" && e.ref ? (() => {
         const g = M.gearByKey(p, e.ref); const sz = M.boardSizeM(g);
         return h("button.sm", { onclick: () => commit(q => { const el = findEl(q, e.id).e; el.w = sz.w; el.h = sz.h; }) }, t("layout.syncBoardSize"));

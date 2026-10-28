@@ -49,3 +49,16 @@
 ## 免责
 
 数值来自厂商目录 / 技术表 / 经销商转载，**不是**计量实验室证书；换代型号请核对最新 PDF。照度均为厂商在指定修饰器与色温下的标称值。
+
+## 现场实测（项目数据，非 catalogs）
+
+场地图灯具元素（`layout.setups[].elements`，`kind=light`）预留：
+
+| 字段 | 含义 |
+|---|---|
+| `exitLux` | 灯具出口 / 修饰器开口实测照度（lux） |
+| `faceLux` | 模特脸位实测照度（lux） |
+| `luxMeter` | 测光表型号（如 Sekonic L-858D） |
+| `luxNote` | 距离、功率档、修饰器、ISO 等备注 |
+
+UI：S6 选中灯 → 右侧「实测照度」。导出布置表会带上这两列。catalogs 里的 `illuminance` / GN / f-stop **只作参考**，不覆盖实测。

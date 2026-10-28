@@ -116,6 +116,15 @@ export function normalize(p) {
   p.layout.setups = Array.isArray(p.layout.setups) ? p.layout.setups : [];
   if (!p.layout.setups.length) p.layout.setups.push({ id: uid(), name: "A", elements: [] });
   for (const s of p.layout.setups) s.elements = Array.isArray(s.elements) ? s.elements : [];
+  const normLightLux = e => {
+    if (e.kind !== "light") return;
+    if (e.exitLux == null) e.exitLux = "";
+    if (e.faceLux == null) e.faceLux = "";
+    if (e.luxNote == null) e.luxNote = "";
+    if (e.luxMeter == null) e.luxMeter = "";
+  };
+  for (const e of p.layout.base) normLightLux(e);
+  for (const s of p.layout.setups) for (const e of s.elements) normLightLux(e);
   if (!p.layout.setups.some(s => s.id === p.layout.activeSetup)) p.layout.activeSetup = p.layout.setups[0].id;
   p.scenes = Array.isArray(p.scenes) ? p.scenes : [];
   p.shots = Array.isArray(p.shots) ? p.shots : [];
@@ -520,7 +529,11 @@ export function newElement(kind, x, y) {
   const e = { id: uid(), kind, x, y, rot: 0 };
   const size = { wall: [3, 0.15], window: [1.2, 0.15], door: [0.9, 0.15], pillar: [0.4, 0.4], backdrop: [2.7, 0.1], prop: [0.6, 0.6], board: [2.4, 0.05] }[kind];
   if (size) [e.w, e.h] = size;
-  if (kind === "light") Object.assign(e, { beam: 60, modifier: "", modifierRef: "", power: "", ref: "" });
+  if (kind === "light") Object.assign(e, {
+    beam: 60, modifier: "", modifierRef: "", power: "", ref: "",
+    // 实测照度（lux）：厂商标称另见 catalogs；此处留给现场测光录入
+    exitLux: "", faceLux: "", luxNote: "", luxMeter: "",
+  });
   if (kind === "camera") Object.assign(e, { focal: 50, label: "" });
   if (kind === "person") Object.assign(e, { ref: "" });
   if (kind === "prop") Object.assign(e, { ref: "" });

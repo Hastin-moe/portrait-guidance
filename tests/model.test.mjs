@@ -338,3 +338,23 @@ test("applyPreset forces modifier type even on light row", () => {
   });
   assert.equal(head.type, "light");
 });
+
+test("light elements reserve measured exitLux / faceLux", () => {
+  const e = M.newElement("light", 1, 2);
+  assert.equal(e.exitLux, "");
+  assert.equal(e.faceLux, "");
+  assert.equal(e.luxMeter, "");
+  assert.equal(e.luxNote, "");
+  const p = M.createProject("lux");
+  p.layout.setups[0].elements.push({ id: "L1", kind: "light", x: 1, y: 1, rot: 0, beam: 60 });
+  M.normalize(p);
+  const L = p.layout.setups[0].elements[0];
+  assert.equal(L.exitLux, "");
+  assert.equal(L.faceLux, "");
+  L.exitLux = 4200;
+  L.faceLux = 860;
+  L.luxMeter = "Sekonic L-858D";
+  M.normalize(p);
+  assert.equal(p.layout.setups[0].elements[0].exitLux, 4200);
+  assert.equal(p.layout.setups[0].elements[0].faceLux, 860);
+});

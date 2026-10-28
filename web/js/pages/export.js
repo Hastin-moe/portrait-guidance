@@ -98,8 +98,8 @@ export function buildDoc(p, L, o) {
       const lab = labels(st);
       const lights = st.elements.filter(e => e.kind === "light");
       s2.append(h("div", { style: { breakInside: "avoid" } }, h("h3", { style: { fontSize: "14px", margin: "14px 0 6px" } }, `${T("layout.setup")} ${st.name}`), svg),
-        lights.length ? h("table", h("tr", h("th", "#"), h("th", T("gear.model")), h("th", T("layout.modifier")), h("th", T("layout.power")), h("th", T("layout.beam"))),
-          lights.map(e => { const g = e.ref && M.gearByKey(p, e.ref); return h("tr", h("td", lab.get(e.id)), h("td", g ? g.model : "—"), h("td", e.modifier || ""), h("td", e.power || ""), h("td", (e.beam || "") + "°")); })) : null);
+        lights.length ? h("table", h("tr", h("th", "#"), h("th", T("gear.model")), h("th", T("layout.modifier")), h("th", T("layout.power")), h("th", T("layout.beam")), h("th", T("layout.exitLux")), h("th", T("layout.faceLux"))),
+          lights.map(e => { const g = e.ref && M.gearByKey(p, e.ref); return h("tr", h("td", lab.get(e.id)), h("td", g ? g.model : "—"), h("td", e.modifier || ""), h("td", e.power || ""), h("td", (e.beam || "") + "°"), h("td", e.exitLux !== "" && e.exitLux != null ? e.exitLux : "—"), h("td", e.faceLux !== "" && e.faceLux != null ? e.faceLux : "—")); })) : null);
     }
     out.append(s2);
   }
