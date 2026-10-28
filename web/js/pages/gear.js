@@ -13,7 +13,7 @@ export function render(ctx) {
   let body;
   if (st.tab === "gear") {
     body = h("div",
-      h("div.card", h("div.row", h("h3", { style: { margin: 0 } }, t("gear.venueGear") + ` (${p.venue.gear.length})`), h("span.spacer"), h("button.sm", { onclick: () => ctx.go("venue") }, t("gear.editInVenue"))),
+      h("div.card", h("div.row", h("h3", { style: { margin: 0 } }, t("gear.venueGear") + ` (${p.venue.gear.length})`), h("span.spacer"), h("button.sm", { onclick: () => ctx.go("site") }, t("gear.editInVenue"))),
         h("div", { style: { height: "8px" } }),
         p.venue.gear.length ? gearTable(p.venue.gear, "venue", ctx, { usage }) : h("p.small.mut", t("gear.noVenueGear"))),
       h("div.card", h("div.row", h("h3", { style: { margin: 0 } }, t("gear.ownGear") + ` (${p.gear.length})`), h("span.spacer"),
@@ -59,7 +59,7 @@ export function render(ctx) {
         h("input", { type: "checkbox", checked: !!p.packing[i.key], onchange: e => commit(q => { q.packing[i.key] = e.target.checked; }, { force: true }) }),
         h("span", i.label), h("span.small.mut", i.meta)))) : h("p.mut", t("gear.packingEmpty")));
   }
-  const list = M.checks(p).filter(c => c.page === "gear");
+  const list = M.checks(p).filter(c => c.page === "site");
   const perSetup = p.layout.setups.map(s => {
     const u = M.gearUsage(p, s.id);
     return h("div", { style: { marginBottom: "8px" } }, h("div.small", h("b", t("layout.setup") + " " + s.name)),

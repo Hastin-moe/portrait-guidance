@@ -374,7 +374,7 @@ function drawer(ctx, s, k) {
       h("label", t("shots.model")), refChips("personIds", r.personIds.map(id => personName(p, id)), k.modelItems, true),
       h("label", t("shots.look")), refChips("lookIds", r.lookIds.map(id => lookName(p, id)), () => k.lookItems(r.personIds), true),
       h("label", t("col.props")), h("div.chips", (s.props || []).map(id => chip((p.props.find(x => x.id === id) || {}).name || t("common.missing"), { broken: !p.props.some(x => x.id === id), onRemove: () => upd({ props: s.props.filter(x => x !== id) }) })),
-        ro ? null : h("span.chip.add", { onclick: e => menu(e.currentTarget, k.propItems(), { multi: true, selected: s.props || [], onPick: v => upd({ props: v }), onAdd: () => ctx.go("gear", { tab: "props" }), addLabel: t("gear.addProp") }) }, "＋"))),
+        ro ? null : h("span.chip.add", { onclick: e => menu(e.currentTarget, k.propItems(), { multi: true, selected: s.props || [], onPick: v => upd({ props: v }), onAdd: () => ctx.go("site", { tab: "props" }), addLabel: t("gear.addProp") }) }, "＋"))),
     h("h4", t("shots.when")),
     h("div.dl",
       h("label", t("col.min")), inp(() => s.minutes, (x, v) => { x.shots.find(y => y.id === s.id).minutes = Number(v) || 0; }, { type: "number", min: 0, step: 5 }),

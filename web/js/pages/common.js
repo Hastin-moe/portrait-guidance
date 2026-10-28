@@ -69,7 +69,7 @@ export function checkText(p, c, lang) {
   if (c.page === "shots" && c.id) params.shot = nos.get(c.id) || "";
   if (c.code === "lockConflict") params.shot = nos.get(c.id) || "";
   if (c.code === "gearOver") { const g = M.gearByKey(p, c.id); params.gear = g ? g.model || t("gear.type." + g.type) : ""; params.setup = (M.setupById(p, c.setupId) || {}).name || ""; }
-  if (c.code === "unbound") params.setup = (M.setupById(p, c.setupId) || {}).name || "";
+  if (c.code === "unbound" || c.code === "setupEmpty") params.setup = (M.setupById(p, c.setupId) || {}).name || c.setup || "";
   return t("chk." + c.code, params, lang);
 }
 

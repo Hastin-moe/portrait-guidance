@@ -70,7 +70,7 @@ export function render(ctx) {
     h("p.small.mut", t("venue.gearHelp")),
     v.gear.length ? gearTable(v.gear, "venue", ctx) : null);
 
-  const list = M.checks(p).filter(c => c.page === "venue");
+  const list = M.checks(p).filter(c => c.page === "site");
   const panel = h("div", h("h4", t("panel.checks")), issuesList(p, list, ctx.go),
     h("h4", t("venue.hints")),
     h("ul.small.mut", { style: { paddingLeft: "18px", margin: 0 } },
@@ -78,5 +78,5 @@ export function render(ctx) {
       v.windowDir ? h("li", t("venue.hintWindow", { v: v.windowDir })) : null,
       v.power ? h("li", t("venue.hintPower", { v: v.power })) : null,
       !v.daylight && !v.windowDir && !v.power ? h("li", t("venue.hintNone")) : null));
-  return { main: h("div", h("h2.pt", t("step.venue")), h("p.sub", t("venue.sub")), info, cond, gear, photos), panel };
+  return { main: h("div", h("h2.pt", t("step.site")), h("p.sub", t("venue.sub")), info, cond, gear, photos), panel };
 }

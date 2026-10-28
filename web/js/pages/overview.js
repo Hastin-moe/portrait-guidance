@@ -74,8 +74,8 @@ export function render(ctx) {
         h("button.sm", { disabled: readonly() || null, onclick: () => commit(q => { const i = q.mood.findIndex(x => x.id === sel.id); const [x] = q.mood.splice(i, 1); q.mood.unshift(x); }) }, t("ov.cover")),
         h("button.sm.danger", { disabled: readonly() || null, onclick: () => { st.selected = null; commit(q => { q.mood = q.mood.filter(x => x.id !== sel.id); }); } }, t("common.delete"))));
   } else {
-    const list = M.checks(p).filter(c => c.page === "overview");
+    const list = M.checks(p).filter(c => c.page === "basics");
     panel = h("div", h("h4", t("panel.checks")), issuesList(p, list, ctx.go), h("h4", t("panel.tips")), h("p.small.mut", t("ov.tip")));
   }
-  return { main: h("div", h("h2.pt", t("step.overview")), h("p.sub", t("ov.sub")), info, moodCard), panel };
+  return { main: h("div", h("h2.pt", t("step.basics")), h("p.sub", t("ov.sub")), info, moodCard), panel };
 }

@@ -290,10 +290,10 @@ export function schedule(p) {
 export function checks(p) {
   const out = [];
   const add = (level, code, page, extra = {}) => out.push({ level, code, page, ...extra });
-  if (!p.name.trim()) add("error", "name", "overview", { field: "name" });
-  if (!p.time.date) add("error", "date", "time", { field: "date" });
-  if (!p.venue.name.trim()) add("error", "venue", "venue", { field: "name" });
-  if (!(Number(p.venue.w) > 0 && Number(p.venue.d) > 0)) add("error", "venueSize", "venue", { field: "w" });
+  if (!p.name.trim()) add("error", "name", "basics", { field: "name" });
+  if (!p.time.date) add("error", "date", "basics", { field: "date" });
+  if (!p.venue.name.trim()) add("error", "venue", "site", { field: "name" });
+  if (!(Number(p.venue.w) > 0 && Number(p.venue.d) > 0)) add("error", "venueSize", "site", { field: "w" });
 
   const allLookIds = new Map(allLooks(p).map(l => [l.id, l.personId]));
   for (const shot of p.shots) {
@@ -310,10 +310,15 @@ export function checks(p) {
   for (const s of p.layout.setups) {
     for (const [k, n] of gearUsage(p, s.id)) {
       const g = gear.get(k);
-      if (g && n > (Number(g.qty) || 0)) add("warn", "gearOver", "gear", { id: k, setupId: s.id, used: n, qty: Number(g.qty) || 0 });
+      if (g && n > (Number(g.qty) || 0)) add("warn", "gearOver", "site", { id: k, setupId: s.id, used: n, qty: Number(g.qty) || 0 });
     }
     for (const e of s.elements) {
       if ((e.kind === "light" || e.kind === "prop") && !e.ref) add("warn", "unbound", "layout", { id: e.id, setupId: s.id });
+    }
+    const referenced = p.scenes.some(sc => sc.setupId === s.id)
+      || p.shots.some(sh => resolveShot(p, sh).setupId === s.id);
+    if (referenced && !s.elements.some(e => e.kind === "light")) {
+      add("warn", "setupEmpty", "layout", { setupId: s.id, setup: s.name });
     }
   }
   if (p.shots.length) {
@@ -321,7 +326,7 @@ export function checks(p) {
     if (sch.overMin > 0) add("warn", "overTime", "schedule", { minutes: sch.overMin });
     for (const c of sch.conflicts) add("warn", "lockConflict", "schedule", { id: c.shotId });
   }
-  if (p.status === "final" && p.props.some(x => x.status !== "ready")) add("info", "propsNotReady", "gear");
+  if (p.status === "final" && p.props.some(x => x.status !== "ready")) add("info", "propsNotReady", "site");
   return out;
 }
 
@@ -335,33 +340,61 @@ export function shotIssues(list) {
 }
 
 // ---------- 步骤完成度（导航圆点）：0 未开始 / 1 有缺项 / 2 完成 ----------
-export const STEPS = ["overview", "time", "venue", "gear", "layout", "shots", "schedule", "export"];
+// progress 是拍摄当天步骤，不计入完整度与 export 完成条件
+export const STEPS = ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export"];
+export const COMPLETE_STEPS = ["basics", "site", "models", "poses", "shots", "layout", "schedule", "export"];
+const EXPORT_PRE = ["basics", "site", "models", "poses", "shots", "layout", "schedule"];
 
 export function stepStatus(p, list = checks(p)) {
   const has = page => list.some(c => c.page === page && c.level !== "info");
   const any = (...vals) => vals.some(v => (Array.isArray(v) ? v.length : !!v));
   const st = {};
-  st.overview = p.name && p.overview.theme ? (has("overview") ? 1 : 2) : any(p.name, p.overview.theme, p.overview.keywords, p.mood) ? 1 : 0;
-  st.time = p.time.date && models(p).length ? (has("time") ? 1 : 2) : any(p.time.date, p.people) ? 1 : 0;
-  st.venue = !has("venue") ? 2 : any(p.venue.name, p.venue.w, p.venue.gear) ? 1 : 0;
+  // S1 基础信息：名 + 主题 + 日期
+  st.basics = p.name && p.overview.theme && p.time.date
+    ? (has("basics") ? 1 : 2)
+    : any(p.name, p.overview.theme, p.overview.keywords, p.time.date, p.overview.client) ? 1 : 0;
+  // S2 场地与器材
   const gl = gearList(p);
-  st.gear = gl.length ? (has("gear") ? 1 : 2) : any(p.props) ? 1 : 0;
+  const siteFilled = any(p.venue.name, p.venue.w, p.venue.d, p.venue.gear, p.gear, p.props);
+  st.site = p.venue.name.trim() && Number(p.venue.w) > 0 && Number(p.venue.d) > 0 && gl.length
+    ? (has("site") ? 1 : 2)
+    : siteFilled ? 1 : 0;
+  // S3 模特与样图
+  const ms = models(p);
+  st.models = ms.length && ms.every(m => (m.looks || []).length)
+    ? 2
+    : any(ms, p.mood) ? 1 : 0;
+  // S4 动作库：每个镜头有动作或要点
+  const poseOk = s => !!(s.poseId || (s.cue || "").trim());
+  st.poses = p.shots.length && p.shots.every(poseOk)
+    ? 2
+    : p.shots.some(poseOk) ? 1 : 0;
+  // S5 分镜（同 0.1.0）
+  const shotErr = list.some(c => c.page === "shots" && c.level === "error");
+  st.shots = p.shots.length ? (shotErr ? 1 : 2) : p.scenes.length ? 1 : 0;
+  // S6 场地图：同 0.1.0，另需无 setupEmpty
   const lit = p.layout.setups.some(s => s.elements.some(e => e.kind === "light") && s.elements.some(e => e.kind === "camera"));
   const anyEl = p.layout.base.length || p.layout.setups.some(s => s.elements.length);
   st.layout = lit ? (has("layout") ? 1 : 2) : anyEl ? 1 : 0;
-  const shotErr = list.some(c => c.page === "shots" && c.level === "error");
-  st.shots = p.shots.length ? (shotErr ? 1 : 2) : p.scenes.length ? 1 : 0;
+  // S7 时间轴
   st.schedule = p.shots.length ? (has("schedule") ? 1 : 2) : 0;
+  // S8 进度：planned / shooting / done / skipped（缺省视为 planned）
+  const shotStat = s => s.status || "planned";
+  st.progress = p.shots.length && p.shots.every(s => shotStat(s) === "done" || shotStat(s) === "skipped")
+    ? 2
+    : p.shots.some(s => shotStat(s) !== "planned") ? 1 : 0;
+  // S9 导出：前七步都完成且无 error
   const errors = list.some(c => c.level === "error");
-  const done = STEPS.slice(0, 7).every(k => st[k] === 2);
-  st.export = done && !errors ? 2 : STEPS.slice(0, 7).some(k => st[k]) ? 1 : 0;
+  st.export = EXPORT_PRE.every(k => st[k] === 2) && !errors
+    ? 2
+    : EXPORT_PRE.some(k => st[k]) ? 1 : 0;
   return st;
 }
 
 export function completeness(p) {
   const st = stepStatus(p);
-  const total = STEPS.length * 2;
-  return Math.round(100 * STEPS.reduce((a, k) => a + st[k], 0) / total);
+  const total = COMPLETE_STEPS.length * 2;
+  return Math.round(100 * COMPLETE_STEPS.reduce((a, k) => a + st[k], 0) / total);
 }
 
 // ---------- 布置图几何 ----------

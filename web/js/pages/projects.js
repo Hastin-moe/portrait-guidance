@@ -17,7 +17,7 @@ async function create(ctx, body) {
   if (name == null) return;
   const { data } = await api("POST", "projects", { ...body, name: name.trim() });
   st.list = null;
-  location.hash = `#/p/${data.id}/overview`;
+  location.hash = `#/p/${data.id}/basics`;
 }
 
 export function render(ctx) {
@@ -44,7 +44,7 @@ export function render(ctx) {
 
 function projCard(ctx, p) {
   const pct = (p.summary && p.summary.completeness) || 0;
-  return h("div.proj", { tabindex: 0, onclick: () => { location.hash = `#/p/${p.id}/overview`; }, onkeydown: e => { if (e.key === "Enter") location.hash = `#/p/${p.id}/overview`; } },
+  return h("div.proj", { tabindex: 0, onclick: () => { location.hash = `#/p/${p.id}/basics`; }, onkeydown: e => { if (e.key === "Enter") location.hash = `#/p/${p.id}/basics`; } },
     h("div.cover", { style: p.cover ? { backgroundImage: `url(/files/${p.id}/${encodeURIComponent(p.cover)})` } : {} }, p.cover ? "" : "◐"),
     h("div.info",
       h("div.nm", p.name || t("proj.untitled")),

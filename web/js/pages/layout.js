@@ -35,7 +35,7 @@ export function render(ctx) {
   const { w, d } = venueSize(p);
   const hasSize = Number(p.venue.w) > 0 && Number(p.venue.d) > 0;
   if (!hasSize) {
-    return { main: h("div", h("h2.pt", t("step.layout")), emptyState(t("layout.needSize"), t("layout.needSizeBody"), h("button.primary", { onclick: () => ctx.go("venue") }, t("layout.goVenue")))), panel: null };
+    return { main: h("div", h("h2.pt", t("step.layout")), emptyState(t("layout.needSize"), t("layout.needSizeBody"), h("button.primary", { onclick: () => ctx.go("site") }, t("layout.goVenue")))), panel: null };
   }
 
   const addAt = (kind, x, y, ref = "") => {

@@ -4,17 +4,23 @@ import * as M from "./model.js";
 import { t, setLang, getLang, LANGS } from "./i18n.js";
 import { h, menu, modal, confirmDlg, promptDlg, toast, isTyping } from "./ui.js";
 import * as P0 from "./pages/projects.js";
-import * as P1 from "./pages/overview.js";
-import * as P2 from "./pages/time.js";
-import * as P3 from "./pages/venue.js";
-import * as P4 from "./pages/gear.js";
-import * as P5 from "./pages/layout.js";
-import * as P6 from "./pages/shots.js";
-import * as P7 from "./pages/poses.js";
-import * as P8 from "./pages/schedule.js";
-import * as P9 from "./pages/export.js";
+import * as PBasics from "./pages/overview.js";   // T1 暂用；T2 换成 basics.js
+import * as PSite from "./pages/venue.js";       // T1 暂用；T3 换成 site.js
+import * as PModels from "./pages/time.js";      // T1 暂用；T4 换成 models.js
+import * as PPoses from "./pages/poses.js";
+import * as PShots from "./pages/shots.js";
+import * as PLayout from "./pages/layout.js";
+import * as PSchedule from "./pages/schedule.js";
+import * as PProgress from "./pages/progress.js";
+import * as PExport from "./pages/export.js";
 
-const PAGES = { overview: P1, time: P2, venue: P3, gear: P4, layout: P5, shots: P6, poses: P7, schedule: P8, export: P9 };
+const PAGES = {
+  basics: PBasics, site: PSite, models: PModels, poses: PPoses,
+  shots: PShots, layout: PLayout, schedule: PSchedule, progress: PProgress, export: PExport,
+};
+// 0.1.0 收藏夹 / 旧链接跳转
+const LEGACY_STEP = { overview: "basics", time: "basics", venue: "site", gear: "site" };
+
 const app = document.getElementById("app");
 const ui = { navMini: null, panelOpen: false, page: {} };   // 页面自己的临时状态放在 ui.page[step]
 let route = { name: "list" };
@@ -23,29 +29,48 @@ let liveFns = [];
 
 setLang(S.settings.lang || "zh");
 
+function resolveStep(raw) {
+  const key = LEGACY_STEP[raw] || raw;
+  return PAGES[key] ? key : "basics";
+}
+
 function parseHash() {
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  if (parts[0] === "p" && parts[1]) return { name: "project", id: parts[1], step: PAGES[parts[2]] ? parts[2] : "overview" };
+  if (parts[0] === "p" && parts[1]) {
+    const step = resolveStep(parts[2]);
+    // 旧 key 写进地址栏时改成新 key，用户收藏也能落到正确页
+    if (parts[2] && parts[2] !== step) {
+      location.replace(`#/p/${parts[1]}/${step}`);
+      return { name: "project", id: parts[1], step };
+    }
+    return { name: "project", id: parts[1], step };
+  }
   return { name: "list" };
 }
 
 export function go(step, extra = {}) {
   if (!S.project) { location.hash = "#/"; return; }
-  Object.assign(ui.page[step] || (ui.page[step] = {}), extra);
-  const h2 = `#/p/${S.project.id}/${step}`;
+  const key = resolveStep(step);
+  Object.assign(ui.page[key] || (ui.page[key] = {}), extra);
+  const h2 = `#/p/${S.project.id}/${key}`;
   if (location.hash === h2) render(); else location.hash = h2;
 }
 
+let routeGen = 0;
 async function onRoute() {
+  const gen = ++routeGen;
   route = parseHash();
   try {
     if (route.name === "project") { await openProject(route.id); }
     else { await flush(); closeProject(); P0.invalidate(); }
   } catch (e) {
+    if (gen !== routeGen) return;
     toast(t("err.open") + " " + e.message);
     location.hash = "#/";
     return;
   }
+  // 快速连点导航时，只让最新一次路由完成渲染，避免旧请求把页面盖回去
+  if (gen !== routeGen) return;
   render();
   document.querySelector("main.page")?.scrollTo(0, 0);
 }
@@ -94,18 +119,15 @@ function statusMenu(anchor) {
   } });
 }
 
-const NAV_ICONS = { overview: "1", time: "2", venue: "3", gear: "4", layout: "5", shots: "6", schedule: "7", export: "8" };
 function navBar(step) {
   const st = M.stepStatus(S.project);
   return h("nav.steps", { "aria-label": t("nav.label") },
-    M.STEPS.map(k => h("a" + (k === step ? ".on" : ""), { href: `#/p/${S.project.id}/${k}`, title: t("step." + k), "aria-current": k === step ? "page" : null },
-      h("span.num", NAV_ICONS[k]), h("span.lbl", t("step." + k)), h("span.dot.s" + st[k], { title: t("dot." + st[k]) }))),
-    h("div.sep"),
-    h("a" + (step === "poses" ? ".on" : ""), { href: `#/p/${S.project.id}/poses`, title: t("step.poses") }, h("span.num", "◎"), h("span.lbl", t("step.poses"))),
+    M.STEPS.map((k, i) => h("a" + (k === step ? ".on" : ""), { href: `#/p/${S.project.id}/${k}`, title: t("step." + k), "aria-current": k === step ? "page" : null },
+      h("span.num", String(i + 1)), h("span.lbl", t("step." + k)), h("span.dot.s" + st[k], { title: t("dot." + st[k]) }))),
     h("button.ghost.sm.collapse", { title: t("nav.toggle"), onclick: () => { ui.navMini = !isMini(step); render(); } }, isMini(step) ? "»" : "«"));
 }
-// 分镜页默认把导航收成图标栏，把空间让给表格
-const isMini = step => ui.navMini ?? (step === "shots" || step === "layout" || step === "schedule");
+// 分镜 / 场地图 / 时间轴 / 进度默认收成图标栏
+const isMini = step => ui.navMini ?? (step === "shots" || step === "layout" || step === "schedule" || step === "progress");
 
 function render() {
   liveFns = [];

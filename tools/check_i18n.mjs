@@ -14,13 +14,13 @@ for (const f of files) {
   for (const m of src.matchAll(/\b[tT]\(\s*"([a-zA-Z0-9_.]+[a-zA-Z0-9_])"\s*[,)]/g)) used.add(m[1]);
 }
 const DYN = {
-  "step.": ["overview", "time", "venue", "gear", "layout", "shots", "schedule", "export", "poses"],
+  "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear"],
   "status.": ["draft", "pending", "final"], "dot.": ["0", "1", "2"],
   "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "text"],
   "size.": ["full", "knee", "half", "bust", "close", "xclose"], "pri.": ["must", "opt"],
   "gear.type.": ["light", "modifier", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"],
   "gear.src.": ["own", "rent", "venue"], "prop.": ["todo", "ready"],
-  "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady"],
+  "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
   "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],
   "sch.buf.": ["light", "look"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop"],

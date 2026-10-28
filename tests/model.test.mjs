@@ -97,7 +97,8 @@ test("model availability limits the window", () => {
 test("checks: gear over-use, unbound, look mismatch, missing refs", () => {
   const { p, shots, emma } = sample();
   let c = M.checks(p);
-  assert.ok(c.some(x => x.code === "gearOver" && x.used === 2 && x.qty === 1));
+  assert.ok(c.some(x => x.code === "gearOver" && x.used === 2 && x.qty === 1 && x.page === "site"));
+  assert.ok(c.some(x => x.code === "setupEmpty" && x.setupId === "B" && x.page === "layout"));
   assert.ok(!c.some(x => x.level === "error"), JSON.stringify(c.filter(x => x.level === "error")));
   shots[0].lookIds = [emma.looks[0].id];
   p.layout.setups[0].elements.push(M.newElement("prop", 3, 3));
@@ -122,15 +123,19 @@ test("checks: required fields", () => {
 test("step status and completeness", () => {
   const { p } = sample();
   const st = M.stepStatus(p);
-  assert.equal(st.overview, 2);
-  assert.equal(st.time, 2);
-  assert.equal(st.venue, 2);
-  assert.equal(st.gear, 1);  // gear over-use
-  assert.equal(st.layout, 2);
+  assert.equal(st.basics, 2);
+  assert.equal(st.site, 1);       // gear over-use → site warn
+  assert.equal(st.models, 2);
+  assert.equal(st.poses, 0);      // 镜头尚无动作/要点
   assert.equal(st.shots, 2);
+  assert.equal(st.layout, 1);     // setupEmpty on B
+  assert.equal(st.schedule, 2);
+  assert.equal(st.progress, 0);
   assert.equal(st.export, 1);
-  assert.equal(M.stepStatus(M.blankProject("")).overview, 0);
-  assert.ok(M.completeness(p) > 70);
+  assert.equal(M.stepStatus(M.blankProject("")).basics, 0);
+  assert.ok(M.completeness(p) > 50);
+  assert.ok(!("overview" in st) && !("gear" in st));
+  assert.deepEqual(M.STEPS, ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export"]);
 });
 
 test("move shot to another scene renumbers both", () => {

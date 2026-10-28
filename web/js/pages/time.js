@@ -80,7 +80,7 @@ export function render(ctx) {
         commit(q => { q.people = q.people.filter(y => y.id !== x.id); });
       } }, t("common.delete"))));
   } else {
-    panel = h("div", h("h4", t("panel.checks")), issuesList(p, M.checks(p).filter(c => c.page === "time"), ctx.go), h("h4", t("panel.tips")), h("p.small.mut", t("time.tip")));
+    panel = h("div", h("h4", t("panel.checks")), issuesList(p, M.checks(p).filter(c => c.page === "models"), ctx.go), h("h4", t("panel.tips")), h("p.small.mut", t("time.tip")));
   }
-  return { main: h("div", h("h2.pt", t("step.time")), h("p.sub", t("time.sub")), h("div.grid2", { style: { alignItems: "start" } }, timeCard, callCard), peopleCard), panel };
+  return { main: h("div", h("h2.pt", t("step.models")), h("p.sub", t("time.sub")), h("div.grid2", { style: { alignItems: "start" } }, timeCard, callCard), peopleCard), panel };
 }

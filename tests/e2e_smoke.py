@@ -30,17 +30,23 @@ def main(shots_dir=None):
         pg.get_by_role("button", name="＋ 新建项目").first.click()
         pg.fill(".dlg input", "测试项目")
         pg.click(".dlg button.primary")
-        pg.wait_for_url("**/overview")
+        # 新导航：1 basics 2 site 3 models 4 poses 5 shots 6 layout 7 schedule 8 progress 9 export
+        def go_step(n, title):
+            pg.click(f"nav.steps a:nth-child({n})")
+            pg.wait_for_selector(f"main.page h2.pt:has-text('{title}')")
+
+        pg.wait_for_url("**/basics")
+        pg.wait_for_selector("main.page h2.pt:has-text('基础信息')")
         pg.fill("textarea", "窗光下的安静人像")
         pg.keyboard.press("Tab")
         pg.fill(".chips input", "窗光"); pg.keyboard.press("Enter")
-        # 时间与人员
-        pg.click("nav.steps a:nth-child(2)")
+        # S3 模特与样图（T1 暂映射 time.js：日期 + 模特）
+        go_step(3, "模特与样图")
         pg.fill("input[type=date]", "2026-11-08")
         pg.get_by_role("button", name="＋ 添加模特").click()
         pg.get_by_role("button", name="＋ 添加模特").click()
-        # 场地
-        pg.click("nav.steps a:nth-child(3)")
+        # S2 场地与器材（T1 暂映射 venue.js）
+        go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")
         inputs.nth(0).fill("白棚")
         pg.locator("input[type=number]").nth(0).fill("8")
@@ -49,8 +55,9 @@ def main(shots_dir=None):
         pg.get_by_role("button", name="＋ 添加器材").click()
         pg.locator("table.grid input[type=text]").first.fill("Godox AD600")
         pg.keyboard.press("Tab")
-        # 布置图：加灯（从器材清单单击放入）、机位、人物
-        pg.click("nav.steps a:nth-child(5)")
+        # S6 场地图：加灯、机位、人物
+        go_step(6, "场地图")
+        pg.wait_for_selector(".palette button.bindable")
         snap("layout0")
         pg.click(".palette button.bindable >> nth=0")
         pg.click(".palette button:has-text('机位')")
@@ -69,8 +76,8 @@ def main(shots_dir=None):
         pg.wait_for_timeout(200)
         assert rin() == "15", "R 旋转 15°"
         snap("layout")
-        # 分镜：按布光方案生成场景，加两个镜头
-        pg.click("nav.steps a:nth-child(6)")
+        # S5 分镜：按布光方案生成场景，加两个镜头
+        go_step(5, "分镜表")
         pg.get_by_role("button", name="按布光方案生成场景").click()
         pg.get_by_role("button", name="＋ 新镜头").click()
         pg.keyboard.press("Meta+n") if sys.platform == "darwin" else pg.keyboard.press("Control+n")
@@ -95,12 +102,12 @@ def main(shots_dir=None):
         pg.wait_for_timeout(200)
         assert pg.locator("tr.shot.opt").count() == 0, "撤销批量修改"
         snap("shots")
-        # 时间表与导出
-        pg.click("nav.steps a:nth-child(7)")
+        # S7 时间轴与 S9 导出（第 8 步是 progress 占位）
+        go_step(7, "时间轴")
         pg.wait_for_timeout(300)
         snap("schedule")
         assert pg.locator(".gantt .bar").count() >= 2
-        pg.click("nav.steps a:nth-child(8)")
+        go_step(9, "预览导出")
         pg.select_option(".opts select", "ja")
         pg.wait_for_timeout(200)
         assert "ショットリスト" in pg.locator(".doc").inner_text()
@@ -109,7 +116,7 @@ def main(shots_dir=None):
         pg.wait_for_timeout(1800)
         assert pg.inner_text("[data-save]") == "已保存"
         pg.reload(); pg.wait_for_timeout(800)
-        pg.click("nav.steps a:nth-child(6)")
+        go_step(5, "分镜表")
         pg.wait_for_selector("tr.shot")
         assert pg.locator("tr.shot").count() == 2, "刷新后数据还在"
         assert "回眸" in pg.locator("tr.shot >> nth=0").inner_text()
