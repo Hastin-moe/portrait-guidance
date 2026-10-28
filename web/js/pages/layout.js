@@ -7,8 +7,8 @@ import { renderLayout, venueSize, labels, elementLabel, svgToPng } from "../canv
 import { inp, fld, sel, issuesList, emptyState, chip } from "./common.js";
 
 const ARCH = ["wall", "window", "door", "pillar", "text"];
-const SET = ["backdrop", "light", "camera", "person", "prop"];
-const ICON = { wall: "▬", window: "▭", door: "◜", pillar: "■", text: "T", backdrop: "▤", light: "◉", camera: "◧", person: "●", prop: "◇" };
+const SET = ["backdrop", "light", "camera", "person", "prop", "board"];
+const ICON = { wall: "▬", window: "▭", door: "◜", pillar: "■", text: "T", backdrop: "▤", light: "◉", camera: "◧", person: "●", prop: "◇", board: "▮" };
 
 // 按住空格拖动 = 平移画布
 let spaceDown = false;
@@ -43,6 +43,10 @@ export function render(ctx) {
     const e = M.newElement(kind, Math.round(x / (grid / 2)) * (grid / 2), Math.round(y / (grid / 2)) * (grid / 2));
     if (ref) e.ref = ref;
     if (kind === "camera") { e.rot = 180; }
+    if (kind === "board" && ref) {
+      const sz = M.boardSizeM(M.gearByKey(p, ref));
+      e.w = sz.w; e.h = sz.h;
+    }
     commit(q => { (M.BASE_KINDS.has(kind) ? q.layout.base : M.setupById(q, setup.id).elements).push(e); });
     st.selected = e.id; ctx.rerender();
   };
@@ -168,6 +172,7 @@ export function render(ctx) {
     onclick: () => addAt(kind, ...center(), ref) }, h("span", ICON[kind]), h("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, label), sub ? h("span.small.mut", sub) : null);
   const usage = M.gearUsage(p, setup.id);
   const lights = M.gearList(p).filter(g => g.type === "light");
+  const boards = M.gearList(p).filter(g => g.type === "absorb");
   const palette = h("div.palette",
     h("div.hd", t("layout.arch")),
     ARCH.map(k => h("button", { disabled: ro || null, onclick: () => addAt(k, ...center()) }, h("span", ICON[k]), t("el." + k))),
@@ -175,6 +180,8 @@ export function render(ctx) {
     SET.map(k => h("button", { disabled: ro || null, onclick: () => addAt(k, ...center()) }, h("span", ICON[k]), t("el." + k))),
     lights.length ? h("div.hd", t("layout.fromGear")) : null,
     lights.map(g => dragItem(g.model || t("gear.type.light"), "light", g.key, `${usage.get(g.key) || 0}/${g.qty || 0}`)),
+    boards.length ? h("div.hd", t("layout.fromAbsorb")) : null,
+    boards.map(g => dragItem(g.model || t("gear.type.absorb"), "board", g.key, `${usage.get(g.key) || 0}/${g.qty || 0}`)),
     M.models(p).length ? h("div.hd", t("layout.fromPeople")) : null,
     M.models(p).map(m => dragItem(m.name, "person", m.id)),
     p.props.length ? h("div.hd", t("layout.fromProps")) : null,
@@ -217,8 +224,10 @@ export function render(ctx) {
     const e = f.e;
     const upd = (k, type) => inp(() => e[k], (q, v) => { findEl(q, e.id).e[k] = v; }, { type, step: type === "number" ? (k === "rot" ? 15 : 0.1) : null });
     const lab = labels(f.setup || setup);
-    const bindOpts = e.kind === "light" ? M.gearList(p).filter(g => g.type === "light" || g.type === "modifier").map(g => [g.key, `${g.model || t("gear.type." + g.type)} (${t("gear.src." + g.source)})`])
+    const bindOpts = e.kind === "light" ? M.gearList(p).filter(g => g.type === "light").map(g => [g.key, `${g.model || t("gear.type." + g.type)} (${t("gear.src." + g.source)})`])
+      : e.kind === "board" ? M.gearList(p).filter(g => g.type === "absorb").map(g => [g.key, `${g.model || t("gear.type.absorb")} (${t("gear.src." + g.source)})`])
       : e.kind === "person" ? M.models(p).map(m => [m.id, m.name]) : e.kind === "prop" ? p.props.map(x => [x.id, x.name || "—"]) : null;
+    const modOpts = M.gearList(p).filter(g => g.type === "modifier").map(g => [g.key, g.model || t("gear.type.modifier")]);
     const dists = M.distances(p, setup.id, e);
     const used = e.kind === "camera" ? p.scenes.filter(s => s.cameraId === e.id).length + p.shots.filter(s => s.cameraId === e.id).length : 0;
     panel = h("div",
@@ -230,7 +239,14 @@ export function render(ctx) {
       fld(t("layout.rot") + " (°)", upd("rot", "number")),
       e.w != null ? h("div.grid2", fld(t("layout.len") + " (m)", upd("w", "number")), fld(t("layout.thick") + " (m)", upd("h", "number"))) : null,
       e.kind === "light" ? [h("div.grid2", fld(t("layout.beam") + " (°)", upd("beam", "number")), fld(t("layout.power"), upd("power"))),
-        fld(t("layout.modifier"), inp(() => e.modifier, (q, v) => { findEl(q, e.id).e.modifier = v; }, { placeholder: t("layout.modifierPh") }))] : null,
+        fld(t("layout.modifierRef"), sel(modOpts, e.modifierRef || "", v => commit(q => {
+          const el = findEl(q, e.id).e; el.modifierRef = v;
+        }), { emptyLabel: t("layout.noModifier") })),
+        !e.modifierRef ? fld(t("layout.modifier"), inp(() => e.modifier, (q, v) => { findEl(q, e.id).e.modifier = v; }, { placeholder: t("layout.modifierPh") })) : null] : null,
+      e.kind === "board" && e.ref ? (() => {
+        const g = M.gearByKey(p, e.ref); const sz = M.boardSizeM(g);
+        return h("button.sm", { onclick: () => commit(q => { const el = findEl(q, e.id).e; el.w = sz.w; el.h = sz.h; }) }, t("layout.syncBoardSize"));
+      })() : null,
       e.kind === "camera" ? [fld(t("layout.focal") + " (mm)", upd("focal", "number")), h("p.small.mut", t("layout.fov", { deg: Math.round(M.fovDeg(e.focal)) })),
         used ? h("p.small.mut", t("layout.camUsed", { n: used })) : null] : null,
       dists.length ? [h("h4", t("layout.distances")), dists.map(x => h("div.small", `${t("dist." + x.kind)}：${x.d.toFixed(2)} m`))] : null,

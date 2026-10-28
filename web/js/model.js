@@ -101,6 +101,14 @@ export function normalize(p) {
   p.venue.gear = Array.isArray(p.venue.gear) ? p.venue.gear : [];
   p.venue.photos = Array.isArray(p.venue.photos) ? p.venue.photos : [];
   p.gear = Array.isArray(p.gear) ? p.gear : [];
+  const normGear = g => {
+    if (g.presetId == null) g.presetId = "";
+    if (g.shape == null) g.shape = "";
+    for (const k of ["diameterCm", "widthCm", "heightCm", "depthCm"]) if (g[k] == null) g[k] = "";
+    return g;
+  };
+  p.gear.forEach(normGear);
+  p.venue.gear.forEach(normGear);
   p.props = Array.isArray(p.props) ? p.props : [];
   p.packing = d(p.packing, {});                  // 打包清单勾选状态：key -> true
   p.layout = d(p.layout, { underlay: null, base: [], setups: [], activeSetup: "" });
@@ -159,7 +167,10 @@ export function gearUsage(p, setupId) {
   const s = setupById(p, setupId);
   const use = new Map();
   if (!s) return use;
-  for (const e of s.elements) if (e.kind === "light" && e.ref) use.set(e.ref, (use.get(e.ref) || 0) + 1);
+  for (const e of s.elements) {
+    if ((e.kind === "light" || e.kind === "board") && e.ref) use.set(e.ref, (use.get(e.ref) || 0) + 1);
+    if (e.kind === "light" && e.modifierRef) use.set(e.modifierRef, (use.get(e.modifierRef) || 0) + 1);
+  }
   return use;
 }
 
@@ -417,7 +428,7 @@ export function checks(p) {
       if (g && n > (Number(g.qty) || 0)) add("warn", "gearOver", "site", { id: k, setupId: s.id, used: n, qty: Number(g.qty) || 0 });
     }
     for (const e of s.elements) {
-      if ((e.kind === "light" || e.kind === "prop") && !e.ref) add("warn", "unbound", "layout", { id: e.id, setupId: s.id });
+      if ((e.kind === "light" || e.kind === "prop" || e.kind === "board") && !e.ref) add("warn", "unbound", "layout", { id: e.id, setupId: s.id });
     }
     const referenced = p.scenes.some(sc => sc.setupId === s.id)
       || p.shots.some(sh => resolveShot(p, sh).setupId === s.id);
@@ -502,19 +513,37 @@ export function completeness(p) {
 }
 
 // ---------- 布置图几何 ----------
-export const ELEMENT_KINDS = ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "text"];
+export const ELEMENT_KINDS = ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "board", "text"];
 export const BASE_KINDS = new Set(["wall", "window", "door", "pillar", "text"]);
 
 export function newElement(kind, x, y) {
   const e = { id: uid(), kind, x, y, rot: 0 };
-  const size = { wall: [3, 0.15], window: [1.2, 0.15], door: [0.9, 0.15], pillar: [0.4, 0.4], backdrop: [2.7, 0.1], prop: [0.6, 0.6] }[kind];
+  const size = { wall: [3, 0.15], window: [1.2, 0.15], door: [0.9, 0.15], pillar: [0.4, 0.4], backdrop: [2.7, 0.1], prop: [0.6, 0.6], board: [2.4, 0.05] }[kind];
   if (size) [e.w, e.h] = size;
-  if (kind === "light") Object.assign(e, { beam: 60, modifier: "", power: "", ref: "" });
+  if (kind === "light") Object.assign(e, { beam: 60, modifier: "", modifierRef: "", power: "", ref: "" });
   if (kind === "camera") Object.assign(e, { focal: 50, label: "" });
   if (kind === "person") Object.assign(e, { ref: "" });
   if (kind === "prop") Object.assign(e, { ref: "" });
+  if (kind === "board") Object.assign(e, { ref: "" });
   if (kind === "text") Object.assign(e, { label: "" });
   return e;
+}
+
+/** 从器材尺寸推算场地图上吸光板 / 修饰器投影（米） */
+export function boardSizeM(gear) {
+  if (!gear) return { w: 2.4, h: 0.05 };
+  const thick = Number(gear.depthCm) > 0 ? Number(gear.depthCm) / 100 : 0.05;
+  if (Number(gear.widthCm) > 0) return { w: Number(gear.widthCm) / 100, h: thick };
+  if (Number(gear.diameterCm) > 0) return { w: Number(gear.diameterCm) / 100, h: thick };
+  return { w: 2.4, h: thick };
+}
+
+export function modifierSizeM(gear) {
+  if (!gear) return { depth: 0.4, width: 0.9 };
+  const diam = Number(gear.diameterCm) > 0 ? Number(gear.diameterCm) / 100
+    : Number(gear.widthCm) > 0 ? Number(gear.widthCm) / 100 : 0.9;
+  const depth = Number(gear.depthCm) > 0 ? Number(gear.depthCm) / 100 : diam * 0.5;
+  return { depth, width: diam };
 }
 
 // 35mm 全画幅横向视角

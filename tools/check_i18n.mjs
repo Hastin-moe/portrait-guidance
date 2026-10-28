@@ -16,9 +16,9 @@ for (const f of files) {
 const DYN = {
   "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear"],
   "status.": ["draft", "pending", "final"], "dot.": ["0", "1", "2"],
-  "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "text"],
+  "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "board", "text"],
   "size.": ["full", "knee", "half", "bust", "close", "xclose"], "pri.": ["must", "opt"],
-  "gear.type.": ["light", "modifier", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"],
+  "gear.type.": ["light", "modifier", "absorb", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"],
   "gear.src.": ["own", "rent", "venue"], "prop.": ["todo", "ready"],
   "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty"],
   "mood.src.": ["none", "x", "xhs", "web", "ai", "own"],

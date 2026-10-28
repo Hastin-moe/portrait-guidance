@@ -1,0 +1,70 @@
+{
+  "schema": "portrait-guidance.board-presets/v1",
+  "updated": "2026-10-28",
+  "unit": "cm",
+  "notes": "影棚常用吸光/反光板平面投影尺寸。厚度不参与俯视投影。数值为行业常用规格，非某一单一 SKU 计量证书。",
+  "items": [
+    {
+      "id": "polyboard-240x120",
+      "category": "absorb",
+      "label": "聚苯板 / Polyboard 240×120cm（8×4ft）",
+      "shape": "rect",
+      "width_cm": 240,
+      "height_cm": 120,
+      "thickness_cm": 5,
+      "confidence": "high",
+      "source": "多篇影棚教程称标准 polyboard 为 2400×1200mm（常 50mm 厚）",
+      "source_url": "https://www.diyphotography.net/studio-polyboards-work-make-diy-alternatives/"
+    },
+    {
+      "id": "vflat-foam-244x122",
+      "category": "absorb",
+      "label": "V-Flat 泡沫板约 244×122cm",
+      "shape": "rect",
+      "width_cm": 244,
+      "height_cm": 122,
+      "thickness_cm": 1,
+      "confidence": "medium",
+      "source": "KOHLSCHEIN V-Flat 板 1220×2440 mm",
+      "source_url": "https://www.kohlschein.de/en/boards-for-v-flats"
+    },
+    {
+      "id": "vflat-foam-244x150",
+      "category": "absorb",
+      "label": "V-Flat 泡沫板约 244×150cm",
+      "shape": "rect",
+      "width_cm": 244,
+      "height_cm": 150,
+      "thickness_cm": 1,
+      "confidence": "medium",
+      "source": "KOHLSCHEIN 1500×2440 mm",
+      "source_url": "https://www.kohlschein.de/en/boards-for-v-flats"
+    },
+    {
+      "id": "foamcore-100x70",
+      "category": "other",
+      "label": "小尺寸泡沫芯板 100×70cm（手填常用）",
+      "shape": "rect",
+      "width_cm": 100,
+      "height_cm": 70,
+      "thickness_cm": 0.5,
+      "confidence": "low",
+      "notes": "常见裁切尺寸，非统一标准件；可手填覆盖。",
+      "source": "常用裁切约定（低置信）",
+      "source_url": ""
+    },
+    {
+      "id": "flag-60x90",
+      "category": "other",
+      "label": "挡光旗 / Flag 约 60×90cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 90,
+      "thickness_cm": null,
+      "confidence": "low",
+      "notes": "影视旗板常见名义尺寸之一，品牌差异大。",
+      "source": "行业常用名义尺寸（低置信）",
+      "source_url": ""
+    }
+  ]
+}

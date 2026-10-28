@@ -131,6 +131,28 @@ test("model availability limits the window", () => {
   assert.equal(a.limitedBy, "mia");
 });
 
+test("gearUsage counts boards and light modifiers", () => {
+  const p = M.blankProject("x");
+  p.gear.push(
+    { id: "b1", type: "absorb", model: "poly", qty: 1 },
+    { id: "m1", type: "modifier", model: "QR-P90T", qty: 1, diameterCm: 90, depthCm: 43 },
+  );
+  const A = p.layout.setups[0];
+  A.elements.push(
+    { ...M.newElement("board", 1, 1), ref: "o:b1" },
+    { ...M.newElement("board", 2, 1), ref: "o:b1" },
+    { ...M.newElement("light", 3, 1), ref: "", modifierRef: "o:m1" },
+  );
+  const u = M.gearUsage(p, A.id);
+  assert.equal(u.get("o:b1"), 2);
+  assert.equal(u.get("o:m1"), 1);
+  const c = M.checks(p);
+  assert.ok(c.some(x => x.code === "gearOver" && x.id === "o:b1" && x.used === 2 && x.qty === 1));
+  const sz = M.modifierSizeM(p.gear[1]);
+  assert.equal(sz.width, 0.9);
+  assert.ok(Math.abs(sz.depth - 0.43) < 1e-9);
+});
+
 test("checks: gear over-use, unbound, look mismatch, missing refs", () => {
   const { p, shots, emma } = sample();
   let c = M.checks(p);

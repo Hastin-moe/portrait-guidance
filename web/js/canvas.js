@@ -36,6 +36,7 @@ export function elementLabel(p, setup, e, lab = labels(setup), lang) {
   if (e.kind === "camera") return lab.get(e.id) + " · " + (e.focal || 50) + "mm";
   if (e.kind === "person") { const ps = e.ref && M.personById(p, e.ref); return ps ? ps.name : t("el.person", null, lang); }
   if (e.kind === "prop") { const pr = e.ref && p.props.find(x => x.id === e.ref); return pr ? pr.name : t("el.prop", null, lang); }
+  if (e.kind === "board") { const g = e.ref && M.gearByKey(p, e.ref); return g ? (g.model || t("el.board", null, lang)) : t("el.board", null, lang); }
   if (e.kind === "text") return e.label || "";
   return t("el." + e.kind, null, lang);
 }
@@ -75,7 +76,20 @@ export function renderLayout(p, setupId, opts = {}) {
   const els = [...p.layout.base.map(e => ({ e, base: true })), ...(setup ? setup.elements : []).map(e => ({ e, base: false }))];
   // 先画光束和视角，再画实体，避免遮挡
   for (const { e } of els) {
-    if (e.kind === "light") layer.append(s("path", { d: wedge(e.x, e.y, e.rot || 0, Number(e.beam) || 60, 1.6), fill: e.ref ? C.acc : C.warn, opacity: dim(e.id) ? 0.04 : 0.13, "pointer-events": "none" }));
+    if (e.kind === "light") {
+      layer.append(s("path", { d: wedge(e.x, e.y, e.rot || 0, Number(e.beam) || 60, 1.6), fill: e.ref ? C.acc : C.warn, opacity: dim(e.id) ? 0.04 : 0.13, "pointer-events": "none" }));
+      // 灯前修饰器平面投影（沿光轴）
+      const mod = e.modifierRef && M.gearByKey(p, e.modifierRef);
+      if (mod) {
+        const { depth, width } = M.modifierSizeM(mod);
+        const rad = (e.rot || 0) * Math.PI / 180;
+        const cx = e.x + Math.cos(rad) * (depth / 2 + 0.22);
+        const cy = e.y + Math.sin(rad) * (depth / 2 + 0.22);
+        const g = s("g", { transform: `translate(${cx} ${cy}) rotate(${e.rot || 0})`, "pointer-events": "none", opacity: dim(e.id) ? 0.25 : 0.85 });
+        g.append(s("rect", { x: -depth / 2, y: -width / 2, width: depth, height: width, fill: "none", stroke: C.acc, "stroke-width": 0.03, "stroke-dasharray": "0.06 0.04" }));
+        layer.append(g);
+      }
+    }
     if (e.kind === "camera") layer.append(s("path", { d: wedge(e.x, e.y, e.rot || 0, M.fovDeg(e.focal), 2.4), fill: "none", stroke: C.fg, "stroke-width": 0.02, "stroke-dasharray": "0.08 0.06", opacity: dim(e.id) ? 0.15 : 0.7, "pointer-events": "none" }));
   }
   for (const { e, base } of els) {
@@ -92,6 +106,13 @@ export function renderLayout(p, setupId, opts = {}) {
       case "pillar": g.append(rect(C.mut)); break;
       case "backdrop": g.append(rect(C.backdrop, { stroke: C.fg, "stroke-width": 0.02 })); break;
       case "prop": g.append(rect(C.soft, { stroke: e.ref ? C.fg : C.warn, "stroke-width": 0.03, "stroke-dasharray": "0.08 0.05" })); break;
+      case "board": {
+        const gear = e.ref && M.gearByKey(p, e.ref);
+        const sz = M.boardSizeM(gear);
+        const bw = e.w || sz.w, bh = e.h || sz.h;
+        g.append(s("rect", { x: -bw / 2, y: -bh / 2, width: bw, height: bh, fill: "#111", stroke: "#fff", "stroke-width": sel ? 0.05 : 0.03 }));
+        break;
+      }
       case "light":
         g.append(s("circle", { r: 0.2, fill: C.panel, stroke: e.ref ? C.acc : C.warn, "stroke-width": sel ? 0.07 : 0.05 }));
         g.append(s("path", { d: "M0.2 -0.09 L0.34 0 L0.2 0.09 Z", fill: e.ref ? C.acc : C.warn })); break;
@@ -108,9 +129,9 @@ export function renderLayout(p, setupId, opts = {}) {
     // 命中区域：细长的墙和窗也容易点中
     if (opts.editable) g.append(s("rect", { x: -Math.max(e.w || 0.5, 0.5) / 2, y: -Math.max(e.h || 0.5, 0.5) / 2, width: Math.max(e.w || 0.5, 0.5), height: Math.max(e.h || 0.5, 0.5), fill: "transparent" }));
     layer.append(g);
-    if (opts.labels !== false && (e.kind === "light" || e.kind === "camera" || e.kind === "person" || e.kind === "prop")) {
+    if (opts.labels !== false && (e.kind === "light" || e.kind === "camera" || e.kind === "person" || e.kind === "prop" || e.kind === "board")) {
       const txt = e.kind === "light" || e.kind === "camera" ? lab.get(e.id) : elementLabel(p, setup, e, lab, opts.lang);
-      layer.append(s("text", { x: e.x, y: e.y + 0.48, "font-size": 0.2, fill: e.kind === "light" && !e.ref ? C.warn : C.fg, "text-anchor": "middle", opacity: dim(e.id) ? 0.35 : 1, "pointer-events": "none" }, txt));
+      layer.append(s("text", { x: e.x, y: e.y + 0.48, "font-size": 0.2, fill: (e.kind === "light" || e.kind === "board") && !e.ref ? C.warn : C.fg, "text-anchor": "middle", opacity: dim(e.id) ? 0.35 : 1, "pointer-events": "none" }, txt));
     }
   }
   svg.append(layer);
@@ -122,7 +143,15 @@ export function renderLayout(p, setupId, opts = {}) {
   }
   if (opts.legend && setup) {
     const y = d + pad * 0.6 + 0.3;
-    const items = setup.elements.filter(e => e.kind === "light" || e.kind === "camera").map(e => elementLabel(p, setup, e, lab, opts.lang) + (e.kind === "light" && e.modifier ? " · " + e.modifier : ""));
+    const items = setup.elements.filter(e => e.kind === "light" || e.kind === "camera" || e.kind === "board").map(e => {
+      let s = elementLabel(p, setup, e, lab, opts.lang);
+      if (e.kind === "light") {
+        const mod = e.modifierRef && M.gearByKey(p, e.modifierRef);
+        if (mod) s += " · " + (mod.model || "");
+        else if (e.modifier) s += " · " + e.modifier;
+      }
+      return s;
+    });
     svg.append(s("text", { x: 0, y, "font-size": 0.22, fill: C.fg }, `${t("layout.setup", null, opts.lang)} ${setup.name}: ` + items.join("   ")));
   }
   return svg;

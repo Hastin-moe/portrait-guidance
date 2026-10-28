@@ -4,8 +4,53 @@ import { t } from "../i18n.js";
 import { S, commit, fileUrl, uploadImages, readonly, saveLibrary } from "../store.js";
 import * as M from "../model.js";
 import { inp, area, fld, sel, issuesList, emptyState, gearTable, GEAR_TYPES } from "./common.js";
+import { loadGearPresets, applyPreset, menuItemsFromPresets, allPresets } from "../gear-presets.js";
 
 export { gearTable, GEAR_TYPES };
+
+/** 器材「尺寸」列：从库选预设或手填 */
+export async function openSizeEditor(anchor, path, gearId, ctx) {
+  await loadGearPresets();
+  const get = q => path === "venue" ? q.venue.gear : q.gear;
+  const g = get(S.project).find(x => x.id === gearId);
+  if (!g) return;
+  const items = [
+    { header: t("gear.fromLib") },
+    ...menuItemsFromPresets(allPresets()),
+    { header: t("gear.manualSize") },
+    { value: "__manual__", label: t("gear.manualSize") },
+    { value: "__clear__", label: t("gear.clearSize") },
+  ];
+  menu(anchor, items, {
+    search: true,
+    onPick: async id => {
+      if (id === "__clear__") {
+        commit(q => {
+          const x = get(q).find(y => y.id === gearId);
+          Object.assign(x, { presetId: "", shape: "", diameterCm: "", widthCm: "", heightCm: "", depthCm: "" });
+        });
+        return;
+      }
+      if (id === "__manual__") {
+        const w = prompt(t("gear.widthCm"), g.widthCm || g.diameterCm || "");
+        if (w == null) return;
+        const h = prompt(t("gear.heightCm"), g.heightCm || "");
+        if (h == null) return;
+        commit(q => {
+          const x = get(q).find(y => y.id === gearId);
+          const nw = Number(w), nh = Number(h);
+          if (nh > 0) Object.assign(x, { presetId: "", shape: "rect", widthCm: nw, heightCm: nh, diameterCm: "" });
+          else Object.assign(x, { presetId: "", shape: "circle", diameterCm: nw, widthCm: "", heightCm: "" });
+        });
+        return;
+      }
+      const preset = allPresets().find(p => p.id === id);
+      if (!preset) return;
+      commit(q => { applyPreset(get(q).find(y => y.id === gearId), preset); });
+      toast(t("gear.presetApplied", { name: preset.label || preset.model }));
+    },
+  });
+}
 
 export function render(ctx) {
   const p = S.project, v = p.venue, st = ctx.state, ro = readonly();
@@ -47,13 +92,35 @@ export function render(ctx) {
         v.photos.length ? h("div.mood", { style: { marginTop: "10px" } }, v.photos.map((ph, i) => h("div.it", h("img", { src: fileUrl(ph), alt: "" }),
           ro ? null : h("button.sm", { style: { position: "absolute", top: "4px", right: "4px" }, onclick: () => commit(q => { q.venue.photos.splice(i, 1); }) }, "×")))) : null));
   } else if (st.tab === "gear") {
+    const addBlank = (own) => commit(q => {
+      const row = { id: M.uid(), type: "light", model: "", qty: 1, presetId: "", shape: "", diameterCm: "", widthCm: "", heightCm: "", depthCm: "" };
+      if (own) { row.source = "own"; q.gear.push(row); } else q.venue.gear.push(row);
+    });
+    const addLib = async (ev, own) => {
+      await loadGearPresets();
+      menu(ev.currentTarget, menuItemsFromPresets(allPresets()), {
+        search: true,
+        onPick: id => {
+          const preset = allPresets().find(x => x.id === id);
+          if (!preset) return;
+          commit(q => {
+            const row = { id: M.uid(), type: "modifier", model: "", qty: 1, source: own ? "own" : undefined, presetId: "", shape: "", diameterCm: "", widthCm: "", heightCm: "", depthCm: "" };
+            applyPreset(row, preset);
+            if (own) q.gear.push(row); else q.venue.gear.push(row);
+          });
+          toast(t("gear.presetApplied", { name: preset.label || preset.model }));
+        },
+      });
+    };
     body = h("div",
       h("div.card", h("div.row", h("h3", { style: { margin: 0 } }, t("gear.venueGear") + ` (${p.venue.gear.length})`), h("span.spacer"),
-        h("button.sm", { disabled: ro || null, onclick: () => commit(q => { q.venue.gear.push({ id: M.uid(), type: "light", model: "", qty: 1 }); }) }, "＋ " + t("gear.add"))),
+        h("button.sm", { disabled: ro || null, onclick: e => addLib(e, false) }, t("gear.addFromLib")),
+        h("button.sm", { disabled: ro || null, onclick: () => addBlank(false) }, "＋ " + t("gear.add"))),
         h("p.small.mut", t("venue.gearHelp")),
         p.venue.gear.length ? gearTable(p.venue.gear, "venue", ctx, { usage }) : h("p.small.mut", t("gear.noVenueGear"))),
       h("div.card", h("div.row", h("h3", { style: { margin: 0 } }, t("gear.ownGear") + ` (${p.gear.length})`), h("span.spacer"),
-        h("button.sm", { disabled: ro || null, onclick: () => commit(q => { q.gear.push({ id: M.uid(), type: "light", model: "", qty: 1, source: "own" }); }) }, "＋ " + t("gear.add"))),
+        h("button.sm", { disabled: ro || null, onclick: e => addLib(e, true) }, t("gear.addFromLib")),
+        h("button.sm", { disabled: ro || null, onclick: () => addBlank(true) }, "＋ " + t("gear.add"))),
         h("div", { style: { height: "8px" } }),
         p.gear.length ? gearTable(p.gear, "own", ctx, { showSource: true, usage }) : emptyState(t("gear.noOwn"), t("gear.noOwnBody"))),
       h("p.small.mut", t("gear.usedHelp")));

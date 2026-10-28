@@ -4,29 +4,49 @@ import { t } from "../i18n.js";
 import { S, commit, readonly, refresh } from "../store.js";
 import * as M from "../model.js";
 
-export const GEAR_TYPES = ["light", "modifier", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"];
+export const GEAR_TYPES = ["light", "modifier", "absorb", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"];
 
 export function gearTable(rows, path, ctx, { showSource = false, usage = null } = {}) {
   const ro = readonly();
   const get = q => path === "venue" ? q.venue.gear : q.gear;
   return h("table.grid",
-    h("tr", h("th", t("gear.type")), h("th", t("gear.model")), h("th", t("gear.qty")), showSource ? h("th", t("gear.source")) : null, usage ? h("th", t("gear.used")) : null, h("th", "")),
+    h("tr", h("th", t("gear.type")), h("th", t("gear.model")), h("th", t("gear.size")), h("th", t("gear.qty")), showSource ? h("th", t("gear.source")) : null, usage ? h("th", t("gear.used")) : null, h("th", "")),
     rows.map(g => {
       const u = usage ? usage.get((path === "venue" ? "v:" : "o:") + g.id) || 0 : 0;
       const over = u > (Number(g.qty) || 0);
+      const key = (path === "venue" ? "v:" : "o:") + g.id;
       return h("tr" + (over ? ".warn" : ""),
         h("td", sel(GEAR_TYPES.map(k => [k, t("gear.type." + k)]), g.type, v => commit(q => { get(q).find(x => x.id === g.id).type = v; }), { allowEmpty: false })),
         h("td", inp(() => g.model, (q, v) => { get(q).find(x => x.id === g.id).model = v; }, { placeholder: t("gear.modelPh") })),
+        h("td", h("button.sm", {
+          disabled: ro || null,
+          title: g.presetId || t("gear.sizeEdit"),
+          onclick: async e => {
+            const { openSizeEditor } = await import("./site.js");
+            openSizeEditor(e.currentTarget, path, g.id, ctx);
+          },
+        }, sizeText(g) || t("gear.sizeEdit"))),
         h("td.num", inp(() => g.qty, (q, v) => { get(q).find(x => x.id === g.id).qty = v; }, { type: "number", min: 0 })),
         showSource ? h("td", sel([["own", t("gear.src.own")], ["rent", t("gear.src.rent")]], g.source || "own", v => commit(q => { get(q).find(x => x.id === g.id).source = v; }), { allowEmpty: false })) : null,
         usage ? h("td", h("span.used" + (over ? ".over" : ""), `${u} / ${Number(g.qty) || 0}`)) : null,
         h("td", h("button.sm.ghost", { disabled: ro || null, title: t("common.delete"), onclick: async () => {
-          const key = (path === "venue" ? "v:" : "o:") + g.id;
-          const n = S.project.layout.setups.reduce((a, s) => a + s.elements.filter(e => e.ref === key).length, 0);
+          const n = S.project.layout.setups.reduce((a, s) => a + s.elements.filter(e => e.ref === key || e.modifierRef === key).length, 0);
           if (n && !await confirmDlg(t("common.deleteTitle"), t("ref.affectsLayout", { n }), { danger: true, ok: t("common.delete") })) return;
-          commit(q => { const arr = get(q); arr.splice(arr.findIndex(x => x.id === g.id), 1); for (const s of q.layout.setups) for (const e of s.elements) if (e.ref === key) e.ref = ""; });
+          commit(q => {
+            const arr = get(q); arr.splice(arr.findIndex(x => x.id === g.id), 1);
+            for (const s of q.layout.setups) for (const e of s.elements) {
+              if (e.ref === key) e.ref = "";
+              if (e.modifierRef === key) e.modifierRef = "";
+            }
+          });
         } }, "×")));
     }));
+}
+
+function sizeText(g) {
+  if (g.shape === "circle" || Number(g.diameterCm) > 0) return Number(g.diameterCm) > 0 ? `ø${g.diameterCm} cm` : "";
+  if (Number(g.widthCm) > 0 && Number(g.heightCm) > 0) return `${g.widthCm}×${g.heightCm} cm`;
+  return "";
 }
 
 // 文本 / 数字输入：打字时 soft 提交（不重绘页面），离开输入框时整页刷新
