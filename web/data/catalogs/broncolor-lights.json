@@ -1,0 +1,367 @@
+{
+  "schema": "portrait-guidance.gear-catalog/v1",
+  "brand": "Broncolor",
+  "kind": "lights",
+  "updated": "2026-10-29",
+  "unit": "cm",
+  "notes": "布朗电源 / 灯头 / 一体灯。光圈值为厂商在 2 m、ISO 100、指定反光罩下的公布值（非照度计实测 lux）。",
+  "items": [
+    {
+      "id": "broncolor-siros-400-s",
+      "brand": "Broncolor",
+      "model": "Siros 400 S",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Broncolor Siros 400 S",
+      "shape": "rect",
+      "width_cm": 32,
+      "height_cm": 13,
+      "depth_cm": 18,
+      "weight_kg": 3.2,
+      "mount": "Broncolor bayonet",
+      "power_ws": 400,
+      "fstop_at_2m": [
+        {
+          "value": "22 5/10",
+          "iso": 100,
+          "reflector": "L40"
+        },
+        {
+          "value": "32 5/10",
+          "iso": 100,
+          "reflector": "P70"
+        }
+      ],
+      "flash_duration_t01": "min energy 1/6500 s; max energy 1/1000 s (t0.1)",
+      "recycle_s": {
+        "min": 0.02,
+        "max": 0.95,
+        "note": "230 V / 50 Hz"
+      },
+      "power_range_ws": {
+        "min": 2,
+        "max": 400
+      },
+      "modeling": "Halogen max 300 W / 120 V, proportional",
+      "hss": false,
+      "confidence": "high",
+      "source": "broncolor Siros S Technical Data Sheet / Helpjuice",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Monolights/Siros-S/Technical_Data_Sheet_broncolor_nur_Siros_S.pdf",
+      "refs": [
+        "bron-siros-s-tds",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-siros-800-s",
+      "brand": "Broncolor",
+      "model": "Siros 800 S",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Broncolor Siros 800 S",
+      "shape": "rect",
+      "width_cm": 32,
+      "height_cm": 13,
+      "depth_cm": 18,
+      "weight_kg": 3.6,
+      "mount": "Broncolor bayonet",
+      "power_ws": 800,
+      "fstop_at_2m": [
+        {
+          "value": "32 8/10",
+          "iso": 100,
+          "reflector": "L40"
+        },
+        {
+          "value": "45 6/10",
+          "iso": 100,
+          "reflector": "P70"
+        }
+      ],
+      "flash_duration_t01": "min 1/4000 s; max 1/500 s (t0.1)",
+      "recycle_s": {
+        "min": 0.07,
+        "max": 1.9,
+        "note": "230 V / 50 Hz"
+      },
+      "power_range_ws": {
+        "min": 4,
+        "max": 800
+      },
+      "modeling": "Halogen max 300 W / 120 V",
+      "hss": true,
+      "notes": "HS mode available on 800 S",
+      "confidence": "high",
+      "source": "broncolor Siros S Technical Data",
+      "source_url": "https://broncolor.helpjuice.com/en_US/technical-data-siross-en",
+      "refs": [
+        "bron-siros-s-tds",
+        "bron-siros-s-help",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-siros-400-l",
+      "brand": "Broncolor",
+      "model": "Siros 400 L",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Broncolor Siros 400 L（电池）",
+      "shape": "rect",
+      "width_cm": 32,
+      "height_cm": 13,
+      "depth_cm": 18,
+      "weight_kg": 3.1,
+      "mount": "Broncolor bayonet",
+      "power_ws": 400,
+      "fstop_at_2m": [
+        {
+          "value": "22 5/10",
+          "iso": 100,
+          "reflector": "L40"
+        },
+        {
+          "value": "32 5/10",
+          "iso": 100,
+          "reflector": "P70"
+        }
+      ],
+      "flash_duration_t01": "min energy 1/6200 s; max energy 1/400 s (t0.1); Speed mode faster",
+      "recycle_s": {
+        "min": 0.03,
+        "max": 1.2,
+        "note": "Normal @ 28.8 V; Eco 0.04–1.9 s"
+      },
+      "full_power_flashes": 440,
+      "power_range_ws": {
+        "min": 1.5,
+        "max": 400
+      },
+      "cct_flash_k": "5500 (max energy / P70)",
+      "modeling": "25 W LED, 3000 K",
+      "battery": "Li-ion 28.8V / 2.5Ah / 72Wh (battery +0.6 kg)",
+      "hss": true,
+      "confidence": "high",
+      "notes": "重量为不含电池；电池尺寸 8.5×11×5.5 cm。",
+      "source": "broncolor Siros L Technical Data / manual §17",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Monolights/Siros-L/Technical_Data_Sheet_broncolor_Siros_L.pdf",
+      "refs": [
+        "bron-siros-l-tds",
+        "bron-siros-l-manual",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-siros-800-l",
+      "brand": "Broncolor",
+      "model": "Siros 800 L",
+      "category": "light_head",
+      "subcategory": "strobe",
+      "label": "Broncolor Siros 800 L（电池）",
+      "shape": "rect",
+      "width_cm": 36,
+      "height_cm": 13,
+      "depth_cm": 18,
+      "weight_kg": 3.7,
+      "mount": "Broncolor bayonet",
+      "power_ws": 800,
+      "fstop_at_2m": [
+        {
+          "value": "32 8/10",
+          "iso": 100,
+          "reflector": "L40"
+        },
+        {
+          "value": "45 6/10",
+          "iso": 100,
+          "reflector": "P70"
+        }
+      ],
+      "flash_duration_t01": "min 1/4400 s; max 1/250 s (t0.1)",
+      "recycle_s": {
+        "min": 0.03,
+        "max": 2.7,
+        "note": "Normal @ 28.8 V; Eco 0.05–4.3 s"
+      },
+      "full_power_flashes": 220,
+      "power_range_ws": {
+        "min": 4,
+        "max": 800
+      },
+      "cct_flash_k": "5500 (max energy / P70)",
+      "modeling": "25 W LED, 3000 K",
+      "battery": "Li-ion 28.8V / 2.5Ah / 72Wh",
+      "hss": true,
+      "confidence": "high",
+      "notes": "重量不含电池。",
+      "source": "broncolor Siros L Technical Data",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Monolights/Siros-L/Technical_Data_Sheet_broncolor_Siros_L.pdf",
+      "refs": [
+        "bron-siros-l-tds",
+        "bron-siros-l-manual",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-satos-1600",
+      "brand": "Broncolor",
+      "model": "Satos 1600",
+      "category": "power_pack",
+      "subcategory": "generator",
+      "label": "Broncolor Satos 1600",
+      "shape": "rect",
+      "power_ws": 1600,
+      "fstop_at_2m": [
+        {
+          "value": "64 2/10",
+          "iso": 100,
+          "reflector": "P70",
+          "mode": "normal"
+        }
+      ],
+      "flash_duration_t01": "normal 1/6000–1/220 s; speed mode energy 650 J",
+      "cct_flash_k": "constant over control range (normal mode)",
+      "continuous_with_pulso_l": {
+        "cct_k": {
+          "min": 2800,
+          "max": 6800
+        },
+        "cri": 97,
+        "step_k": 50
+      },
+      "confidence": "high",
+      "source": "Satos Technical Data Sheet April 2024 V1.6 EN",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Powerpacks/Satos/Satos_Data-sheet_April-2024_V1.6_EN.pdf",
+      "refs": [
+        "bron-satos-tds-2024",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-satos-3200",
+      "brand": "Broncolor",
+      "model": "Satos 3200",
+      "category": "power_pack",
+      "subcategory": "generator",
+      "label": "Broncolor Satos 3200",
+      "shape": "rect",
+      "power_ws": 3200,
+      "fstop_at_2m": [
+        {
+          "value": "90 4/10",
+          "iso": 100,
+          "reflector": "P70",
+          "mode": "normal"
+        }
+      ],
+      "flash_duration_t01": "normal 1/5400–1/100 s; speed mode energy 1212 J",
+      "confidence": "high",
+      "source": "Satos Technical Data Sheet April 2024 V1.6 EN",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Powerpacks/Satos/Satos_Data-sheet_April-2024_V1.6_EN.pdf",
+      "refs": [
+        "bron-satos-tds-2024",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-move-1200-l",
+      "brand": "Broncolor",
+      "model": "Move 1200 L",
+      "category": "power_pack",
+      "subcategory": "battery_generator",
+      "label": "Broncolor Move 1200 L",
+      "shape": "rect",
+      "width_cm": 21,
+      "height_cm": 17,
+      "depth_cm": 23,
+      "weight_kg": 6.2,
+      "mount": "Broncolor lamp outlets ×2",
+      "power_ws": 1200,
+      "fstop_at_2m": [
+        {
+          "value": "64 1/10",
+          "iso": 100,
+          "reflector": "P70",
+          "with": "MobiLED"
+        }
+      ],
+      "flash_duration_t01": "fastest t0.1 1/8500 s; max energy t0.1 1/375 s",
+      "recycle_s": {
+        "min": 0.02,
+        "max": 1.9,
+        "note": "Speed Mode 0.02–0.9 s"
+      },
+      "full_power_flashes": 170,
+      "power_range_ws": {
+        "min": 4.5,
+        "max": 1200
+      },
+      "modeling": "max 2×100 W halogen or 2×30 W LED",
+      "battery": "14.4 V / 6.6 Ah Li-FePo4 (incl. in 6.2 kg)",
+      "hss": true,
+      "confidence": "high",
+      "notes": "尺寸不含提手；满功率约 170 次，Eco 约 230 次。",
+      "source": "Move 1200 L TDS July 2019",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Powerpacks/Move/TDS_Move_1200_L_new-EN.pdf",
+      "refs": [
+        "bron-move-1200l-tds",
+        "bron-move-brochure",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-pulso-l",
+      "brand": "Broncolor",
+      "model": "Pulso L",
+      "category": "lamp_head",
+      "subcategory": "flash_lamp",
+      "label": "Broncolor Pulso L 灯头",
+      "shape": "circle",
+      "diameter_cm": 12.0,
+      "depth_cm": 26.2,
+      "weight_kg": 3.5,
+      "mount": "Broncolor bayonet",
+      "power_ws": 3200,
+      "notes": "灯头本身不储能；最大承受 3200 J；持续光模式经 Satos",
+      "modeling": "LED 90 W typical 2800 or 5500 K (flash mode modeling)",
+      "cct_k": {
+        "min": 2800,
+        "max": 6800,
+        "step_k": 50
+      },
+      "cri": 97,
+      "tlci": 97,
+      "dimming": "6–100% continuous",
+      "confidence": "high",
+      "source": "Pulso L Technical Data Sheet August 2024 V1.4",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Lamps/Pulso-L/Pulso-L_Data-sheet_August-2024-V1.4.pdf",
+      "refs": [
+        "bron-pulso-l-tds"
+      ]
+    },
+    {
+      "id": "broncolor-mobiled",
+      "brand": "Broncolor",
+      "model": "MobiLED",
+      "category": "lamp_head",
+      "subcategory": "flash_lamp",
+      "label": "Broncolor MobiLED 灯头",
+      "shape": "circle",
+      "diameter_cm": 12.0,
+      "depth_cm": 24.3,
+      "height_cm": 17.2,
+      "weight_kg": 1.7,
+      "mount": "Broncolor bayonet",
+      "power_ws": 1200,
+      "notes": "灯头最大 1200 J（手册亦写 max 1600 J 承受）；须接 Move 等电源。尺寸 Ø×L×H。",
+      "modeling": "30 W LED",
+      "cable_m": 3.5,
+      "confidence": "high",
+      "source": "Move / MobiLED brochure",
+      "source_url": "https://broncolor.swiss/assets/img/Products/Light/Lamps/MobiLED/01_EXP_BRN_Move_BRO_ENG_low_04.pdf",
+      "refs": [
+        "bron-move-brochure"
+      ]
+    }
+  ]
+}

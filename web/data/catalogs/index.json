@@ -1,0 +1,38 @@
+{
+  "schema": "portrait-guidance.gear-catalog-index/v1",
+  "updated": "2026-10-29",
+  "catalogs": [
+    {
+      "file": "godox-lights.json",
+      "brand": "Godox",
+      "kind": "lights",
+      "count": 12
+    },
+    {
+      "file": "godox-modifiers.json",
+      "brand": "Godox",
+      "kind": "modifiers",
+      "count": 16
+    },
+    {
+      "file": "broncolor-lights.json",
+      "brand": "Broncolor",
+      "kind": "lights",
+      "count": 9
+    },
+    {
+      "file": "broncolor-modifiers.json",
+      "brand": "Broncolor",
+      "kind": "modifiers",
+      "count": 17
+    }
+  ],
+  "references": "docs/gear-catalog/REFERENCES.md",
+  "schema_doc": "docs/gear-catalog/SCHEMA.md",
+  "next": [
+    "Profoto lights+modifiers full photometrics",
+    "Aputure / amaran continuous lux tables",
+    "Godox studio MS/SK/QT monolights one-by-one",
+    "Godox AD200Pro II / ML60II Bi illuminance table fill gaps"
+  ]
+}

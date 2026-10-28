@@ -2,7 +2,7 @@
   "schema": "portrait-guidance.modifier-library/v1",
   "updated": "2026-10-29",
   "unit": "cm",
-  "notes": "尺寸来自公开网页/官方或经销商页面摘要。场地图用开口直径或面板宽×高作为平面投影；深度仅供参考。Broncolor Para 的「开口直径×深度」在不同页面略有出入，已标注置信度。 2026-10-29 增补 Godox QR-P150T / SB-GUE、Profoto Deep 伞与 OCF/RFi、Aputure Dome/Quick Dome、Broncolor Para 222；来源见各条目。",
+  "notes": "尺寸来自公开网页/官方或经销商页面摘要。场地图用开口直径或面板宽×高作为平面投影；深度仅供参考。Broncolor Para 的「开口直径×深度」在不同页面略有出入，已标注置信度。 2026-10-29 增补 Godox QR-P150T / SB-GUE、Profoto Deep 伞与 OCF/RFi、Aputure Dome/Quick Dome、Broncolor Para 222；来源见各条目。 2026-10-29：Godox/Bron 完整目录在 catalogs/；本库保留场地图用开口尺寸。详见 docs/gear-catalog/。",
   "items": [
     {
       "id": "godox-qr-p60t",
@@ -16,8 +16,8 @@
       "depth_cm": 29.8,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "ec-mall 规格表（Depth x Diameter: 29.8×60cm）",
-      "source_url": "https://www.ec-mall.com/p/flash-lighting-studio/lighting-equipment/35947/"
+      "source": "Godox.ru QR-P Tech Specs 表",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/"
     },
     {
       "id": "godox-qr-p70t",
@@ -31,8 +31,8 @@
       "depth_cm": 34.1,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "ec-mall 规格表",
-      "source_url": "https://www.ec-mall.com/p/flash-lighting-studio/lighting-equipment/35947/"
+      "source": "Godox.ru QR-P Tech Specs",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/"
     },
     {
       "id": "godox-qr-p90t",
@@ -46,8 +46,8 @@
       "depth_cm": 42.7,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "ec-mall + Godox ZA 产品页（Open ø90cm）",
-      "source_url": "https://godox.co.za/product/qr-p90t-quick-release-parabolic-softbox/"
+      "source": "Godox.ru + Godox ZA",
+      "source_url": "https://www.godox.com/product-d/QR-Series.html"
     },
     {
       "id": "godox-qr-p120t",
@@ -61,8 +61,8 @@
       "depth_cm": 56.7,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "ec-mall 规格表",
-      "source_url": "https://www.ec-mall.com/p/flash-lighting-studio/lighting-equipment/35947/"
+      "source": "Godox.ru QR-P Tech Specs",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/"
     },
     {
       "id": "godox-eazyflow-octa90",
@@ -76,7 +76,7 @@
       "depth_cm": 44.2,
       "mount": "varies",
       "confidence": "high",
-      "source": "Godox 官方 EazyFlow Tech Specs",
+      "source": "Godox EazyFlow Tech Specs",
       "source_url": "https://www.godox.com/product-e/EazyFlow.html"
     },
     {
@@ -92,7 +92,7 @@
       "depth_cm": 42.2,
       "mount": "varies",
       "confidence": "high",
-      "source": "Godox 官方 EazyFlow Tech Specs",
+      "source": "Godox EazyFlow Tech Specs",
       "source_url": "https://www.godox.com/product-e/EazyFlow.html"
     },
     {
@@ -101,16 +101,16 @@
       "model": "SB-BW-6060",
       "category": "modifier",
       "subcategory": "rect_softbox",
-      "label": "Godox SB-BW 矩形 60×60cm",
+      "label": "Godox SB-BW 方形 60×60cm",
       "shape": "rect",
       "width_cm": 60,
       "height_cm": 60,
       "depth_cm": null,
       "mount": "Bowens",
-      "confidence": "medium",
+      "confidence": "high",
       "notes": "官方产品列表给出面板开口尺寸；深度未在该页列出。",
-      "source": "Godox Bowens Mount Softbox 列表",
-      "source_url": "https://www.godox.com/product-d/1458.html"
+      "source": "Godox KNOWLED catalogue softbox table",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
     },
     {
       "id": "profoto-rfi-octa-3",
@@ -169,9 +169,9 @@
       "diameter_cm": 85,
       "depth_cm": 64,
       "mount": "Broncolor Para focusing",
-      "confidence": "medium",
-      "notes": "产品页写 open Ø85×64 cm；部分套装手册写 Ø85×107 cm（可能含对焦筒总长）。场地图平面投影采用开口直径 85cm。",
-      "source": "broncolor.swiss Para 88 reflector 产品页",
+      "confidence": "high",
+      "notes": "产品页 open Ø85×64 cm；套装手册另写 Ø85×107 cm（常含对焦筒）。场地图用开口 85 cm。",
+      "source": "broncolor Para 88 reflector product page",
       "source_url": "https://broncolor.swiss/products/para-88-reflector"
     },
     {
@@ -185,9 +185,9 @@
       "diameter_cm": 120,
       "depth_cm": 77,
       "mount": "Broncolor Para focusing",
-      "confidence": "medium",
-      "notes": "产品页 open Ø120×77 cm；手册套装另有 Ø120×112 cm 写法。平面投影用 120cm。",
-      "source": "broncolor.swiss Para 133 reflector 产品页",
+      "confidence": "high",
+      "notes": "产品页 open Ø120×77；手册套装另有 Ø120×112。",
+      "source": "broncolor Para 133 reflector",
       "source_url": "https://broncolor.swiss/products/para-133-reflector"
     },
     {
@@ -201,10 +201,10 @@
       "diameter_cm": 170,
       "depth_cm": 95,
       "mount": "Broncolor Para focusing",
-      "confidence": "medium",
+      "confidence": "high",
       "notes": "多来源一致开口直径约 170cm；深度以产品/手册 95cm 记。",
-      "source": "broncolor Para 产品页 / 手册摘要",
-      "source_url": "https://broncolor.swiss/products/para-88-kit-without-adapter"
+      "source": "broncolor Para brochure / kit data",
+      "source_url": "https://broncolor.swiss/assets/img/General/Category-images/Para/broncolor-Para-brochure.pdf"
     },
     {
       "id": "godox-qr-p150t",
@@ -218,8 +218,8 @@
       "depth_cm": 70.2,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Godox.ru / Wex 规格表 Depth×Diameter 70.2×150 cm（2024–2025 QR-PT 系列）",
-      "source_url": "https://www.godox.com/product-d/QR-Series.html"
+      "source": "Godox.ru / Wex Photovideo",
+      "source_url": "https://www.wexphotovideo.com/godox-qr-p150t-quick-release-parabolic-softbox-3228751/"
     },
     {
       "id": "godox-sb-gue80",
@@ -234,7 +234,7 @@
       "mount": "Bowens S",
       "confidence": "high",
       "notes": "伞式快开；深度未在多数经销商页单独列出。",
-      "source": "Godox SB-GUE80 经销商规格（ø80 cm）",
+      "source": "Godox.pl SB-GUE80",
       "source_url": "https://store.godox.pl/en/softboxes/5433-godox-sb-gue80-umbrella-style-softbox-with-bowens-mount-octa-80cm-6952344211656.html"
     },
     {
@@ -249,7 +249,7 @@
       "depth_cm": null,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "Godox SB-GUE95 规格 ø95 cm",
+      "source": "Brilliant.com.sg SB-GUE95",
       "source_url": "https://www.brilliant.com.sg/Godox-SB-UE80-SB-UE120-Octagon-Umbrella-Softboxes-with-Honeycomb-Grid"
     },
     {
@@ -264,7 +264,7 @@
       "depth_cm": null,
       "mount": "Bowens S",
       "confidence": "high",
-      "source": "ec-mall / Brilliant SB-GUE120 ø120 cm",
+      "source": "ec-mall SB-GUE 120",
       "source_url": "https://www.ec-mall.com/p/flash-lighting-studio/lighting-equipment/7064/"
     },
     {
@@ -447,8 +447,275 @@
       "mount": "Broncolor Para focusing",
       "confidence": "high",
       "notes": "套装手册 open Ø220×115 cm（含对焦筒总长口径）；产品页同口径。",
-      "source": "broncolor Para brochure / Para 222 Kit",
+      "source": "Para 222 Kit / brochure open Ø220×115 cm",
       "source_url": "https://broncolor.swiss/products/para-222-kit-without-adapter"
+    },
+    {
+      "id": "godox-sb-bw-9090",
+      "brand": "Godox",
+      "model": "SB-BW-9090",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox SB-BW 方形 90×90cm",
+      "shape": "rect",
+      "width_cm": 90,
+      "height_cm": 90,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
+    },
+    {
+      "id": "godox-sb-bw-6090",
+      "brand": "Godox",
+      "model": "SB-BW-6090",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox SB-BW 矩形 60×90cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 90,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
+    },
+    {
+      "id": "godox-sb-fw-95",
+      "brand": "Godox",
+      "model": "SB-FW-95",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 95cm",
+      "shape": "circle",
+      "diameter_cm": 95,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue octa table",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
+    },
+    {
+      "id": "godox-sb-fw-120",
+      "brand": "Godox",
+      "model": "SB-FW-120",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 120cm",
+      "shape": "circle",
+      "diameter_cm": 120,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
+    },
+    {
+      "id": "godox-sb-fw-140",
+      "brand": "Godox",
+      "model": "SB-FW-140",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 140cm",
+      "shape": "circle",
+      "diameter_cm": 140,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf"
+    },
+    {
+      "id": "broncolor-p70",
+      "brand": "Broncolor",
+      "model": "P70",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor P70 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 23.2,
+      "depth_cm": 18.4,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor P70 product page",
+      "source_url": "https://broncolor.swiss/products/p70-standard-reflector"
+    },
+    {
+      "id": "broncolor-p65",
+      "brand": "Broncolor",
+      "model": "P65",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor P65 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 29.5,
+      "depth_cm": 24.0,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor P65 data sheet (dicam.pl mirror)",
+      "source_url": "https://www.dicam.pl/sites/dicam.pl/files/broncolor-opis-p65-en.pdf"
+    },
+    {
+      "id": "broncolor-l40",
+      "brand": "Broncolor",
+      "model": "L40",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor L40 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 18.2,
+      "depth_cm": 11.8,
+      "mount": "Broncolor (Siros / Siros S / Siros L)",
+      "confidence": "high",
+      "source": "broncolor L40 product page",
+      "source_url": "https://broncolor.swiss/products/l40-standard-reflector",
+      "notes": "产品页 Ø18.2×11.8 cm；与 Siros 系列光圈表配套。"
+    },
+    {
+      "id": "broncolor-beauty-dish",
+      "brand": "Broncolor",
+      "model": "Beauty Dish",
+      "category": "reflector",
+      "subcategory": "beauty_dish",
+      "label": "Broncolor Beauty Dish（白内涂）",
+      "shape": "circle",
+      "diameter_cm": 51.8,
+      "depth_cm": 19.6,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor Beauty Dish product page + data sheet",
+      "source_url": "https://broncolor.swiss/products/beauty-dish-reflector"
+    },
+    {
+      "id": "broncolor-softlight-p",
+      "brand": "Broncolor",
+      "model": "Softlight reflector P",
+      "category": "reflector",
+      "subcategory": "beauty_dish",
+      "label": "Broncolor Softlight P（银内涂）",
+      "shape": "circle",
+      "diameter_cm": 51.8,
+      "depth_cm": 19.6,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor Softlight reflector P product page",
+      "source_url": "https://broncolor.swiss/products/softlight-reflector-p",
+      "notes": "较 Beauty Dish 输出更高；同外形。"
+    },
+    {
+      "id": "broncolor-softbox-35x60",
+      "brand": "Broncolor",
+      "model": "Softbox 35×60",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 35×60cm",
+      "shape": "rect",
+      "width_cm": 35,
+      "height_cm": 60,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-softbox-60x60",
+      "brand": "Broncolor",
+      "model": "Softbox 60×60",
+      "category": "modifier",
+      "subcategory": "square_softbox",
+      "label": "Broncolor Softbox 60×60cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 60,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-softbox-60x100",
+      "brand": "Broncolor",
+      "model": "Softbox 60×100",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 60×100cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 100,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-softbox-90x120",
+      "brand": "Broncolor",
+      "model": "Softbox 90×120",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 90×120cm",
+      "shape": "rect",
+      "width_cm": 90,
+      "height_cm": 120,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-softbox-120x180",
+      "brand": "Broncolor",
+      "model": "Softbox 120×180",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 120×180cm",
+      "shape": "rect",
+      "width_cm": 120,
+      "height_cm": 180,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-softbox-30x120",
+      "brand": "Broncolor",
+      "model": "Softbox 30×120",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 30×120cm",
+      "shape": "rect",
+      "width_cm": 30,
+      "height_cm": 120,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-octabox-75",
+      "brand": "Broncolor",
+      "model": "Octabox 75",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Broncolor Octabox 75cm",
+      "shape": "circle",
+      "diameter_cm": 75,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes / Octabox listing",
+      "source_url": "https://broncolor.swiss/products/softboxes"
+    },
+    {
+      "id": "broncolor-octabox-150",
+      "brand": "Broncolor",
+      "model": "Octabox 150",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Broncolor Octabox 150cm",
+      "shape": "circle",
+      "diameter_cm": 150,
+      "mount": "Broncolor speed ring 33.401.00",
+      "confidence": "high",
+      "source": "broncolor Softboxes / Octabox listing",
+      "source_url": "https://broncolor.swiss/products/softboxes"
     }
   ]
 }

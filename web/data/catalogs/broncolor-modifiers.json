@@ -1,0 +1,421 @@
+{
+  "schema": "portrait-guidance.gear-catalog/v1",
+  "brand": "Broncolor",
+  "kind": "modifiers",
+  "updated": "2026-10-29",
+  "unit": "cm",
+  "notes": "Para / 标准反光罩 / Beauty Dish / Softbox / Octabox。Para 开口尺寸以产品页为准；LED F160 相对 f-stop 见 REFERENCES bron-led-f160-photometry。",
+  "items": [
+    {
+      "id": "broncolor-para-88",
+      "brand": "Broncolor",
+      "model": "Para 88",
+      "category": "modifier",
+      "subcategory": "parabolic_reflector",
+      "label": "Broncolor Para 88（开口 ø85cm）",
+      "shape": "circle",
+      "diameter_cm": 85,
+      "depth_cm": 64,
+      "weight_kg": 2.8,
+      "mount": "Broncolor Para focusing",
+      "max_flash_j": 3200,
+      "max_continuous_w": 650,
+      "fstop_at_2m": {
+        "value": "90",
+        "iso": 100,
+        "note": "kit brochure focused figure (see Para brochure)"
+      },
+      "interior": "silver textured",
+      "confidence": "high",
+      "notes": "产品页 open Ø85×64 cm；套装手册另写 Ø85×107 cm（常含对焦筒）。场地图用开口 85 cm。",
+      "source": "broncolor Para 88 reflector product page",
+      "source_url": "https://broncolor.swiss/products/para-88-reflector",
+      "refs": [
+        "bron-para-88-page",
+        "bron-para-brochure"
+      ]
+    },
+    {
+      "id": "broncolor-para-133",
+      "brand": "Broncolor",
+      "model": "Para 133",
+      "category": "modifier",
+      "subcategory": "parabolic_reflector",
+      "label": "Broncolor Para 133（开口 ø120cm）",
+      "shape": "circle",
+      "diameter_cm": 120,
+      "depth_cm": 77,
+      "weight_kg": 3.3,
+      "mount": "Broncolor Para focusing",
+      "max_flash_j": 3200,
+      "max_continuous_w": 800,
+      "interior": "silver textured",
+      "confidence": "high",
+      "notes": "产品页 open Ø120×77；手册套装另有 Ø120×112。",
+      "source": "broncolor Para 133 reflector",
+      "source_url": "https://broncolor.swiss/products/para-133-reflector",
+      "refs": [
+        "bron-para-brochure"
+      ]
+    },
+    {
+      "id": "broncolor-para-177",
+      "brand": "Broncolor",
+      "model": "Para 177",
+      "category": "modifier",
+      "subcategory": "parabolic_reflector",
+      "label": "Broncolor Para 177（开口 ø170cm）",
+      "shape": "circle",
+      "diameter_cm": 170,
+      "depth_cm": 95,
+      "weight_kg": 9.4,
+      "mount": "Broncolor Para focusing",
+      "max_flash_j": 3200,
+      "max_continuous_w": 1600,
+      "interior": "silver glossy",
+      "confidence": "high",
+      "source": "broncolor Para brochure / kit data",
+      "source_url": "https://broncolor.swiss/assets/img/General/Category-images/Para/broncolor-Para-brochure.pdf",
+      "refs": [
+        "bron-para-brochure"
+      ]
+    },
+    {
+      "id": "broncolor-para-222",
+      "brand": "Broncolor",
+      "model": "Para 222",
+      "category": "modifier",
+      "subcategory": "parabolic_reflector",
+      "label": "Broncolor Para 222（开口 ø220cm）",
+      "shape": "circle",
+      "diameter_cm": 220,
+      "depth_cm": 115,
+      "weight_kg": 10.0,
+      "mount": "Broncolor Para focusing",
+      "max_flash_j": 3200,
+      "max_continuous_w": 1600,
+      "interior": "silver glossy",
+      "confidence": "high",
+      "source": "Para 222 Kit / brochure open Ø220×115 cm",
+      "source_url": "https://broncolor.swiss/products/para-222-kit-without-adapter",
+      "refs": [
+        "bron-para-brochure",
+        "bron-para-222-kit"
+      ]
+    },
+    {
+      "id": "broncolor-p70",
+      "brand": "Broncolor",
+      "model": "P70",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor P70 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 23.2,
+      "depth_cm": 18.4,
+      "beam_deg": 70,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor P70 product page",
+      "source_url": "https://broncolor.swiss/products/p70-standard-reflector",
+      "refs": [
+        "bron-p70-page"
+      ]
+    },
+    {
+      "id": "broncolor-p65",
+      "brand": "Broncolor",
+      "model": "P65",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor P65 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 29.5,
+      "depth_cm": 24.0,
+      "weight_kg": 0.6,
+      "beam_deg": 65,
+      "mount": "Broncolor",
+      "confidence": "high",
+      "source": "broncolor P65 data sheet (dicam.pl mirror)",
+      "source_url": "https://www.dicam.pl/sites/dicam.pl/files/broncolor-opis-p65-en.pdf",
+      "refs": [
+        "bron-p65-tds"
+      ]
+    },
+    {
+      "id": "broncolor-l40",
+      "brand": "Broncolor",
+      "model": "L40",
+      "category": "reflector",
+      "subcategory": "standard_reflector",
+      "label": "Broncolor L40 标准反光罩",
+      "shape": "circle",
+      "diameter_cm": 18.2,
+      "depth_cm": 11.8,
+      "weight_kg": 0.43,
+      "mount": "Broncolor (Siros / Siros S / Siros L)",
+      "max_flash_j": 800,
+      "confidence": "high",
+      "notes": "产品页 Ø18.2×11.8 cm；与 Siros 系列光圈表配套。",
+      "source": "broncolor L40 product page",
+      "source_url": "https://broncolor.swiss/products/l40-standard-reflector",
+      "refs": [
+        "bron-l40-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-beauty-dish",
+      "brand": "Broncolor",
+      "model": "Beauty Dish",
+      "category": "reflector",
+      "subcategory": "beauty_dish",
+      "label": "Broncolor Beauty Dish（白内涂）",
+      "shape": "circle",
+      "diameter_cm": 51.8,
+      "depth_cm": 19.6,
+      "weight_kg": 1.2,
+      "beam_deg": 84,
+      "mount": "Broncolor",
+      "interior": "white",
+      "includes": [
+        "textile diffuser",
+        "bag"
+      ],
+      "fstop_at_2m": [
+        {
+          "value": "32.6",
+          "iso": 100,
+          "energy_j": 3200,
+          "note": "without diffuser"
+        },
+        {
+          "value": "32.1",
+          "iso": 100,
+          "energy_j": 3200,
+          "note": "with diffuser"
+        }
+      ],
+      "confidence": "high",
+      "source": "broncolor Beauty Dish product page + data sheet",
+      "source_url": "https://broncolor.swiss/products/beauty-dish-reflector",
+      "refs": [
+        "bron-beauty-dish-page",
+        "bron-beauty-dish-tds",
+        "method-flash-fstop"
+      ]
+    },
+    {
+      "id": "broncolor-softlight-p",
+      "brand": "Broncolor",
+      "model": "Softlight reflector P",
+      "category": "reflector",
+      "subcategory": "beauty_dish",
+      "label": "Broncolor Softlight P（银内涂）",
+      "shape": "circle",
+      "diameter_cm": 51.8,
+      "depth_cm": 19.6,
+      "weight_kg": 1.2,
+      "beam_deg": 84,
+      "mount": "Broncolor",
+      "interior": "silver",
+      "confidence": "high",
+      "notes": "较 Beauty Dish 输出更高；同外形。",
+      "source": "broncolor Softlight reflector P product page",
+      "source_url": "https://broncolor.swiss/products/softlight-reflector-p",
+      "refs": [
+        "bron-softlight-p-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-softbox-35x60",
+      "brand": "Broncolor",
+      "model": "Softbox 35×60",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 35×60cm",
+      "shape": "rect",
+      "width_cm": 35,
+      "height_cm": 60,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-softbox-60x60",
+      "brand": "Broncolor",
+      "model": "Softbox 60×60",
+      "category": "modifier",
+      "subcategory": "square_softbox",
+      "label": "Broncolor Softbox 60×60cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 60,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-softbox-60x100",
+      "brand": "Broncolor",
+      "model": "Softbox 60×100",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 60×100cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 100,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-softbox-90x120",
+      "brand": "Broncolor",
+      "model": "Softbox 90×120",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 90×120cm",
+      "shape": "rect",
+      "width_cm": 90,
+      "height_cm": 120,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ],
+      "relative_fstop_led_f160": {
+        "value": "2.08",
+        "iso": 400,
+        "shutter": "1/60",
+        "distance_m": 2,
+        "note": "LED F160 photometry table — relative, not absolute flash lux"
+      }
+    },
+    {
+      "id": "broncolor-softbox-120x180",
+      "brand": "Broncolor",
+      "model": "Softbox 120×180",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 120×180cm",
+      "shape": "rect",
+      "width_cm": 120,
+      "height_cm": 180,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-softbox-30x120",
+      "brand": "Broncolor",
+      "model": "Softbox 30×120",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Broncolor Softbox 30×120cm",
+      "shape": "rect",
+      "width_cm": 30,
+      "height_cm": 120,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes product line",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-octabox-75",
+      "brand": "Broncolor",
+      "model": "Octabox 75",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Broncolor Octabox 75cm",
+      "shape": "circle",
+      "diameter_cm": 75,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes / Octabox listing",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    },
+    {
+      "id": "broncolor-octabox-150",
+      "brand": "Broncolor",
+      "model": "Octabox 150",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Broncolor Octabox 150cm",
+      "shape": "circle",
+      "diameter_cm": 150,
+      "mount": "Broncolor speed ring 33.401.00",
+      "includes": [
+        "inner diffuser",
+        "front diffuser"
+      ],
+      "confidence": "high",
+      "source": "broncolor Softboxes / Octabox listing",
+      "source_url": "https://broncolor.swiss/products/softboxes",
+      "refs": [
+        "bron-softboxes-page",
+        "bron-led-f160-photometry"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,316 @@
+{
+  "schema": "portrait-guidance.gear-catalog/v1",
+  "brand": "Godox",
+  "kind": "modifiers",
+  "updated": "2026-10-29",
+  "unit": "cm",
+  "notes": "神牛柔光/抛物线/八角等光效器材。QR-P*T 深度×直径来自 Godox.ru 规格表。",
+  "items": [
+    {
+      "id": "godox-qr-p60t",
+      "brand": "Godox",
+      "model": "QR-P60T",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Godox QR-P60T 深抛 60cm",
+      "shape": "circle",
+      "diameter_cm": 60,
+      "depth_cm": 29.8,
+      "weight_kg": 0.771,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "includes": [
+        "inner diffuser",
+        "front diffuser",
+        "bag"
+      ],
+      "confidence": "high",
+      "source": "Godox.ru QR-P Tech Specs 表",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/",
+      "refs": [
+        "godox-qrp-ru"
+      ]
+    },
+    {
+      "id": "godox-qr-p70t",
+      "brand": "Godox",
+      "model": "QR-P70T",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Godox QR-P70T 深抛 70cm",
+      "shape": "circle",
+      "diameter_cm": 70,
+      "depth_cm": 34.1,
+      "weight_kg": 0.83,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "confidence": "high",
+      "source": "Godox.ru QR-P Tech Specs",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/",
+      "refs": [
+        "godox-qrp-ru"
+      ]
+    },
+    {
+      "id": "godox-qr-p90t",
+      "brand": "Godox",
+      "model": "QR-P90T",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Godox QR-P90T 深抛 90cm",
+      "shape": "circle",
+      "diameter_cm": 90,
+      "depth_cm": 42.7,
+      "weight_kg": 1.359,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "confidence": "high",
+      "source": "Godox.ru + Godox ZA",
+      "source_url": "https://www.godox.com/product-d/QR-Series.html",
+      "refs": [
+        "godox-qrp-ru",
+        "godox-qrp-official"
+      ]
+    },
+    {
+      "id": "godox-qr-p120t",
+      "brand": "Godox",
+      "model": "QR-P120T",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Godox QR-P120T 深抛 120cm",
+      "shape": "circle",
+      "diameter_cm": 120,
+      "depth_cm": 56.7,
+      "weight_kg": 1.781,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "confidence": "high",
+      "source": "Godox.ru QR-P Tech Specs",
+      "source_url": "https://godox.ru/catalog/softboksy_godox/softboks-godox-qr-p60t-parabolicheskiy-bystroskladnoy/",
+      "refs": [
+        "godox-qrp-ru"
+      ]
+    },
+    {
+      "id": "godox-qr-p150t",
+      "brand": "Godox",
+      "model": "QR-P150T",
+      "category": "modifier",
+      "subcategory": "parabolic_softbox",
+      "label": "Godox QR-P150T 深抛 150cm",
+      "shape": "circle",
+      "diameter_cm": 150,
+      "depth_cm": 70.2,
+      "weight_kg": 2.386,
+      "mount": "Bowens S",
+      "interior": "silver",
+      "confidence": "high",
+      "source": "Godox.ru / Wex Photovideo",
+      "source_url": "https://www.wexphotovideo.com/godox-qr-p150t-quick-release-parabolic-softbox-3228751/",
+      "refs": [
+        "godox-qrp-ru",
+        "godox-qrp150t-wex"
+      ]
+    },
+    {
+      "id": "godox-sb-gue80",
+      "brand": "Godox",
+      "model": "SB-GUE80",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-GUE 八角伞式 80cm",
+      "shape": "circle",
+      "diameter_cm": 80,
+      "depth_cm": null,
+      "mount": "Bowens S",
+      "includes": [
+        "grid",
+        "inner/outer diffuser",
+        "bag"
+      ],
+      "confidence": "high",
+      "source": "Godox.pl SB-GUE80",
+      "source_url": "https://store.godox.pl/en/softboxes/5433-godox-sb-gue80-umbrella-style-softbox-with-bowens-mount-octa-80cm-6952344211656.html",
+      "refs": [
+        "godox-sbgue-pl"
+      ]
+    },
+    {
+      "id": "godox-sb-gue95",
+      "brand": "Godox",
+      "model": "SB-GUE95",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-GUE 八角伞式 95cm",
+      "shape": "circle",
+      "diameter_cm": 95,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "Brilliant.com.sg SB-GUE95",
+      "source_url": "https://www.brilliant.com.sg/Godox-SB-UE80-SB-UE120-Octagon-Umbrella-Softboxes-with-Honeycomb-Grid",
+      "refs": [
+        "godox-sbgue-brilliant"
+      ]
+    },
+    {
+      "id": "godox-sb-gue120",
+      "brand": "Godox",
+      "model": "SB-GUE120",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-GUE 八角伞式 120cm",
+      "shape": "circle",
+      "diameter_cm": 120,
+      "mount": "Bowens S",
+      "confidence": "high",
+      "source": "ec-mall SB-GUE 120",
+      "source_url": "https://www.ec-mall.com/p/flash-lighting-studio/lighting-equipment/7064/",
+      "refs": [
+        "godox-sbgue-ecmall"
+      ]
+    },
+    {
+      "id": "godox-sb-bw-6060",
+      "brand": "Godox",
+      "model": "SB-BW-6060",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox SB-BW 方形 60×60cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 60,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue softbox table",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-sb-bw-9090",
+      "brand": "Godox",
+      "model": "SB-BW-9090",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox SB-BW 方形 90×90cm",
+      "shape": "rect",
+      "width_cm": 90,
+      "height_cm": 90,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-sb-bw-6090",
+      "brand": "Godox",
+      "model": "SB-BW-6090",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox SB-BW 矩形 60×90cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 90,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-sb-fw-95",
+      "brand": "Godox",
+      "model": "SB-FW-95",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 95cm",
+      "shape": "circle",
+      "diameter_cm": 95,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue octa table",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-sb-fw-120",
+      "brand": "Godox",
+      "model": "SB-FW-120",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 120cm",
+      "shape": "circle",
+      "diameter_cm": 120,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-sb-fw-140",
+      "brand": "Godox",
+      "model": "SB-FW-140",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox SB-FW 八角 140cm",
+      "shape": "circle",
+      "diameter_cm": 140,
+      "mount": "Bowens",
+      "confidence": "high",
+      "source": "Godox KNOWLED catalogue",
+      "source_url": "https://www.godox.com/Downloads/Godox_KNOWLED_Lighting_Catalogue_EN.pdf",
+      "refs": [
+        "godox-knowled-catalogue"
+      ]
+    },
+    {
+      "id": "godox-eazyflow-octa90",
+      "brand": "Godox",
+      "model": "EazyFlow Octa90",
+      "category": "modifier",
+      "subcategory": "octa_softbox",
+      "label": "Godox EazyFlow Octa 90cm",
+      "shape": "circle",
+      "diameter_cm": 90,
+      "depth_cm": 44.2,
+      "mount": "varies",
+      "confidence": "high",
+      "source": "Godox EazyFlow Tech Specs",
+      "source_url": "https://www.godox.com/product-e/EazyFlow.html",
+      "refs": [
+        "godox-eazyflow"
+      ]
+    },
+    {
+      "id": "godox-eazyflow-rect6090",
+      "brand": "Godox",
+      "model": "EazyFlow Rect 60×90",
+      "category": "modifier",
+      "subcategory": "rect_softbox",
+      "label": "Godox EazyFlow 矩形 60×90cm",
+      "shape": "rect",
+      "width_cm": 60,
+      "height_cm": 90,
+      "depth_cm": 42.2,
+      "mount": "varies",
+      "confidence": "high",
+      "source": "Godox EazyFlow Tech Specs",
+      "source_url": "https://www.godox.com/product-e/EazyFlow.html",
+      "refs": [
+        "godox-eazyflow"
+      ]
+    }
+  ]
+}
