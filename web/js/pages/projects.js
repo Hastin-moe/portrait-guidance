@@ -1,8 +1,10 @@
-// S0 项目列表：新建、从模板新建、复制、归档、搜索、按状态筛选（F01–F03）
-import { h, menu, promptDlg, toast, confirmDlg } from "../ui.js";
+// S0 项目列表：新建、从模板新建、复制、归档、搜索、按状态筛选、导入（F01–F03）
+import { h, menu, promptDlg, toast, confirmDlg, modal } from "../ui.js";
 import { t, fmtDate } from "../i18n.js";
-import { api } from "../store.js";
+import { api, openProject, S, uploadImages, loadLibraries } from "../store.js";
+import * as M from "../model.js";
 import { emptyState } from "./common.js";
+import { convertGrok } from "../import_grok.js";
 
 const st = { q: "", status: "all", archived: false, list: null, templates: [] };
 
@@ -20,6 +22,106 @@ async function create(ctx, body) {
   location.hash = `#/p/${data.id}/basics`;
 }
 
+function pickJsonFile() {
+  return new Promise(resolve => {
+    const inp = h("input", { type: "file", accept: "application/json,.json", style: { display: "none" },
+      onchange: () => { resolve(inp.files[0] || null); inp.remove(); } });
+    document.body.append(inp);
+    inp.click();
+  });
+}
+
+function dataUrlToFile(dataUrl, name = "image.png") {
+  const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return null;
+  const bin = atob(m[2]);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new File([arr], name, { type: m[1] });
+}
+
+function showReport(report, then) {
+  const sec = (title, items) => items && items.length
+    ? [h("h4", title), h("ul.small", { style: { paddingLeft: "18px" } }, items.map(x => h("li", x)))]
+    : null;
+  modal(close => [
+    h("h3", t("proj.importReport")),
+    sec(t("proj.importOk"), report.ok),
+    sec(t("proj.importSkip"), report.skip),
+    sec(t("proj.importCheck"), report.check),
+    h("div.acts", h("button.primary", { onclick: () => { close(); then && then(); } }, t("common.close"))),
+  ], { wide: true });
+}
+
+async function doImport(ctx) {
+  const file = await pickJsonFile();
+  if (!file) return;
+  let raw;
+  try { raw = JSON.parse(await file.text()); }
+  catch { return toast(t("proj.importBadJson")); }
+
+  let project, poses = [], images = [], report;
+
+  if (raw && raw.schema === "portrait-guidance.plan/v1") {
+    ({ project, poses, images, report } = convertGrok(raw));
+  } else if (raw && raw.schema === 1 && raw.layout) {
+    project = M.normalize(raw);
+    report = {
+      ok: [t("proj.importNativeOk")],
+      skip: [],
+      check: [t("proj.importNoImages")],
+    };
+    // 本地备份不含图片文件
+    if ((project.mood || []).length || (project.venue.photos || []).length) {
+      report.check.push(t("proj.importImageMissing"));
+    }
+  } else {
+    return toast(t("proj.importUnknown"));
+  }
+
+  try {
+    const { data: created } = await api("POST", "projects", { data: project, name: project.name || file.name.replace(/\.json$/i, "") });
+    await openProject(created.id);
+
+    // 合并动作库（按名去重）
+    if (poses.length) {
+      await loadLibraries();
+      let added = false;
+      for (const pose of poses) {
+        if (S.poses.some(x => x.name === pose.name)) continue;
+        S.poses.push(pose);
+        added = true;
+      }
+      if (added) await api("PUT", "library/poses", S.poses);
+    }
+
+    // 上传 dataURL 图片
+    const venuePhotos = [];
+    const mood = [];
+    for (const img of images) {
+      const f = dataUrlToFile(img.dataUrl, img.role + "-" + M.uid() + ".png");
+      if (!f) { report.skip.push(t("proj.importBadImage")); continue; }
+      const names = await uploadImages([f]);
+      if (!names.length) continue;
+      if (img.role === "venue") venuePhotos.push(names[0]);
+      else mood.push({ id: M.uid(), file: names[0], note: img.note || "", tags: [], source: img.source || "", url: img.url || "", x: 10, y: 10 });
+    }
+    if (venuePhotos.length || mood.length) {
+      const { commit } = await import("../store.js");
+      commit(q => {
+        if (venuePhotos.length) q.venue.photos.push(...venuePhotos);
+        if (mood.length) q.mood.push(...mood);
+      }, { force: true });
+      report.ok.push(t("proj.importImagesDone", { n: venuePhotos.length + mood.length }));
+    }
+
+    st.list = null;
+    showReport(report, () => { location.hash = `#/p/${created.id}/basics`; });
+  } catch (e) {
+    toast(t("proj.importFail") + " " + (e.message || e));
+  }
+}
+
 export function render(ctx) {
   if (st.list == null) { load(ctx).catch(e => toast(e.message)); return { main: h("p.mut", t("common.loading")) }; }
   const q = st.q.trim().toLowerCase();
@@ -35,6 +137,7 @@ export function render(ctx) {
         ["all", "draft", "pending", "final"].map(v => h("option", { value: v, selected: v === st.status || null }, v === "all" ? t("proj.allStatus") : t("status." + v)))),
       h("button.ghost", { onclick: () => { st.archived = !st.archived; ctx.rerender(); } }, st.archived ? t("proj.showActive") : t("proj.showArchived")),
       tplBtn,
+      h("button", { onclick: () => doImport(ctx) }, t("proj.import")),
       h("button.primary", { onclick: () => create(ctx, {}) }, "＋ " + t("proj.new"))),
     !st.list.length ? emptyState(t("proj.emptyTitle"), t("proj.emptyBody"), h("button.primary", { onclick: () => create(ctx, {}) }, "＋ " + t("proj.new")))
       : !rows.length ? h("p.mut", t("proj.noMatch"))

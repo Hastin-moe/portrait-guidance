@@ -221,3 +221,82 @@ test("distances and fov", () => {
   assert.equal(Math.round(d[0].d * 10) / 10, 3);
   assert.equal(Math.round(M.fovDeg(50)), 40);
 });
+
+import { convertGrok } from "../web/js/import_grok.js";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const FIX = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "demo-project.json");
+
+test("convertGrok maps demo project core fields", () => {
+  const raw = JSON.parse(readFileSync(FIX, "utf8"));
+  const { project: p, poses, images, report } = convertGrok(raw);
+  assert.equal(p.name, "窗边人像试拍 · 样例策划案");
+  assert.equal(p.time.date, "2026-10-28");
+  assert.equal(p.time.timezone, "Asia/Shanghai");
+  assert.equal(p.venue.name, "小影棚 · 北窗");
+  assert.equal(p.venue.w, 8);
+  assert.equal(p.venue.d, 6);
+  assert.equal(p.venue.zones, raw.site_conditions);
+  assert.equal(p.overview.theme, raw.notes);
+  const models = M.models(p);
+  assert.equal(models.length, 1);
+  assert.equal(models[0].name, "模特 A");
+  assert.equal(models[0].looks[0].name, "白衬衫");
+  assert.equal(p.people.filter(x => x.kind === "staff").length, 2);
+  const qr = p.gear.find(g => /QR-P90T/.test(g.model));
+  assert.ok(qr);
+  assert.equal(qr.type, "modifier");
+  assert.equal(qr.diameterCm, 90);
+  assert.equal(qr.presetId, "godox-qr-p90t");
+  const board = p.gear.find(g => /聚苯/.test(g.model));
+  assert.ok(board);
+  assert.equal(board.type, "absorb");
+  assert.equal(board.widthCm, 240);
+  assert.ok(p.gear.some(g => g.type === "camera" && g.model === "ILCE-1M2"));
+  assert.ok(p.gear.some(g => g.type === "lens" && /85mm/.test(g.model)));
+  assert.equal(poses.length, 2);
+  assert.equal(poses[0].cues.weight, "肩线放松");
+  assert.equal(p.shots.length, 2);
+  assert.equal(p.scenes.length, 2);
+  assert.equal(p.shots[0].size, "half");
+  assert.equal(p.shots[1].size, "close");
+  assert.equal(p.shots[0].focal, 85);
+  assert.equal(p.shots[0].lockedNo, "S01");
+  assert.equal(p.shots[0].minutes, 10);
+  assert.ok(p.schedule.locks[p.shots[0].id]);
+  const base = p.layout.base;
+  assert.ok(base.some(e => e.kind === "window"));
+  const A = p.layout.setups[0];
+  assert.ok(A.elements.some(e => e.kind === "person" && e.ref === models[0].id));
+  assert.ok(A.elements.some(e => e.kind === "camera" && e.focal === 85));
+  assert.ok(A.elements.some(e => e.kind === "board" && Math.abs(e.w - 2.4) < 0.01));
+  assert.ok(A.elements.some(e => e.kind === "light" && e.modifierRef && e.modifierRef.startsWith("o:")));
+  assert.ok(report.ok.length >= 3);
+  assert.ok(report.skip.some(s => /gear_ids/.test(s)));
+  assert.ok(report.skip.some(s => /检索词|query/.test(s) || /window portrait/.test(s)));
+  assert.ok(report.skip.some(s => /无图|缩略图/.test(s)));
+  assert.ok(report.check.some(s => /重心/.test(s)));
+  assert.ok(report.check.some(s => /卸妆/.test(s)));
+  assert.equal(images.length, 0);
+});
+
+test("convertGrok collects dataURL images and model_count mismatch", () => {
+  const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const raw = {
+    schema: "portrait-guidance.plan/v1",
+    title: "图测",
+    model_count: 2,
+    models: [{ id: "m1", name: "A", wardrobe: "" }],
+    location_place: { screenshot: { dataUrl: png }, map: { query: "上海" } },
+    references: { items: [{ title: "ref", url: "https://x.com/a", source: "x", thumb: png }] },
+  };
+  const { project: p, images, report } = convertGrok(raw);
+  assert.equal(p.venue.address, "上海");
+  assert.equal(images.length, 2);
+  assert.equal(images[0].role, "venue");
+  assert.equal(images[1].role, "mood");
+  assert.equal(images[1].source, "x");
+  assert.ok(report.check.some(s => /model_count/.test(s)));
+});

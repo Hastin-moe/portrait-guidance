@@ -117,6 +117,31 @@ class ServerTest(unittest.TestCase):
         code = server.main(["--port", str(port), "--no-browser", "--exact-port", "--data", self.tmp.name])
         self.assertEqual(code, 1)
 
+    def test_create_project_from_data(self):
+        payload = {
+            "name": "导入名",
+            "data": {
+                "id": "should-be-replaced",
+                "rev": 99,
+                "status": "final",
+                "archived": True,
+                "name": "数据内名称",
+                "overview": {"theme": "窗光"},
+                "schema": 1,
+            },
+        }
+        st, p = self.req("POST", "/api/projects", payload)
+        self.assertEqual(st, 200)
+        self.assertNotEqual(p["id"], "should-be-replaced")
+        self.assertEqual(p["rev"], 1)
+        self.assertEqual(p["status"], "draft")
+        self.assertFalse(p["archived"])
+        self.assertEqual(p["name"], "导入名")
+        self.assertEqual(p["overview"]["theme"], "窗光")
+        self.assertIn("createdAt", p)
+        st, got = self.req("GET", f"/api/projects/{p['id']}")
+        self.assertEqual(got["overview"]["theme"], "窗光")
+
 
 if __name__ == "__main__":
     unittest.main()

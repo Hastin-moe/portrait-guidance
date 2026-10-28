@@ -119,7 +119,12 @@ class Store:
         pid = new_id()
         d = self.projects / pid
         src = None
-        if body.get("from"):                       # 复制项目
+        if body.get("data") and isinstance(body["data"], dict):
+            # 导入备份 / 转换结果：内容用 data，身份字段由服务端重写
+            src = dict(body["data"])
+            for k in ("id", "rev", "createdAt", "updatedAt", "status", "archived"):
+                src.pop(k, None)
+        elif body.get("from"):                       # 复制项目
             src_dir = self.pdir(body["from"])
             src = self.read_json(src_dir / "project.json")
             shutil.copytree(src_dir / "images", d / "images", dirs_exist_ok=True) if (src_dir / "images").exists() else None
@@ -136,7 +141,7 @@ class Store:
         p = dict(src or {})
         p.update({"id": pid, "name": body.get("name") or p.get("name") or "", "status": "draft", "archived": False,
                   "createdAt": now(), "updatedAt": now(), "rev": 1})
-        if src and body.get("from"):
+        if src and body.get("from") and not body.get("data"):
             p["name"] = body.get("name") or (src.get("name", "") + " (2)")
         (d / "images").mkdir(parents=True, exist_ok=True)
         self.write_json(d / "project.json", p)
