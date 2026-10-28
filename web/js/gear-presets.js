@@ -1,19 +1,21 @@
 // 器材尺寸库（离线 JSON）。供 S2 器材表与场地图使用。
-let modLib = null, boardLib = null;
+let modLib = null, boardLib = null, headLib = null;
 
 export async function loadGearPresets() {
-  if (modLib && boardLib) return { modifiers: modLib, boards: boardLib };
-  const [m, b] = await Promise.all([
+  if (modLib && boardLib && headLib) return { modifiers: modLib, boards: boardLib, heads: headLib };
+  const [m, b, h] = await Promise.all([
     fetch("/static/data/modifier-library.json").then(r => r.json()),
     fetch("/static/data/board-presets.json").then(r => r.json()),
+    fetch("/static/data/light-heads.json").then(r => r.json()).catch(() => ({ items: [] })),
   ]);
   modLib = m.items || [];
   boardLib = b.items || [];
-  return { modifiers: modLib, boards: boardLib };
+  headLib = h.items || [];
+  return { modifiers: modLib, boards: boardLib, heads: headLib };
 }
 
 export function allPresets() {
-  return [...(modLib || []), ...(boardLib || [])];
+  return [...(headLib || []), ...(modLib || []), ...(boardLib || [])];
 }
 
 export function presetById(id) {
@@ -41,8 +43,10 @@ export function applyPreset(gear, preset) {
   gear.widthCm = preset.width_cm ?? "";
   gear.heightCm = preset.height_cm ?? "";
   gear.depthCm = preset.depth_cm ?? preset.thickness_cm ?? "";
+  // 类型以预设类别为准，避免「灯」行套上柔光箱后仍占灯类型（T11-A3）
   if (preset.category === "absorb") gear.type = "absorb";
-  else if (preset.category === "modifier" || preset.subcategory) gear.type = gear.type === "light" ? gear.type : "modifier";
+  else if (preset.category === "light_head" || preset.category === "light") gear.type = "light";
+  else if (preset.category === "modifier" || preset.subcategory) gear.type = "modifier";
   return gear;
 }
 
@@ -55,7 +59,7 @@ export function menuItemsFromPresets(presets, { filter = "" } = {}) {
   });
   const byBrand = new Map();
   for (const p of list) {
-    const brand = p.brand || (p.category === "absorb" ? "Board" : "Other");
+    const brand = p.brand || (p.category === "absorb" ? "Board" : p.category === "light_head" ? "Light" : "Other");
     if (!byBrand.has(brand)) byBrand.set(brand, []);
     byBrand.get(brand).push(p);
   }
@@ -77,5 +81,6 @@ export function menuItemsFromPresets(presets, { filter = "" } = {}) {
 function sizeHint(p) {
   if (p.diameter_cm) return `ø${p.diameter_cm} cm`;
   if (p.width_cm && p.height_cm) return `${p.width_cm}×${p.height_cm} cm`;
+  if (p.power_ws) return `${p.power_ws} Ws`;
   return "";
 }

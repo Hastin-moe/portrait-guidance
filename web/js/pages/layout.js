@@ -5,6 +5,7 @@ import { S, commit, fileUrl, uploadImages, readonly } from "../store.js";
 import * as M from "../model.js";
 import { renderLayout, venueSize, labels, elementLabel, svgToPng } from "../canvas.js";
 import { inp, fld, sel, issuesList, emptyState, chip } from "./common.js";
+import { openCamView3d } from "./camview.js";
 
 const ARCH = ["wall", "window", "door", "pillar", "text"];
 const SET = ["backdrop", "light", "camera", "person", "prop", "board"];
@@ -248,6 +249,8 @@ export function render(ctx) {
         return h("button.sm", { onclick: () => commit(q => { const el = findEl(q, e.id).e; el.w = sz.w; el.h = sz.h; }) }, t("layout.syncBoardSize"));
       })() : null,
       e.kind === "camera" ? [fld(t("layout.focal") + " (mm)", upd("focal", "number")), h("p.small.mut", t("layout.fov", { deg: Math.round(M.fovDeg(e.focal)) })),
+        h("button.sm.primary", { style: { marginTop: "8px" }, onclick: () => openCamView3d(p, setup.id, e) }, t("cam3d.open")),
+        h("p.small.mut", t("cam3d.openHelp")),
         used ? h("p.small.mut", t("layout.camUsed", { n: used })) : null] : null,
       dists.length ? [h("h4", t("layout.distances")), dists.map(x => h("div.small", `${t("dist." + x.kind)}：${x.d.toFixed(2)} m`))] : null,
       h("div.row", { style: { marginTop: "14px" } },

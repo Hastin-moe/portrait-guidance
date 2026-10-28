@@ -300,3 +300,41 @@ test("convertGrok collects dataURL images and model_count mismatch", () => {
   assert.equal(images[1].source, "x");
   assert.ok(report.check.some(s => /model_count/.test(s)));
 });
+
+import { buildSceneBoxes, hFovDeg, cameraFromElement, DEFAULT_FOCAL } from "../web/js/camview3d.js";
+import { applyPreset } from "../web/js/gear-presets.js";
+
+test("20mm full-frame horizontal FOV is wide (~84°)", () => {
+  const fov = hFovDeg(20);
+  assert.ok(fov > 80 && fov < 90, fov);
+  assert.equal(Math.round(M.fovDeg(20)), Math.round(fov));
+});
+
+test("buildSceneBoxes includes floor and people from layout", () => {
+  const { p, A } = sample();
+  A.elements.push(M.newElement("camera", 6, 4));
+  A.elements.push(M.newElement("person", 3, 2));
+  const boxes = buildSceneBoxes(p, A.id);
+  assert.ok(boxes.some(b => b.kind === "floor"));
+  assert.ok(boxes.some(b => b.kind === "person"));
+  assert.ok(boxes.some(b => b.kind === "wall"));
+  const cam = cameraFromElement(A.elements.find(e => e.kind === "camera"), DEFAULT_FOCAL);
+  assert.equal(cam.focal, 20);
+  assert.ok(cam.hfovDeg > 80);
+});
+
+test("applyPreset forces modifier type even on light row", () => {
+  const row = { id: "g1", type: "light", model: "", qty: 1 };
+  applyPreset(row, {
+    id: "godox-qr-p90t", category: "modifier", subcategory: "parabolic_softbox",
+    label: "Godox QR-P90T", shape: "circle", diameter_cm: 90, depth_cm: 42.7,
+  });
+  assert.equal(row.type, "modifier");
+  assert.equal(row.diameterCm, 90);
+  const head = { id: "g2", type: "modifier", model: "" };
+  applyPreset(head, {
+    id: "godox-ad600pro-ii", category: "light_head", label: "AD600Pro II",
+    shape: "rect", width_cm: 25, height_cm: 25, depth_cm: 12.5,
+  });
+  assert.equal(head.type, "light");
+});
