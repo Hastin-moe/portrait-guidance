@@ -648,6 +648,26 @@ test("T21 starter poses and rankPosesForShot", async () => {
   assert.ok(ranked.slice(0, 8).some(x => (x.dims.scene || []).includes("窗边") || (x.dims.mood || []).includes("温柔")));
 });
 
+test("preset recall clones with new id and optional thumb url", async () => {
+  const { STARTER_POSES, clonePresetPose, presetThumbUrl, PRESET_THUMBS } = await import("../web/js/pose_starter.js");
+  const back = STARTER_POSES.find(x => x.id === "pose-back");
+  assert.ok(back);
+  const a = clonePresetPose(back);
+  const b = clonePresetPose(back);
+  assert.notEqual(a.id, "pose-back");
+  assert.notEqual(a.id, b.id);
+  assert.equal(a.presetId, "pose-back");
+  assert.equal(a.name, "回眸");
+  assert.ok(a.steps.length);
+  assert.equal(presetThumbUrl("pose-back"), "/static/img/pose-presets/lookback.jpg");
+  assert.equal(M.poseCoverHref(a), "/static/img/pose-presets/lookback.jpg");
+  assert.ok(Object.keys(PRESET_THUMBS).length >= 3);
+  const lean = STARTER_POSES.find(x => x.id === "pose-lean");
+  const c = clonePresetPose(lean);
+  assert.equal(c.presetId, "pose-lean");
+  assert.equal(M.poseCoverHref(c), "");
+});
+
 test("T18 model profile: normalize looks/photos/role, cover, incomplete", () => {
   const bare = { id: "m", kind: "model", name: "", height: "" };
   M.normalizeModel(bare);

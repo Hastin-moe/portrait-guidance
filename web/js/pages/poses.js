@@ -1,5 +1,5 @@
-// S4 动作库：列表筛选 + T21 二级编辑（参考图 / 分解 / 要点 / 标签维）
-import { h, confirmDlg, promptDlg } from "../ui.js";
+// S4 动作库：列表筛选 + T21 二级编辑；起步库改为「从预设调出」
+import { h, confirmDlg, promptDlg, toast } from "../ui.js";
 import { t } from "../i18n.js";
 import { S, libUrl, saveLibrary, commit } from "../store.js";
 import * as M from "../model.js";
@@ -7,12 +7,15 @@ import { tagsInput, fld, emptyState } from "./common.js";
 import { SIZES } from "./shots.js";
 import { editShell, editForm } from "../editlayer.js";
 import { openRefPicker } from "../refimages.js";
+import { STARTER_POSES, clonePresetPose, presetThumbUrl } from "../pose_starter.js";
 
 const PEOPLE = ["1", "2", "group"];
 
 export function render(ctx) {
-  const st = ctx.state, p = S.project;
   if (ctx.edit?.kind === "pose") return renderPoseEdit(ctx, ctx.edit.id);
+  if (ctx.edit?.kind === "preset") return renderPresetBrowse(ctx);
+
+  const st = ctx.state, p = S.project;
   st.dim = st.dim || {};
 
   const q = (st.q || "").toLowerCase();
@@ -34,6 +37,7 @@ export function render(ctx) {
     ctx.openEdit("pose", pose.id);
   };
   const openPose = id => ctx.openEdit("pose", id);
+  const openPresets = () => ctx.openEdit("preset", "");
 
   const dimFilters = h("div.pose-dims", M.POSE_DIMS.map(d => h("div.pose-dim",
     h("span.lbl", t("pose.dim." + d)),
@@ -47,12 +51,17 @@ export function render(ctx) {
     h("input", { type: "search", placeholder: t("pose.search"), value: st.q || "", oninput: e => { st.q = e.target.value; ctx.rerender(); requestAnimationFrame(() => { const i = document.querySelector(".toolbar input[type=search]"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }); } }),
     h("select", { style: { width: "auto" }, onchange: e => { st.size = e.target.value; ctx.rerender(); } }, h("option", { value: "" }, t("pose.allSizes")), SIZES.map(k => h("option", { value: k, selected: st.size === k || null }, t("size." + k)))),
     h("select", { style: { width: "auto" }, onchange: e => { st.people = e.target.value; ctx.rerender(); } }, h("option", { value: "" }, t("pose.allPeople")), PEOPLE.map(k => h("option", { value: k, selected: st.people === k || null }, t("ppl." + k)))),
-    h("span.spacer"), h("button.primary", { onclick: add }, "＋ " + t("pose.new")));
+    h("span.spacer"),
+    h("button", { onclick: openPresets }, t("pose.recall")),
+    h("button.primary", { onclick: add }, "＋ " + t("pose.new")));
 
-  const grid = !S.poses.length ? emptyState(t("pose.emptyTitle"), t("pose.emptyBody"), h("button.primary", { onclick: add }, "＋ " + t("pose.new")))
+  const grid = !S.poses.length ? emptyState(t("pose.emptyTitle"), t("pose.emptyBody"),
+    h("div.row", { style: { gap: "8px", justifyContent: "center", flexWrap: "wrap" } },
+      h("button.primary", { onclick: openPresets }, t("pose.recall")),
+      h("button", { onclick: add }, "＋ " + t("pose.new"))))
     : !list.length ? h("p.mut", t("pose.noMatch"))
       : h("div.poses", list.map(x => {
-        const cover = M.poseCoverFile(x);
+        const cover = M.poseCoverHref(x);
         const mood = M.poseMoodChips(x, 2);
         return h("div.pose", {
           tabindex: 0,
@@ -60,7 +69,7 @@ export function render(ctx) {
           onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openPose(x.id); } },
         },
           cover
-            ? h("div.img", { style: { backgroundImage: `url(${libUrl(cover)})` } })
+            ? h("div.img", { style: { backgroundImage: `url(${cover})` } })
             : h("div.img.ph", (x.name || "?").slice(0, 1)),
           h("div.bd",
             h("b", x.name),
@@ -70,6 +79,86 @@ export function render(ctx) {
 
   const panel = h("div", h("h4", t("panel.tips")), h("p.small.mut", t("pose.tip")), h("p.small.mut", t("pose.count", { n: S.poses.length })));
   return { main: h("div", h("h2.pt", t("step.poses")), h("p.sub", t("pose.sub")), filterRow, dimFilters, grid), panel };
+}
+
+function renderPresetBrowse(ctx) {
+  const st = ctx.state;
+  st.presetQ = st.presetQ || "";
+  st.presetSize = st.presetSize || "";
+  st.presetPeople = st.presetPeople || "";
+  st.presetDim = st.presetDim || {};
+
+  const q = st.presetQ.toLowerCase();
+  const recalled = new Set(S.poses.map(x => x.presetId).filter(Boolean));
+  const list = STARTER_POSES.filter(x => {
+    const hay = [x.name, ...(x.dims?.mood || []), ...(x.steps || []), x.guide, x.cues && Object.values(x.cues).join(" ")].join(" ").toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    if (st.presetSize && !(x.sizes || []).includes(st.presetSize)) return false;
+    if (st.presetPeople && x.people !== st.presetPeople) return false;
+    if (!M.poseMatchesDims(x, st.presetDim)) return false;
+    return true;
+  });
+
+  const recall = starter => {
+    const pose = clonePresetPose(starter);
+    S.poses.unshift(pose);
+    saveLibrary("poses");
+    toast(t("pose.recalled", { name: pose.name }));
+    ctx.openEdit("pose", pose.id);
+  };
+
+  const dimFilters = h("div.pose-dims", M.POSE_DIMS.map(d => h("div.pose-dim",
+    h("span.lbl", t("pose.dim." + d)),
+    h("div.chips", [
+      h("span.chip" + (!st.presetDim[d] ? "" : ".plain"), { onclick: () => { st.presetDim[d] = ""; ctx.rerender(); } }, t("pose.dimAll")),
+      ...[...new Set([...(M.POSE_DIM_PRESETS[d] || []), ...STARTER_POSES.flatMap(x => x.dims?.[d] || [])])].map(v =>
+        h("span.chip" + (st.presetDim[d] === v ? "" : ".plain"), { onclick: () => { st.presetDim[d] = st.presetDim[d] === v ? "" : v; ctx.rerender(); } }, v)),
+    ]))));
+
+  const filterRow = h("div.toolbar",
+    h("input", { type: "search", placeholder: t("pose.search"), value: st.presetQ, oninput: e => { st.presetQ = e.target.value; ctx.rerender(); requestAnimationFrame(() => { const i = document.querySelector(".toolbar input[type=search]"); i?.focus(); i?.setSelectionRange(i.value.length, i.value.length); }); } }),
+    h("select", { style: { width: "auto" }, onchange: e => { st.presetSize = e.target.value; ctx.rerender(); } }, h("option", { value: "" }, t("pose.allSizes")), SIZES.map(k => h("option", { value: k, selected: st.presetSize === k || null }, t("size." + k)))),
+    h("select", { style: { width: "auto" }, onchange: e => { st.presetPeople = e.target.value; ctx.rerender(); } }, h("option", { value: "" }, t("pose.allPeople")), PEOPLE.map(k => h("option", { value: k, selected: st.presetPeople === k || null }, t("ppl." + k)))),
+    h("span.spacer"),
+    h("span.small.mut", t("pose.presetCount", { n: STARTER_POSES.length })));
+
+  const grid = !list.length ? h("p.mut", t("pose.noMatch"))
+    : h("div.poses", list.map(x => {
+      const thumb = presetThumbUrl(x.id);
+      const already = recalled.has(x.id);
+      const mood = M.poseMoodChips(x, 2);
+      return h("div.pose.preset" + (already ? ".recalled" : ""), {
+        tabindex: 0,
+        title: already ? t("pose.alreadyRecalled") : t("pose.recallOne"),
+        onclick: () => recall(x),
+        onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); recall(x); } },
+      },
+        thumb
+          ? h("div.img", { style: { backgroundImage: `url(${thumb})` } })
+          : h("div.img.ph", (x.name || "?").slice(0, 1)),
+        already ? h("span.badge.preset-badge", t("pose.inLibrary")) : null,
+        h("div.bd",
+          h("b", x.name),
+          h("div.small.mut", [(x.sizes || []).map(k => t("size." + k)).join("/"), x.people ? t("ppl." + x.people) : ""].filter(Boolean).join(" · ")),
+          mood.length ? h("div.chips.tight", mood.map(m => h("span.chip.plain", m))) : null));
+    }));
+
+  const body = h("div",
+    h("p.sub", t("pose.recallSub")),
+    filterRow, dimFilters, grid);
+
+  const main = editShell({
+    crumb: `${t("step.poses")} / ${t("pose.recallTitle")}`,
+    onBack: () => ctx.closeEdit(),
+    body,
+  });
+
+  const panel = h("div",
+    h("h4", t("panel.tips")),
+    h("p.small.mut", t("pose.recallTip")),
+    h("p.small.mut", t("pose.presetCount", { n: STARTER_POSES.length })));
+
+  return { main, panel };
 }
 
 function renderPoseEdit(ctx, id) {
@@ -91,15 +180,24 @@ function renderPoseEdit(ctx, id) {
         poseName: x.name || "", poseCues: cues,
       });
       if (!items?.length) return;
-      const first = !x.images.length;
+      const first = !x.images.some(im => im.file);
       for (const it of items) x.images.push({ id: M.uid(), file: it.file, source: it.source || "", url: it.url || "", note: "", cover: false });
-      if (first && x.images[0]) x.images[0].cover = true;
+      if (first && x.images.length) {
+        for (const z of x.images) z.cover = false;
+        const withFile = x.images.find(im => im.file) || x.images[0];
+        withFile.cover = true;
+      }
       save();
     } }, "＋ " + t("ref.add"))),
     !(x.images || []).length ? h("p.mut", t("pose.noImages")) : h("div.photo-grid", x.images.map((im, i) => h("div.photo-card",
-      h("img", { src: libUrl(im.file), alt: "" }),
+      im.file
+        ? h("img", { src: libUrl(im.file), alt: "" })
+        : im.url
+          ? h("img", { src: im.url, alt: "" })
+          : h("div.img.ph", "?"),
       im.cover ? h("span.badge", t("model.cover")) : null,
       im.source === "ai" ? h("span.ai-badge", "AI") : null,
+      im.source === "preset" ? h("span.ai-badge", t("pose.presetBadge")) : null,
       h("div.row.wrap",
         h("button.sm", { disabled: im.cover || null, onclick: () => {
           for (const z of x.images) z.cover = false;
@@ -158,7 +256,7 @@ function renderPoseEdit(ctx, id) {
       } }, t("common.delete"))),
   ]);
 
-  const cover = M.poseCoverFile(x);
+  const cover = M.poseCoverHref(x);
   const main = editShell({
     crumb: `${t("step.poses")} / ${x.name || "—"}`,
     onBack: () => ctx.closeEdit(),
@@ -169,7 +267,7 @@ function renderPoseEdit(ctx, id) {
 
   const panel = h("div",
     h("h4", t("edit.summary")),
-    cover ? h("img", { src: libUrl(cover), style: { width: "100%", borderRadius: "8px", marginBottom: "8px" }, alt: "" }) : null,
+    cover ? h("img", { src: cover, style: { width: "100%", borderRadius: "8px", marginBottom: "8px" }, alt: "" }) : null,
     h("p", h("b", x.name || "—")),
     h("p.small.mut", [(x.sizes || []).map(k => t("size." + k)).join("/"), x.people ? t("ppl." + x.people) : "", ...(M.poseMoodChips(x, 2))].filter(Boolean).join(" · ") || "—"),
     h("h4", t("pose.usedHere")),

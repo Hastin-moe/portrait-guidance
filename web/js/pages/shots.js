@@ -1,7 +1,7 @@
 // S6 分镜（重做版）：按场景分组 + 继承、时长预算、检查列、详情抽屉带机位与布光缩略图、批量操作（F23–F28）
 import { h, menu, modal, promptDlg, confirmDlg, toast, seg, isTyping } from "../ui.js";
 import { t, fmtDuration } from "../i18n.js";
-import { S, commit, fileUrl, libUrl, readonly, saveLibrary } from "../store.js";
+import { S, commit, fileUrl, readonly, saveLibrary } from "../store.js";
 import * as M from "../model.js";
 import { renderLayout } from "../canvas.js";
 import { inp, area, fld, sel, chip, issuesList, checkText, personName, lookName, setupName, cameraName, poseById, poseName, sceneName, emptyState } from "./common.js";
@@ -273,9 +273,9 @@ export function render(ctx) {
           && (!state.tag || [...(x.dims?.mood || []), ...(x.tags || []), ...(x.sizes || []).map(k => t("size." + k)), x.people ? t("ppl." + x.people) : ""].includes(state.tag)));
         list = M.rankPosesForShot(p, shot, list);
         grid.replaceChildren(...list.map(x => {
-          const cover = M.poseCoverFile(x);
+          const cover = M.poseCoverHref(x);
           return h("div.pose" + (x.id === shot.poseId ? ".on" : ""), { tabindex: 0, onclick: () => close(x.id), onkeydown: e => { if (e.key === "Enter") close(x.id); } },
-            cover ? h("div.img", { style: { backgroundImage: `url(${libUrl(cover)})` } }) : h("div.img.ph", (x.name || "?").slice(0, 1)),
+            cover ? h("div.img", { style: { backgroundImage: `url(${cover})` } }) : h("div.img.ph", (x.name || "?").slice(0, 1)),
             h("div.bd", h("b", x.name), h("div.small.mut", M.poseMoodChips(x, 3).join(" · "))));
         }));
         if (!list.length) grid.append(h("p.mut", t("pose.noMatch")));

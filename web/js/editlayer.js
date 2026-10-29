@@ -8,6 +8,7 @@ export function editHash(projectId, step, edit) {
   if (!edit) return `#/p/${projectId}/${step}`;
   if (step === "models" && edit.kind === "person") return `#/p/${projectId}/models/${edit.id}`;
   if (step === "models" && edit.kind === "mood") return `#/p/${projectId}/models/mood/${edit.id}`;
+  if (step === "poses" && edit.kind === "preset") return `#/p/${projectId}/poses/preset`;
   if (step === "poses" && (edit.kind === "pose" || !edit.kind)) return `#/p/${projectId}/poses/${edit.id}`;
   if ((step === "layout" || step === "ex") && edit.kind === "element") return `#/p/${projectId}/${step}/${edit.id}`;
   return `#/p/${projectId}/${step}/${edit.kind}/${edit.id}`;
@@ -22,6 +23,7 @@ export function parseEdit(step, rest) {
     return { kind: "person", id: rest[0] };
   }
   if (step === "poses") {
+    if (rest[0] === "preset") return { kind: "preset", id: "" };
     if (rest[0] === "pose" && rest[1]) return { kind: "pose", id: rest[1] };
     return { kind: "pose", id: rest[0] };
   }

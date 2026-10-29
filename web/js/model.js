@@ -457,6 +457,7 @@ export function blankPose(name = "") {
   return {
     id: uid(), name: name || "",
     images: [], image: "", imageSource: "", imageUrl: "",
+    presetId: "",
     steps: [],
     cues: { weight: "", hands: "", gaze: "", pitfalls: "" },
     guide: "", sizes: [], people: "1", wardrobe: "",
@@ -469,6 +470,7 @@ export function normalizePose(x) {
   if (!x || typeof x !== "object") return blankPose();
   if (!x.id) x.id = uid();
   if (x.name == null) x.name = "";
+  if (x.presetId == null) x.presetId = "";
   if (!Array.isArray(x.images)) x.images = [];
   // 旧字段单图 → images
   if (!x.images.length && x.image) {
@@ -513,6 +515,15 @@ export function poseCoverFile(x) {
   const imgs = x?.images || [];
   const hit = imgs.find(im => im.cover && im.file) || imgs.find(im => im.file);
   return hit?.file || x?.image || "";
+}
+
+/** 封面展示地址：优先资料库文件 `/lib/…`，否则用条目上的静态/外链 url（预设例图） */
+export function poseCoverHref(x) {
+  const file = poseCoverFile(x);
+  if (file) return `/lib/${encodeURIComponent(file)}`;
+  const imgs = x?.images || [];
+  const hit = imgs.find(im => im.cover && im.url) || imgs.find(im => im.url);
+  return hit?.url || x?.imageUrl || "";
 }
 
 /** 卡片上最多两个情绪标签 */

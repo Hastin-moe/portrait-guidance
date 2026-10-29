@@ -1,4 +1,36 @@
-// T21 起步动作库：约 30 个常用人像动作（仅文字，无参考图）
+// T21 起步动作库：约 30 个常用人像动作；白墙影棚例图按需挂在 PRESET_THUMBS
+import { uid, normalizePose } from "./model.js";
+
+/** 预设 id → web/img/pose-presets 文件名（有图的先挂上，其余字母占位） */
+export const PRESET_THUMBS = {
+  "pose-back": "lookback.jpg",
+  "pose-chin": "chinrest.jpg",
+  "sp-stand-front": "frontstand.jpg",
+};
+
+export function presetThumbUrl(presetId) {
+  const f = PRESET_THUMBS[presetId];
+  return f ? `/static/img/pose-presets/${f}` : "";
+}
+
+/** 从起步预设克隆一条可写入动作库的副本（新 id；有例图则作封面 url） */
+export function clonePresetPose(starter) {
+  const raw = JSON.parse(JSON.stringify(starter));
+  const presetId = starter.id;
+  raw.id = uid();
+  raw.presetId = presetId;
+  const thumb = presetThumbUrl(presetId);
+  if (thumb) {
+    raw.images = [{ id: uid(), file: "", source: "preset", url: thumb, note: "", cover: true }];
+    raw.image = "";
+    raw.imageSource = "preset";
+    raw.imageUrl = thumb;
+  } else {
+    raw.images = [];
+  }
+  return normalizePose(raw);
+}
+
 export const STARTER_POSES = [
   { id: "pose-lean", name: "窗边倚靠", steps: ["侧身对窗", "重心移到后脚", "一手轻搭窗框"], cues: { weight: "重心在后脚", hands: "一手轻搭窗框", gaze: "看向窗外", pitfalls: "肩膀容易耸起" }, guide: "想象窗外有人轻轻叫你", sizes: ["half", "knee"], people: "1", dims: { mood: ["安静", "清冷"], stance: ["倚"], focus: ["全身"], prop: ["窗帘"], scene: ["窗边"] } },
   { id: "pose-back", name: "回眸", steps: ["身体背向镜头", "肩向窗侧", "视线回到镜头"], cues: { weight: "身体背向镜头", hands: "自然下垂", gaze: "肩向窗，视线回到镜头", pitfalls: "脖子拧得太紧" }, guide: "先看窗外，再慢慢回头看我", sizes: ["close", "bust"], people: "1", dims: { mood: ["灵动", "温柔"], stance: ["站"], focus: ["脸"], prop: ["无"], scene: ["窗边"] } },
