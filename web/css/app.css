@@ -43,6 +43,19 @@ nav.steps .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .body.navmini nav.steps a{justify-content:center;padding:8px 0;position:relative}.body.navmini nav.steps .lbl{display:none}
 .body.navmini nav.steps .dot{position:absolute;top:5px;right:9px;width:7px;height:7px}
 nav.steps .sep{border-top:1px solid var(--line);margin:8px 4px}
+nav.steps a.extra{margin-top:10px;position:relative}
+nav.steps a.extra::before{content:"";position:absolute;left:6px;right:6px;top:-6px;border-top:1px solid var(--line)}
+nav.steps a.extra .num{width:auto;min-width:22px;padding:0 4px;border-radius:11px;font-size:10px;font-weight:700;letter-spacing:.02em}
+/* EX 光比面板 */
+.lr-head{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin:6px 0 10px;background:var(--panel)}
+.lr-big{font-size:28px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.lr-card{border:1px solid var(--line);border-radius:var(--radius);padding:9px 10px;margin:8px 0;background:var(--panel);cursor:pointer}
+.lr-card:hover{border-color:var(--mut)}.lr-card:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.lr-card.key{border-color:var(--fg)}
+.lr-t{display:flex;align-items:center;gap:6px;min-width:0}.lr-t>span:not(.lr-badge){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lr-badge{font-size:11px;font-weight:600;background:var(--fg);color:var(--panel);border-radius:9px;padding:1px 7px;white-space:nowrap}
+.lr-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;margin-top:6px;font-variant-numeric:tabular-nums}
+.lr-warn{font-size:12px;color:var(--y);margin-top:6px}
 nav.steps .collapse{margin-top:auto;align-self:flex-start;color:var(--mut)}
 main.page{overflow:auto;min-width:0;padding:18px 22px 80px;position:relative}
 aside.panel{border-left:1px solid var(--line);overflow:auto;padding:16px;background:var(--bg);min-width:0}
@@ -136,7 +149,10 @@ table.grid tr.warn td:first-child{box-shadow:inset 3px 0 var(--y)}
 .stage{flex:1;background:var(--stage);border-radius:var(--radius-l);overflow:hidden;position:relative;min-height:0;touch-action:none}
 .stage svg{width:100%;height:100%;display:block;user-select:none}
 .stage.calibrating{cursor:crosshair}
-.canvas-foot{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut);margin-top:6px}
+.canvas-foot{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut);margin-top:6px;min-width:0}
+.canvas-foot>*{white-space:nowrap;flex:none}
+.canvas-foot>span.small{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.canvas-foot>.spacer{flex:1 1 0}
 .el-sel{stroke:var(--focus)!important;stroke-width:2.5}
 .layout-thumb{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative}
 .layout-thumb svg{display:block;width:100%;height:120px}

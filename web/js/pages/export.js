@@ -4,6 +4,7 @@ import { t, fmtDate, fmtDuration, LANGS, getLang } from "../i18n.js";
 import { S, commit, fileUrl, api, flush } from "../store.js";
 import { promptDlg, toast } from "../ui.js";
 import * as M from "../model.js";
+import { catalogCache } from "../gear-presets.js";
 import { renderLayout, labels } from "../canvas.js";
 import { issuesList, checkText, personName, lookName, setupName, cameraName, poseName, sceneName } from "./common.js";
 
@@ -98,8 +99,15 @@ export function buildDoc(p, L, o) {
       const lab = labels(st);
       const lights = st.elements.filter(e => e.kind === "light");
       s2.append(h("div", { style: { breakInside: "avoid" } }, h("h3", { style: { fontSize: "14px", margin: "14px 0 6px" } }, `${T("layout.setup")} ${st.name}`), svg),
-        lights.length ? h("table", h("tr", h("th", "#"), h("th", T("gear.model")), h("th", T("layout.modifier")), h("th", T("layout.power")), h("th", T("layout.beam")), h("th", T("layout.exitLux")), h("th", T("layout.faceLux"))),
-          lights.map(e => { const g = e.ref && M.gearByKey(p, e.ref); return h("tr", h("td", lab.get(e.id)), h("td", g ? g.model : "—"), h("td", e.modifier || ""), h("td", e.power || ""), h("td", (e.beam || "") + "°"), h("td", e.exitLux !== "" && e.exitLux != null ? e.exitLux : "—"), h("td", e.faceLux !== "" && e.faceLux != null ? e.faceLux : "—")); })) : null);
+        lights.length ? (() => {
+          // 光比（EX）：和 S6 同一份布置；实测优先，没有实测用估算
+          const lr = M.lightRatios(p, st.id, { catalog: catalogCache(), subjectId: (st.ex || {}).subjectId, keyId: (st.ex || {}).keyId, iso: (st.ex || {}).iso || 100 });
+          const relOf = id => { const r = lr.rows.find(x => x.id === id); if (!r) return "—"; if (lr.key && lr.key.id === id) return T("lr.key"); return r.evRel != null ? M.ratioText(r.evRel) : "—"; };
+          const reading = e => [Number(e.faceFstop) > 0 ? "f/" + e.faceFstop : "", Number(e.faceLux) > 0 ? e.faceLux + " lx" : ""].filter(Boolean).join(" · ") || "—";
+          return h("table", h("tr", h("th", "#"), h("th", T("gear.model")), h("th", T("layout.modifier")), h("th", T("layout.power")), h("th", T("layout.beam")), h("th", T("layout.luxTitle")), h("th", T("ex.lr"))),
+            lights.map(e => { const g = e.ref && M.gearByKey(p, e.ref); const m = e.modifierRef && M.gearByKey(p, e.modifierRef);
+              return h("tr", h("td", lab.get(e.id)), h("td", g ? g.model : "—"), h("td", m ? m.model : (e.modifier || "")), h("td", e.power || ""), h("td", (e.beam || "") + "°"), h("td", reading(e)), h("td", relOf(e.id))); }));
+        })() : null);
     }
     out.append(s2);
   }

@@ -452,3 +452,91 @@ test("T11-C1/C2 fixtures: images and an older minimal Grok file both import", ()
   assert.equal(min.project.layout.setups[0].elements.length, 0);
   assert.ok(min.project.gear.length >= 1, "lights / gear 旧字段仍转成器材");
 });
+
+// ---------- T14 EX 光比 ----------
+function exSample() {
+  const p = M.blankProject("光比");
+  Object.assign(p.venue, { name: "棚", w: 8, d: 6 });
+  p.people.push({ id: "m", kind: "model", name: "林夏" });
+  p.gear.push({ id: "k", type: "light", model: "Godox AD600Pro II", presetId: "godox-ad600pro-ii", qty: 2 });
+  p.gear.push({ id: "led", type: "light", model: "Aputure STORM 80c", presetId: "aputure-storm-80c", qty: 1 });
+  const A = p.layout.setups[0];
+  const person = { ...M.newElement("person", 4, 3), ref: "m" };
+  const key = { ...M.newElement("light", 2, 3), ref: "o:k", power: "1/4", rot: 0 };          // 2 m，正对
+  const fill = { ...M.newElement("light", 4, 1), ref: "o:k", power: "1/16", rot: 90 };       // 2 m，低 2 档
+  A.elements.push(person, key, fill);
+  const catalog = new Map([
+    ["godox-ad600pro-ii", { id: "godox-ad600pro-ii", category: "light_head", subcategory: "strobe", power_ws: 600, guide_number_m: { value: 87, iso: 100 } }],
+    ["aputure-storm-80c", { id: "aputure-storm-80c", category: "led", subcategory: "full_color_led", power_w: 80, illuminance: [{ lux: 6500, distance_m: 1, modifier: "bare" }] }],
+  ]);
+  return { p, A, person, key, fill, catalog };
+}
+
+test("parsePower reads common power notations", () => {
+  assert.equal(M.parsePower("1/4"), 0.25);
+  assert.ok(Math.abs(M.parsePower("1/8+0.3") - 0.125 * Math.pow(2, 0.3)) < 1e-9);
+  assert.equal(M.parsePower("50%"), 0.5);
+  assert.equal(M.parsePower("全光"), 1);
+  assert.equal(M.parsePower("0.5"), 0.5);
+  assert.equal(M.parsePower("abc"), null);
+  assert.equal(M.ratioText(-Math.log2(3)), "3:1");
+  assert.equal(M.ratioText(1), "1:2");
+});
+
+test("EX estimate: same strobe two stops down reads 4:1 against the key", () => {
+  const { p, A, key, fill, catalog } = exSample();
+  const r = M.lightRatios(p, A.id, { catalog });
+  assert.equal(r.key.id, key.id, "brightest estimate is the key");
+  const f = r.rows.find(x => x.id === fill.id);
+  assert.equal(f.est.unit, "f");
+  assert.ok(Math.abs(f.evRel + 2) < 1e-9, f.evRel);
+  assert.equal(M.ratioText(f.evRel), "4:1");
+  // GN 87 × √(1/4) ÷ 2 m ≈ f/21.8
+  assert.ok(Math.abs(r.rows.find(x => x.id === key.id).est.value - 87 * 0.5 / 2) < 1e-9);
+});
+
+test("EX measured readings win over estimates and flag a big gap", () => {
+  const { p, A, key, fill, catalog } = exSample();
+  key.faceFstop = 11; fill.faceFstop = 5.6;
+  const r = M.lightRatios(p, A.id, { catalog });
+  const f = r.rows.find(x => x.id === fill.id);
+  assert.ok(Math.abs(f.evRel - 2 * Math.log2(5.6 / 11)) < 1e-9, "measured ratio");
+  assert.ok(r.warnings.some(w => w.code === "gap" && w.id === key.id), "f/11 vs estimated f/21.8 is > 1 EV off");
+  // 加上柔光箱后估算按 1.7 档损耗下调，实测 f/11 就和估算接近了
+  p.gear.push({ id: "box", type: "modifier", model: "Godox QR-P90T 抛物线柔光箱", diameterCm: 90, depthCm: 42.7 });
+  key.modifierRef = "o:box";
+  const r2 = M.lightRatios(p, A.id, { catalog });
+  assert.equal(r2.rows.find(x => x.id === key.id).loss, 1.7);
+  assert.equal(M.modifierLossEv(null, null, "蜂巢"), 0.3);
+  assert.equal(M.modifierLossEv(null, null, ""), 0);
+});
+
+test("EX: modifier front shortens distance, out-of-beam light is flagged, units don't mix", () => {
+  const { p, A, key, catalog } = exSample();
+  p.gear.push({ id: "box", type: "modifier", model: "QR-P90T", diameterCm: 90, depthCm: 42.7 });
+  key.modifierRef = "o:box";
+  const led = { ...M.newElement("light", 6, 3), ref: "o:led", power: "100%", rot: 0 };   // 背对被摄者
+  A.elements.push(led);
+  const r = M.lightRatios(p, A.id, { catalog });
+  const k = r.rows.find(x => x.id === key.id);
+  assert.ok(Math.abs(k.dEff - (2 - 0.13 - 0.427)) < 1e-9);
+  const l = r.rows.find(x => x.id === led.id);
+  assert.equal(l.inBeam, false);
+  assert.equal(l.est.unit, "lux");
+  assert.equal(l.evRel, null, "lux vs f-stop not compared");
+  l.el.rot = 180;   // 转过来对着被摄者：LED 再亮也不会因为单位不同被选成主光
+  assert.equal(M.lightRatios(p, A.id, { catalog }).key.kind, "flash");
+  assert.ok(r.warnings.some(w => w.code === "outOfBeam" && w.id === led.id));
+});
+
+test("EX status dot counts measured lights; layout edits are shared with S6", () => {
+  const { p, A, key, fill } = exSample();
+  assert.equal(M.stepStatus(p).ex, 0);
+  key.faceFstop = 8;
+  assert.equal(M.stepStatus(p).ex, 1);
+  fill.faceLux = 900;
+  assert.equal(M.stepStatus(p).ex, 2);
+  const n = M.normalize(JSON.parse(JSON.stringify(p)));
+  assert.deepEqual(n.layout.setups[0].ex, { subjectId: "", keyId: "", iso: 100 });
+  assert.equal(n.layout.setups[0].elements.find(e => e.id === key.id).faceFstop, 8);
+});

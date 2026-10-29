@@ -63,10 +63,10 @@ def main():
         ],
         "venue": {"name": "白日摄影棚 2 号厅", "address": "", "contact": "", "indoor": True, "w": 8, "d": 6, "h": 3.2, "photos": [files[0]],
                   "windowDir": "北墙两扇落地窗", "daylight": "10:00–13:00 柔和散射", "surfaces": "白墙、浅木地板", "power": "东墙 3 个插座", "zones": "",
-                  "gear": [{"id": "vg1", "type": "light", "model": "Godox AD600", "qty": 2}, {"id": "vg2", "type": "modifier", "model": "120 cm 抛物线柔光箱", "qty": 1},
+                  "gear": [{"id": "vg1", "type": "light", "model": "Godox AD600Pro II（600Ws）", "presetId": "godox-ad600pro-ii", "qty": 2}, {"id": "vg2", "type": "modifier", "model": "120 cm 抛物线柔光箱", "qty": 1},
                            {"id": "vg3", "type": "reflector", "model": "五合一反光板", "qty": 2}]},
         "gear": [{"id": "og1", "type": "camera", "model": "Sony A7C II", "qty": 1, "source": "own"}, {"id": "og2", "type": "lens", "model": "85mm F1.4", "qty": 1, "source": "own"},
-                 {"id": "og3", "type": "light", "model": "Aputure 60x", "qty": 1, "source": "rent"},
+                 {"id": "og3", "type": "light", "model": "Godox SL60II D", "presetId": "godox-sl60iid", "qty": 1, "source": "rent"},
                  {"id": "og4", "type": "modifier", "model": "Godox QR-P90T", "qty": 1, "source": "own",
                   "presetId": "godox-qr-p90t", "shape": "circle", "diameterCm": 90, "depthCm": 42.7, "widthCm": "", "heightCm": ""},
                  {"id": "og5", "type": "absorb", "model": "聚苯板 240×120", "qty": 1, "source": "own",
@@ -80,7 +80,7 @@ def main():
                             {"id": "wn2", "kind": "window", "x": 4.6, "y": 0.1, "rot": 0, "w": 1.6, "h": 0.15}],
                    "setups": [
                        {"id": "A", "name": "A", "elements": [
-                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "", "modifierRef": "o:og4", "power": "1/4", "ref": "v:vg1"},
+                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "", "modifierRef": "o:og4", "power": "1/4", "ref": "v:vg1", "faceFstop": 11, "luxMeter": "Sekonic L-858D", "luxNote": "ISO 100，脸位朝灯"},
                            {"id": "a-bd1", "kind": "board", "x": 6.5, "y": 1.2, "rot": 90, "w": 2.4, "h": 0.05, "ref": "o:og5"},
                            {"id": "a-c1", "kind": "camera", "x": 6.2, "y": 3.6, "rot": 205, "focal": 85},
                            {"id": "a-p1", "kind": "person", "x": 3.2, "y": 1.4, "rot": 160, "ref": "mia"},
@@ -88,7 +88,8 @@ def main():
                        {"id": "B", "name": "B", "elements": [
                            {"id": "b-bd", "kind": "backdrop", "x": 4, "y": 5.6, "rot": 0, "w": 2.7, "h": 0.1},
                            {"id": "b-l1", "kind": "light", "x": 2.4, "y": 3.2, "rot": 40, "beam": 60, "modifier": "", "power": "1/8", "ref": "v:vg1"},
-                           {"id": "b-l2", "kind": "light", "x": 5.8, "y": 3.4, "rot": 140, "beam": 40, "modifier": "蜂巢", "power": "1/16", "ref": "o:og3"},
+                           {"id": "b-l2", "kind": "light", "x": 5.8, "y": 3.4, "rot": 140, "beam": 40, "modifier": "蜂巢", "power": "50%", "ref": "o:og3"},
+                           {"id": "b-l3", "kind": "light", "x": 5.6, "y": 5.2, "rot": 200, "beam": 60, "modifier": "柔光箱", "power": "1/32", "ref": "v:vg1"},
                            {"id": "b-c1", "kind": "camera", "x": 4, "y": 1.6, "rot": 90, "focal": 50},
                            {"id": "b-p1", "kind": "person", "x": 3.6, "y": 4.4, "rot": 270, "ref": "mia"},
                            {"id": "b-p2", "kind": "person", "x": 4.4, "y": 4.4, "rot": 270, "ref": "emma"},

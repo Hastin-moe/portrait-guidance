@@ -6,6 +6,7 @@ import * as M from "../model.js";
 import { renderLayout, venueSize, labels, elementLabel, svgToPng } from "../canvas.js";
 import { inp, fld, sel, issuesList, emptyState, chip } from "./common.js";
 import { openCamView3d } from "./camview.js";
+import { ratiosFor, annotate, summaryPanel, readingBlock } from "./expanel.js";
 
 const ARCH = ["wall", "window", "door", "pillar", "text"];
 const SET = ["backdrop", "light", "camera", "person", "prop", "board"];
@@ -13,7 +14,7 @@ const ICON = { wall: "▬", window: "▭", door: "◜", pillar: "■", text: "T"
 
 // 按住空格拖动 = 平移画布
 let spaceDown = false;
-addEventListener("keydown", e => { if (e.code === "Space" && !isTyping(e) && location.hash.endsWith("/layout")) { spaceDown = true; e.preventDefault(); } });
+addEventListener("keydown", e => { if (e.code === "Space" && !isTyping(e) && /\/(layout|ex)$/.test(location.hash)) { spaceDown = true; e.preventDefault(); } });
 addEventListener("keyup", e => { if (e.code === "Space") spaceDown = false; });
 
 function findEl(p, id) {
@@ -28,15 +29,22 @@ function svgPoint(svg, x, y) {
   return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
 
-export function render(ctx) {
+export function render(ctx) { return renderLayoutPage(ctx, "plan"); }
+
+/**
+ * 布置图页面。mode = "plan"：S6 场地图；mode = "ex"：EX 光比。
+ * 两种模式编辑的是同一份 project.layout，所以改灯位两边自动同步；只是画布标注和右侧面板不同。
+ */
+export function renderLayoutPage(ctx, mode = "plan") {
   const p = S.project, st = ctx.state, ro = readonly();
+  const isEx = mode === "ex";
   if (st.setup && M.setupById(p, st.setup)) { p.layout.activeSetup = st.setup; st.setup = null; }
   const setup = M.setupById(p, p.layout.activeSetup) || p.layout.setups[0];
   const grid = Number(S.settings.gridM) || 0.5;
   const { w, d } = venueSize(p);
   const hasSize = Number(p.venue.w) > 0 && Number(p.venue.d) > 0;
   if (!hasSize) {
-    return { main: h("div", h("h2.pt", t("step.layout")), emptyState(t("layout.needSize"), t("layout.needSizeBody"), h("button.primary", { onclick: () => ctx.go("site") }, t("layout.goVenue")))), panel: null };
+    return { main: h("div", h("h2.pt", t(isEx ? "step.ex" : "step.layout")), emptyState(t("layout.needSize"), t("layout.needSizeBody"), h("button.primary", { onclick: () => ctx.go("site") }, t("layout.goVenue")))), panel: null };
   }
 
   const addAt = (kind, x, y, ref = "") => {
@@ -57,6 +65,8 @@ export function render(ctx) {
   const svg = renderLayout(p, setup.id, { editable: true, selectedId: st.selected, underlayUrl: fileUrl, gridM: grid,
     distances: st.selected ? M.distances(p, setup.id, (findEl(p, st.selected) || {}).e) : [] });
   if (st.vb) svg.setAttribute("viewBox", st.vb.join(" "));
+  const res = isEx ? ratiosFor(p, setup, ctx.rerender) : null;
+  if (isEx) annotate(svg, res);
   stage.append(svg);
   let drag = null, pan = null;
 
@@ -147,7 +157,7 @@ export function render(ctx) {
       title: t("layout.setupTip") }, `${t("layout.setup")} ${s.name}`, h("span.small.mut", ` · ${s.elements.length}`))),
     h("button.sm.ghost", { disabled: ro || null, onclick: async () => {
       const n = await promptDlg(t("layout.newSetup"), { value: String.fromCharCode(65 + p.layout.setups.length) }); if (!n) return;
-      const id = M.uid(); commit(q => { q.layout.setups.push({ id, name: n.trim(), elements: [] }); q.layout.activeSetup = id; });
+      const id = M.uid(); commit(q => { q.layout.setups.push({ id, name: n.trim(), elements: [], ex: { subjectId: "", keyId: "", iso: 100 } }); q.layout.activeSetup = id; });
     } }, "＋"),
     h("button.sm.ghost", { title: t("layout.more"), onclick: e => menu(e.currentTarget, [
       { value: "dup", label: t("layout.dupSetup"), disabled: ro },
@@ -155,7 +165,7 @@ export function render(ctx) {
       { value: "compare", label: st.compare ? t("layout.compareOff") : t("layout.compare"), disabled: p.layout.setups.length < 2 },
       { value: "del", label: t("layout.delSetup"), disabled: ro || p.layout.setups.length < 2 },
     ], { onPick: async v => {
-      if (v === "dup") { const id = M.uid(); commit(q => { const src = M.setupById(q, setup.id); q.layout.setups.push({ id, name: src.name + "′", elements: src.elements.map(e => ({ ...e, id: M.uid() })) }); q.layout.activeSetup = id; }); }
+      if (v === "dup") { const id = M.uid(); commit(q => { const src = M.setupById(q, setup.id); q.layout.setups.push({ id, name: src.name + "′", elements: src.elements.map(e => ({ ...e, id: M.uid() })), ex: { subjectId: "", keyId: "", iso: (src.ex || {}).iso || 100 } }); q.layout.activeSetup = id; }); }
       if (v === "rename") { const n = await promptDlg(t("layout.renameSetup"), { value: setup.name }); if (n) commit(q => { M.setupById(q, setup.id).name = n.trim(); }); }
       if (v === "compare") { st.compare = !st.compare; ctx.rerender(); }
       if (v === "del") {
@@ -213,8 +223,10 @@ export function render(ctx) {
   } else canvasArea = stage;
 
   const main = h("div",
-    h("div.row", h("h2.pt", { style: { margin: 0 } }, t("step.layout")), h("span.spacer"),
+    h("div.row", h("h2.pt", { style: { margin: 0 } }, t(isEx ? "step.ex" : "step.layout")), h("span.spacer"),
+      isEx ? h("button.sm.ghost", { onclick: () => ctx.go("layout") }, t("lr.openPlan")) : null,
       h("span.small.mut", `${w} × ${d} m`)),
+    isEx ? h("p.sub", { style: { margin: "4px 0 0" } }, t("lr.sub")) : null,
     h("div", { style: { height: "8px" } }),
     h("div.layout-wrap", palette, h("div.canvas-col", setupTabs, canvasArea, foot)));
 
@@ -244,13 +256,7 @@ export function render(ctx) {
           const el = findEl(q, e.id).e; el.modifierRef = v;
         }), { emptyLabel: t("layout.noModifier") })),
         !e.modifierRef ? fld(t("layout.modifier"), inp(() => e.modifier, (q, v) => { findEl(q, e.id).e.modifier = v; }, { placeholder: t("layout.modifierPh") })) : null,
-        h("h4", t("layout.luxTitle")),
-        h("p.small.mut", t("layout.luxHelp")),
-        h("div.grid2",
-          fld(t("layout.exitLux") + " (lux)", upd("exitLux", "number")),
-          fld(t("layout.faceLux") + " (lux)", upd("faceLux", "number"))),
-        fld(t("layout.luxMeter"), inp(() => e.luxMeter, (q, v) => { findEl(q, e.id).e.luxMeter = v; }, { placeholder: t("layout.luxMeterPh") })),
-        fld(t("layout.luxNote"), inp(() => e.luxNote, (q, v) => { findEl(q, e.id).e.luxNote = v; }, { placeholder: t("layout.luxNotePh") })),
+        readingBlock(p, setup, e, findEl, { mode, res, go: ctx.go }),
       ] : null,
       e.kind === "board" && e.ref ? (() => {
         const g = M.gearByKey(p, e.ref); const sz = M.boardSizeM(g);
@@ -265,6 +271,8 @@ export function render(ctx) {
         h("button.sm", { disabled: ro || null, onclick: () => commit(q => { const g = findEl(q, e.id).e; g.rot = ((g.rot || 0) + 15) % 360; }) }, "↻ 15°"),
         h("button.sm", { disabled: ro || null, onclick: () => dup(e.id) }, t("common.duplicate")),
         h("button.sm.danger", { disabled: ro || null, onclick: () => del(e.id) }, t("common.delete"))));
+  } else if (isEx) {
+    panel = summaryPanel(p, setup, res, { select: id => { st.selected = id; ctx.rerender(); }, go: ctx.go });
   } else {
     const list = M.checks(p).filter(c => c.page === "layout" || (c.code === "gearOver" && c.setupId === setup.id));
     panel = h("div",

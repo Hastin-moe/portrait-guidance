@@ -13,10 +13,11 @@ import * as PLayout from "./pages/layout.js";
 import * as PSchedule from "./pages/schedule.js";
 import * as PProgress from "./pages/progress.js";
 import * as PExport from "./pages/export.js";
+import * as PEx from "./pages/ex.js";
 
 const PAGES = {
   basics: PBasics, site: PSite, models: PModels, poses: PPoses,
-  shots: PShots, layout: PLayout, schedule: PSchedule, progress: PProgress, export: PExport,
+  shots: PShots, layout: PLayout, schedule: PSchedule, progress: PProgress, export: PExport, ex: PEx,
 };
 // 0.1.0 收藏夹 / 旧链接跳转
 const LEGACY_STEP = { overview: "basics", time: "basics", venue: "site", gear: "site" };
@@ -124,10 +125,13 @@ function navBar(step) {
   return h("nav.steps", { "aria-label": t("nav.label") },
     M.STEPS.map((k, i) => h("a" + (k === step ? ".on" : ""), { href: `#/p/${S.project.id}/${k}`, title: t("step." + k), "aria-current": k === step ? "page" : null },
       h("span.num", String(i + 1)), h("span.lbl", t("step." + k)), h("span.dot.s" + st[k], { title: t("dot." + st[k]) }))),
+    // EX：S6 布置图的光比 / 光效视图，不算策划完成度
+    M.EXTRA_STEPS.map(k => h("a.extra" + (k === step ? ".on" : ""), { href: `#/p/${S.project.id}/${k}`, title: t("step." + k), "aria-current": k === step ? "page" : null },
+      h("span.num", "EX"), h("span.lbl", t("step." + k)), h("span.dot.s" + st[k], { title: t("lr.dot." + st[k]) }))),
     h("button.ghost.sm.collapse", { title: t("nav.toggle"), onclick: () => { ui.navMini = !isMini(step); render(); } }, isMini(step) ? "»" : "«"));
 }
 // 分镜 / 场地图 / 时间轴 / 进度默认收成图标栏
-const isMini = step => ui.navMini ?? (step === "shots" || step === "layout" || step === "schedule" || step === "progress");
+const isMini = step => ui.navMini ?? (step === "shots" || step === "layout" || step === "schedule" || step === "progress" || step === "ex");
 
 function render() {
   liveFns = [];

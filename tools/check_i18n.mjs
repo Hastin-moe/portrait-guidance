@@ -16,7 +16,7 @@ for (const f of files) {
   for (const m of src.matchAll(/"([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]*[a-zA-Z0-9_])"/g)) if (STR[m[1]]) used.add(m[1]);
 }
 const DYN = {
-  "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear"],
+  "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear", "ex"],
   "status.": ["draft", "pending", "final"], "dot.": ["0", "1", "2"],
   "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "board", "text"],
   "size.": ["full", "knee", "half", "bust", "close", "xclose"], "pri.": ["must", "opt"],
@@ -27,7 +27,8 @@ const DYN = {
   "prog.col": ["Planned", "Shooting", "Done", "Skipped"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
   "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],
-  "sch.buf.": ["light", "look"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop"],
+  "sch.buf.": ["light", "look"],
+  "lr.kind.": ["flash", "continuous", "unknown"], "lr.w.": ["noSubject", "outOfBeam", "gap", "badPower", "mixed"], "lr.dot.": ["0", "1", "2"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop"],
 };
 for (const [pre, ks] of Object.entries(DYN)) for (const k of ks) used.add(pre + k);
 let bad = 0;

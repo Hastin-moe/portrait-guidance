@@ -84,3 +84,25 @@ function sizeHint(p) {
   if (p.power_ws) return `${p.power_ws} Ws`;
   return "";
 }
+
+// ---------- 详细器材目录（光电参数，EX 光比用） ----------
+let catalogMap = null, catalogLoading = null;
+
+/** 已加载的目录：Map(id → 条目)；还没加载完时返回 null */
+export function catalogCache() { return catalogMap; }
+
+/** 读入 web/data/catalogs/ 里的灯具目录（离线 JSON），按 id 建索引 */
+export function loadCatalogs() {
+  if (catalogMap) return Promise.resolve(catalogMap);
+  if (catalogLoading) return catalogLoading;
+  catalogLoading = fetch("/static/data/catalogs/index.json").then(r => r.json())
+    .then(idx => Promise.all((idx.catalogs || []).map(c => fetch("/static/data/catalogs/" + c.file).then(r => r.json()).catch(() => ({ items: [] })))))
+    .then(files => {
+      const m = new Map();
+      for (const f of files) for (const it of f.items || []) if (it.id) m.set(it.id, it);
+      catalogMap = m;
+      return m;
+    })
+    .catch(() => { catalogMap = new Map(); return catalogMap; });
+  return catalogLoading;
+}

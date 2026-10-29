@@ -137,13 +137,21 @@ export function normalize(p) {
   p.layout.base = Array.isArray(p.layout.base) ? p.layout.base : [];
   p.layout.setups = Array.isArray(p.layout.setups) ? p.layout.setups : [];
   if (!p.layout.setups.length) p.layout.setups.push({ id: uid(), name: "A", elements: [] });
-  for (const s of p.layout.setups) s.elements = Array.isArray(s.elements) ? s.elements : [];
+  for (const s of p.layout.setups) {
+    s.elements = Array.isArray(s.elements) ? s.elements : [];
+    // EX 光比：每套布光自己的被摄者、主光和测光 ISO
+    s.ex = s.ex && typeof s.ex === "object" ? s.ex : {};
+    if (s.ex.subjectId == null) s.ex.subjectId = "";
+    if (s.ex.keyId == null) s.ex.keyId = "";
+    if (!(Number(s.ex.iso) > 0)) s.ex.iso = 100;
+  }
   const normLightLux = e => {
     if (e.kind !== "light") return;
     if (e.exitLux == null) e.exitLux = "";
     if (e.faceLux == null) e.faceLux = "";
     if (e.luxNote == null) e.luxNote = "";
     if (e.luxMeter == null) e.luxMeter = "";
+    if (e.faceFstop == null) e.faceFstop = "";
   };
   for (const e of p.layout.base) normLightLux(e);
   for (const s of p.layout.setups) for (const e of s.elements) normLightLux(e);
@@ -492,6 +500,7 @@ export function shotIssues(list) {
 // ---------- 步骤完成度（导航圆点）：0 未开始 / 1 有缺项 / 2 完成 ----------
 // progress 是拍摄当天步骤，不计入完整度与 export 完成条件
 export const STEPS = ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export"];
+export const EXTRA_STEPS = ["ex"];
 export const COMPLETE_STEPS = ["basics", "site", "models", "poses", "shots", "layout", "schedule", "export"];
 const EXPORT_PRE = ["basics", "site", "models", "poses", "shots", "layout", "schedule"];
 
@@ -533,6 +542,11 @@ export function stepStatus(p, list = checks(p)) {
   st.progress = p.shots.length && p.shots.every(s => shotStat(s) === "done" || shotStat(s) === "skipped")
     ? 2
     : p.shots.some(s => shotStat(s) !== "planned") ? 1 : 0;
+  // EX 光比：被分镜用到的布光方案里，每盏灯都有脸部读数 = 完成；有一部分 = 进行中
+  const usedSetups = new Set([...p.scenes, ...p.shots].map(x => x.setupId).filter(Boolean));
+  const exLights = p.layout.setups.filter(s => !usedSetups.size || usedSetups.has(s.id)).flatMap(s => s.elements.filter(e => e.kind === "light"));
+  const measured = e => Number(e.faceFstop) > 0 || Number(e.faceLux) > 0;
+  st.ex = exLights.length && exLights.every(measured) ? 2 : exLights.some(measured) ? 1 : 0;
   // S9 导出：前七步都完成且无 error
   const errors = list.some(c => c.level === "error");
   st.export = EXPORT_PRE.every(k => st[k] === 2) && !errors
@@ -558,7 +572,7 @@ export function newElement(kind, x, y) {
   if (kind === "light") Object.assign(e, {
     beam: 60, modifier: "", modifierRef: "", power: "", ref: "",
     // 实测照度（lux）：厂商标称另见 catalogs；此处留给现场测光录入
-    exitLux: "", faceLux: "", luxNote: "", luxMeter: "",
+    exitLux: "", faceLux: "", faceFstop: "", luxNote: "", luxMeter: "",
   });
   if (kind === "camera") Object.assign(e, { focal: 50, label: "" });
   if (kind === "person") Object.assign(e, { ref: "" });
@@ -613,4 +627,176 @@ export function distances(p, setupId, el) {
     if (n) out.push({ from: el, to: n.e, d: n.d, kind: "personBackdrop" });
   }
   return out;
+}
+
+// ---------- EX 光比与光效（T14） ----------
+// 原则：布置只有一份（project.layout），S6 场地图和 EX 是同一份数据的两个视图。
+// 实测读数挂在灯位元素上：faceFstop（闪光，脸位入射式测光的光圈）、faceLux（持续光，脸位照度）、exitLux。
+// 估算只看功率档、灯的标称输出和到被摄者的距离（平方反比），不计修饰器损耗和角度衰减，只作预判。
+
+/** 功率档文字 → 满功率的比例：1/4、1/8+0.3、50%、0.25、全光 / full */
+export function parsePower(v) {
+  if (v == null) return null;
+  const s = String(v).trim().toLowerCase().replace(/\s+/g, "").replace("＋", "+").replace("－", "-").replace("％", "%");
+  if (!s) return null;
+  if (/^(全光|满功率|满光|full|max|1\/1)$/.test(s)) return 1;
+  let m = /^1\/(\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)?$/.exec(s);
+  if (m) { const base = 1 / Number(m[1]); return Math.min(1, base * Math.pow(2, Number(m[2] || 0))); }
+  m = /^(\d+(?:\.\d+)?)%$/.exec(s);
+  if (m) return Math.min(1, Number(m[1]) / 100);
+  m = /^(\d+(?:\.\d+)?)$/.exec(s);
+  if (m) { const n = Number(m[1]); if (n > 0 && n <= 1) return n; if (n > 1 && n <= 100) return n / 100; }
+  return null;
+}
+
+const log2 = x => Math.log(x) / Math.LN2;
+/** 光圈读数 → EV（ISO 不变时只用于相互比较） */
+export const fstopToEv = n => (Number(n) > 0 ? 2 * log2(Number(n)) : null);
+/** 照度 → EV100（入射式，C = 250） */
+export const luxToEv = lux => (Number(lux) > 0 ? log2(Number(lux) / 2.5) : null);
+/** EV 差 → 照度比，例如 1.58 EV → 3 */
+export const evToRatio = ev => Math.pow(2, ev);
+
+/** 闪光 / 持续光 / 未知：看目录类别，没有目录时看器材名称里的常见词 */
+export function lightKind(gear, cat) {
+  const c = cat ? `${cat.category || ""} ${cat.subcategory || ""}` : "";
+  if (/strobe|flash|generator|power_pack|lamp_head/.test(c)) return "flash";
+  if (/led|continuous|panel/.test(c)) return "continuous";
+  const n = `${gear ? gear.model : ""}`.toLowerCase();
+  if (/\b(ad|ms|sk|qt|dp|e\d|siros|scoro|move|b10|b1x|d2|a1)\d*|闪光|闪灯|strobe|flash/.test(n)) return "flash";
+  if (/led|storm|amaran|aputure|nova|ls\s?\d|sl\d|ml\d|fv|knowled|持续|常亮/.test(n)) return "continuous";
+  return "unknown";
+}
+
+/**
+ * 修饰器损耗（EV，经验值）：先看目录里的类型，没有就看名称。
+ * 柔光箱 / 八角 / 抛物线柔光箱（带柔光布）约 1.7 档，灯笼 2 档，伞 1.3 档，雷达罩 1 档，
+ * 标准罩、抛物线反光罩（无柔光布）、菲涅尔、蜂巢、束光筒约 0–0.3 档；认不出来按 1 档。
+ */
+export function modifierLossEv(mod, catalog = null, freeText = "") {
+  const cat = mod && mod.presetId && catalog ? catalog.get(mod.presetId) : null;
+  const sub = cat ? String(cat.subcategory || "") : "";
+  const name = `${mod ? mod.model : ""} ${freeText || ""}`.toLowerCase();
+  if (!mod && !String(freeText || "").trim()) return 0;
+  const table = [
+    [/lantern|灯笼|球形/, 2], [/umbrella|伞/, 1.3], [/beauty|雷达/, 1],
+    [/standard_reflector|parabolic_reflector|fresnel|标准罩|反光罩|菲涅尔|para\s?\d|grid|蜂巢|snoot|束光/, 0.3],
+    [/softbox|octa|strip|dome|柔光|八角|抛物线|深抛|条形/, 1.7],
+  ];
+  for (const [re, v] of table) if (re.test(sub)) return v;
+  for (const [re, v] of table) if (re.test(name)) return v;
+  return 1;
+}
+
+/** 目录里 1 m 处、裸灯 / 标准罩的照度（lux，持续光） */
+function catLuxAt1m(cat) {
+  const arr = Array.isArray(cat && cat.illuminance) ? cat.illuminance : [];
+  const bare = arr.filter(x => Number(x.lux) > 0 && Number(x.distance_m) > 0)
+    .map(x => ({ ...x, at1: Number(x.lux) * Math.pow(Number(x.distance_m), 2) }));
+  const pick = bare.find(x => /bare|standard|标准|裸/i.test(x.modifier || "")) || bare[0];
+  return pick ? { lux1m: pick.at1, cct: pick.cct_k || "", modifier: pick.modifier || "" } : null;
+}
+/** 目录里的闪光指数（ISO 100，米） */
+function catGuide(cat) {
+  const g = cat && cat.guide_number_m;
+  const first = Array.isArray(g) ? g[0] : g;
+  if (first && Number(first.value) > 0) return { gn: Number(first.value) * Math.sqrt(100 / (Number(first.iso) || 100)), with: first.with || "" };
+  const f = cat && cat.fstop_at_2m;
+  if (f && Number(f.value) > 0) return { gn: Number(f.value) * 2 * Math.sqrt(100 / (Number(f.iso) || 100)), with: f.reflector || "" };
+  return null;
+}
+
+/**
+ * 一个布光方案的光比表。
+ * @param catalog Map(presetId → 目录条目)，可为空：没有目录时只按功率档和距离做相对估算
+ * @returns {{ subject, subjects, key, rows, pairs, warnings }}
+ */
+export function lightRatios(p, setupId, { catalog = null, subjectId = "", keyId = "", iso = 100 } = {}) {
+  const s = setupById(p, setupId);
+  const empty = { subject: null, subjects: [], key: null, rows: [], warnings: [] };
+  if (!s) return empty;
+  const els = [...p.layout.base, ...s.elements];
+  const subjects = els.filter(e => e.kind === "person");
+  const subject = subjects.find(e => e.id === subjectId) || subjects[0] || null;
+  const lights = s.elements.filter(e => e.kind === "light");
+  const isoK = Math.sqrt((Number(iso) || 100) / 100);
+  const rows = lights.map(e => {
+    const gear = e.ref ? gearByKey(p, e.ref) : null;
+    const cat = gear && gear.presetId && catalog ? catalog.get(gear.presetId) || null : null;
+    const kind = lightKind(gear, cat);
+    const mod = e.modifierRef ? gearByKey(p, e.modifierRef) : null;
+    const frac = parsePower(e.power);
+    const r = { id: e.id, el: e, gear, cat, kind, mod, frac, d: null, dEff: null, offAxis: null, inBeam: true,
+      est: null, meas: null, evRel: null, evRelMeas: null, evRelEst: null, gap: null };
+    if (subject) {
+      r.d = dist(e, subject);
+      // 有修饰器时从修饰器出口算距离（平方反比以发光面为准）
+      const front = mod ? 0.13 + modifierSizeM(mod).depth : 0;
+      r.dEff = Math.max(0.3, r.d - front);
+      const aim = Math.atan2(subject.y - e.y, subject.x - e.x) * 180 / Math.PI;
+      r.offAxis = Math.abs(((aim - (Number(e.rot) || 0)) % 360 + 540) % 360 - 180);
+      r.inBeam = r.offAxis <= (Number(e.beam) || 60) / 2;
+    }
+    const pmax = cat ? (kind === "flash" ? Number(cat.power_ws) : Number(cat.power_w)) || null : null;
+    // 估算
+    r.loss = modifierLossEv(mod, catalog, e.modifier);
+    if (r.dEff && frac) {
+      const gn = kind === "flash" ? catGuide(cat) : null;
+      const lx = kind === "continuous" ? catLuxAt1m(cat) : null;
+      const k = Math.pow(2, -r.loss);
+      if (gn) {
+        const n = gn.gn * isoK * Math.sqrt(frac * k) / r.dEff;
+        r.est = { unit: "f", value: n, ev: fstopToEv(n), basis: gn.with };
+      } else if (lx) {
+        const lux = lx.lux1m * frac * k / (r.dEff * r.dEff);
+        r.est = { unit: "lux", value: lux, ev: luxToEv(lux), basis: lx.modifier };
+      } else {
+        r.est = { unit: "rel", value: null, ev: log2(frac * k * (pmax || 1) / (r.dEff * r.dEff)), basis: pmax ? "power" : "" };
+      }
+    }
+    // 实测：闪光看脸部光圈，持续光看脸部照度；两者都填时按灯的类型取
+    const fF = Number(e.faceFstop) > 0 ? Number(e.faceFstop) : null, fL = Number(e.faceLux) > 0 ? Number(e.faceLux) : null;
+    if (fF && (kind !== "continuous" || !fL)) r.meas = { unit: "f", value: fF, ev: fstopToEv(fF) };
+    else if (fL) r.meas = { unit: "lux", value: fL, ev: luxToEv(fL) };
+    if (r.meas && r.est && r.est.unit === r.meas.unit) r.gap = r.meas.ev - r.est.ev;
+    return r;
+  });
+  // 主光：手动指定；否则取实测最亮，再否则估算最亮（只在同一单位里比）
+  let key = rows.find(r => r.id === keyId) || null;
+  if (!key) {
+    // 只在同一单位里比亮度：取灯数最多的那种单位（同数时闪光优先），实测优先于估算
+    const pickIn = field => {
+      const pool = rows.filter(r => r[field] && r.inBeam);
+      if (!pool.length) return null;
+      const count = u => pool.filter(r => r[field].unit === u).length;
+      const unit = ["f", "lux", "rel"].sort((a, b) => count(b) - count(a))[0];
+      return pool.filter(r => r[field].unit === unit).sort((a, b) => b[field].ev - a[field].ev)[0] || null;
+    };
+    key = pickIn("meas") || pickIn("est") || rows[0] || null;
+  }
+  const comparable = (a, b) => a && b && a.unit === b.unit;
+  for (const r of rows) {
+    if (!key) break;
+    if (comparable(r.meas, key.meas)) r.evRelMeas = r.meas.ev - key.meas.ev;
+    // 估算：光圈对光圈、照度对照度；只有相对估算时要求同一类灯
+    if (comparable(r.est, key.est) && (r.est.unit !== "rel" || r.kind === key.kind)) r.evRelEst = r.est.ev - key.est.ev;
+    r.evRel = r.evRelMeas != null ? r.evRelMeas : r.evRelEst;
+  }
+  const warnings = [];
+  if (!subject) warnings.push({ code: "noSubject" });
+  for (const r of rows) {
+    if (subject && !r.inBeam) warnings.push({ code: "outOfBeam", id: r.id, deg: Math.round(r.offAxis) });
+    if (r.gap != null && Math.abs(r.gap) > 1) warnings.push({ code: "gap", id: r.id, ev: r.gap });
+    if (r.el.power && r.frac == null) warnings.push({ code: "badPower", id: r.id });
+    if (key && r.id !== key.id && r.evRel == null && (r.meas || r.est)) warnings.push({ code: "mixed", id: r.id });
+  }
+  return { subject, subjects, key, rows, warnings };
+}
+
+/** 光比文字：1.58 EV → "3:1"；负数（比主光暗）也按 主:该灯 写 */
+export function ratioText(ev) {
+  if (ev == null || !isFinite(ev)) return "—";
+  const r = evToRatio(Math.abs(ev));
+  const v = r >= 10 ? Math.round(r) : Math.round(r * 10) / 10;
+  return ev <= 0 ? `${v}:1` : `1:${v}`;
 }

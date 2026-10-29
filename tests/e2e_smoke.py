@@ -77,6 +77,20 @@ def main(shots_dir=None):
         pg.wait_for_timeout(200)
         assert rin() == "15", "R 旋转 15°"
         snap("layout")
+        # EX 光比：同一份布置；在 EX 里移动灯，回到场地图位置也变了（T14）
+        pg.click("nav.steps a.extra")
+        pg.wait_for_selector("main.page h2.pt:has-text('EX 光比')")
+        pg.wait_for_selector("aside.panel h4:has-text('光比')")
+        assert pg.locator("aside.panel .lr-card").count() == 1, "光比面板列出这一盏灯"
+        pg.click("aside.panel .lr-card")                      # 点卡片选中灯
+        pg.wait_for_selector("aside.panel h4:has-text('测光读数')")
+        pg.locator("aside.panel input[type=number]").nth(0).fill("3.5")   # X
+        pg.keyboard.press("Tab")
+        pg.wait_for_timeout(300)
+        go_step(6, "场地图")
+        xs = pg.locator("g.el").evaluate_all("els => els.map(e => e.getAttribute('transform'))")
+        assert any(t.startswith("translate(3.5 ") for t in xs), ("EX 改的灯位在场地图同步", xs)
+        snap("ex")
         # S5 分镜：按布光方案生成场景，加两个镜头
         go_step(5, "分镜表")
         pg.get_by_role("button", name="按布光方案生成场景").click()
