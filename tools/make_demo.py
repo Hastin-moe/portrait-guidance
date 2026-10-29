@@ -40,7 +40,10 @@ def main():
         name = f"demo{i:02d}aaaa.png"
         (img / name).write_bytes(png(160, 120, c1, c2))
         files.append(name)
-    looks = [{"id": "lk-mia-1", "name": "白衬衫"}, {"id": "lk-mia-2", "name": "米色针织"}]
+    looks = [
+        {"id": "lk-mia-1", "name": "白衬衫", "status": "ready", "photos": [{"file": files[1], "note": ""}]},
+        {"id": "lk-mia-2", "name": "米色针织", "status": "todo", "photos": [{"file": files[2], "note": ""}]},
+    ]
     p.update({
         "overview": {"theme": "上午的窗光落在室内，人物安静、松弛，画面低饱和、偏暖。", "keywords": ["窗光", "柔和", "低饱和"], "client": "", "purpose": "作品集",
                      "moodStyle": "低饱和窗光，暗部克制，肤色偏暖；动作松弛、不摆拍。"},
@@ -67,9 +70,10 @@ def main():
              "mcn": {"agency": "示例经纪", "agent": "阿陈", "agentContact": "", "contractNo": "MCN-2026-01",
                      "licenseUse": "作品集", "licensePlatform": "小红书 / 官网", "licenseUntil": "2027-12",
                      "fee": "", "settle": "", "note": ""},
+             "photos": [{"file": files[0], "note": "封面", "cover": True}],
              "looks": looks},
             {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "",
-             "roleName": "来访者", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
+             "roleName": "来访者", "looks": [{"id": "lk-emma-1", "name": "牛仔外套", "status": "ready"}]},
             {"id": "mk", "kind": "staff", "name": "小唐", "role": "化妆", "contact": ""},
         ],
         "venue": {"name": "白日摄影棚 2 号厅", "address": "", "contact": "", "indoor": True, "w": 8, "d": 6, "h": 3.2, "photos": [files[0]],

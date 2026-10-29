@@ -405,10 +405,34 @@ function drawer(ctx, s, k) {
       h("label", t("shots.cue")), inp(() => s.cue, (x, v) => { x.shots.find(y => y.id === s.id).cue = v; }, { placeholder: poseCue(s.poseId) || t("shots.cuePh") })),
     h("h4", t("shots.who")),
     h("div.dl",
-      h("label", t("shots.model")), refChips("personIds", r.personIds.map(id => personName(p, id)), k.modelItems, true),
+      h("label", t("shots.model")), refChips("personIds", r.personIds.map(id => {
+        const m = M.personById(p, id);
+        return m?.roleName ? `${personName(p, id)}（${m.roleName}）` : personName(p, id);
+      }), k.modelItems, true),
       h("label", t("shots.look")), refChips("lookIds", r.lookIds.map(id => lookName(p, id)), () => k.lookItems(r.personIds), true),
+      r.lookIds.length ? (() => {
+        const photos = r.lookIds.flatMap(id => {
+          const look = M.lookById(p, id);
+          return (look?.photos || []).map(ph => ({ ...ph, lookName: look?.name || "" }));
+        });
+        return photos.length ? h("div.look-thumbs", photos.slice(0, 6).map(ph =>
+          h("img", { src: fileUrl(ph.file), alt: ph.lookName || "", title: ph.lookName || "" }))) : null;
+      })() : null,
       h("label", t("col.props")), h("div.chips", (s.props || []).map(id => chip((p.props.find(x => x.id === id) || {}).name || t("common.missing"), { broken: !p.props.some(x => x.id === id), onRemove: () => upd({ props: s.props.filter(x => x !== id) }) })),
         ro ? null : h("span.chip.add", { onclick: e => menu(e.currentTarget, k.propItems(), { multi: true, selected: s.props || [], onPick: v => upd({ props: v }), onAdd: () => ctx.go("site", { tab: "props" }), addLabel: t("gear.addProp") }) }, "＋"))),
+    (() => {
+      if (!setup) return null;
+      const sub = setup.elements.find(e => e.kind === "mark" && (e.shotIds || []).includes(s.id))
+        || setup.elements.find(e => e.kind === "mark" && r.personIds.includes(e.personId || e.ref))
+        || setup.elements.find(e => e.kind === "person" && r.personIds.includes(e.ref));
+      const rel = M.relativeAngles(p, setup.id, sub?.id);
+      if (!rel.lights.length) return null;
+      return [
+        h("h4", t("shots.lightRel")),
+        h("ul.small.light-rel", rel.lights.map(L => h("li",
+          M.formatShotLightRel(L, t("layout.side." + L.side), t("layout.key." + L.keyName))))),
+      ];
+    })(),
     h("h4", t("shots.when")),
     h("div.dl",
       h("label", t("col.min")), inp(() => s.minutes, (x, v) => { x.shots.find(y => y.id === s.id).minutes = Number(v) || 0; }, { type: "number", min: 0, step: 5 }),

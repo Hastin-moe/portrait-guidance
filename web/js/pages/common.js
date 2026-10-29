@@ -9,6 +9,7 @@ export const GEAR_TYPES = ["light", "modifier", "absorb", "stand", "backdrop", "
 export function gearTable(rows, path, ctx, { showSource = false, usage = null } = {}) {
   const ro = readonly();
   const get = q => path === "venue" ? q.venue.gear : q.gear;
+  const editKind = path === "venue" ? "vgear" : "ogear";
   return h("table.grid",
     h("tr", h("th", t("gear.type")), h("th", t("gear.model")), h("th", t("gear.size")), h("th", t("gear.qty")), showSource ? h("th", t("gear.source")) : null, usage ? h("th", t("gear.used")) : null, h("th", "")),
     rows.map(g => {
@@ -29,17 +30,19 @@ export function gearTable(rows, path, ctx, { showSource = false, usage = null } 
         h("td.num", inp(() => g.qty, (q, v) => { get(q).find(x => x.id === g.id).qty = v; }, { type: "number", min: 0 })),
         showSource ? h("td", sel([["own", t("gear.src.own")], ["rent", t("gear.src.rent")]], g.source || "own", v => commit(q => { get(q).find(x => x.id === g.id).source = v; }), { allowEmpty: false })) : null,
         usage ? h("td", h("span.used" + (over ? ".over" : ""), `${u} / ${Number(g.qty) || 0}`)) : null,
-        h("td", h("button.sm.ghost", { disabled: ro || null, title: t("common.delete"), onclick: async () => {
-          const n = S.project.layout.setups.reduce((a, s) => a + s.elements.filter(e => e.ref === key || e.modifierRef === key).length, 0);
-          if (n && !await confirmDlg(t("common.deleteTitle"), t("ref.affectsLayout", { n }), { danger: true, ok: t("common.delete") })) return;
-          commit(q => {
-            const arr = get(q); arr.splice(arr.findIndex(x => x.id === g.id), 1);
-            for (const s of q.layout.setups) for (const e of s.elements) {
-              if (e.ref === key) e.ref = "";
-              if (e.modifierRef === key) e.modifierRef = "";
-            }
-          });
-        } }, "×")));
+        h("td", h("div.row", { style: { gap: "4px", justifyContent: "flex-end" } },
+          h("button.sm", { title: t("gear.openEdit"), onclick: () => ctx.openEdit?.(editKind, g.id) }, t("gear.edit")),
+          h("button.sm.ghost", { disabled: ro || null, title: t("common.delete"), onclick: async () => {
+            const n = S.project.layout.setups.reduce((a, s) => a + s.elements.filter(e => e.ref === key || e.modifierRef === key).length, 0);
+            if (n && !await confirmDlg(t("common.deleteTitle"), t("ref.affectsLayout", { n }), { danger: true, ok: t("common.delete") })) return;
+            commit(q => {
+              const arr = get(q); arr.splice(arr.findIndex(x => x.id === g.id), 1);
+              for (const s of q.layout.setups) for (const e of s.elements) {
+                if (e.ref === key) e.ref = "";
+                if (e.modifierRef === key) e.modifierRef = "";
+              }
+            });
+          } }, "×"))));
     }));
 }
 

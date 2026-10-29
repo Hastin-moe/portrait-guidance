@@ -169,6 +169,21 @@ def main(shots_dir=None):
         vals = pg.locator("main.page table.grid input[type=text]").evaluate_all("els => els.map(e => e.value)")
         assert any("QR-P90T" in (v or "") for v in vals), vals
         assert "ø90" in pg.locator("main.page").inner_text()
+        # T25：器材二级编辑层 + 打包「已装箱」
+        pg.locator("button.sm").filter(has_text="编辑").first.click()
+        pg.wait_for_selector(".edit-layer")
+        assert "目录参数" in pg.locator(".edit-body").inner_text()
+        pg.click("button.edit-back")
+        # 自带器材才会进打包清单（第二个「＋ 添加器材」）；再勾「已装箱」
+        pg.get_by_role("button", name="＋ 添加器材").nth(1).click()
+        pg.wait_for_timeout(250)
+        pg.get_by_role("radio", name="打包清单").click()
+        pg.wait_for_timeout(250)
+        pack_txt = pg.locator("main.page").inner_text()
+        assert "待装箱" in pack_txt or "已装箱" in pack_txt, pack_txt[:300]
+        pg.locator("main.page input[type=checkbox]").first.check()
+        pg.wait_for_timeout(250)
+        assert "已装箱" in pg.locator("main.page").inner_text()
         # S8 进度：开始并完成一个镜头
         go_step(8, "进度看板")
         pg.wait_for_selector(".prog-board .pcard")
@@ -184,6 +199,9 @@ def main(shots_dir=None):
         snap("schedule")
         assert pg.locator(".gantt .bar").count() >= 2
         go_step(9, "预览导出")
+        assert "模特资料" in pg.locator(".opts").inner_text()
+        assert "通告单" in pg.locator(".opts").inner_text()
+        assert "隐私字段" in pg.locator(".opts").inner_text()
         pg.select_option(".opts select", "ja")
         pg.wait_for_timeout(200)
         assert "ショットリスト" in pg.locator(".doc").inner_text()

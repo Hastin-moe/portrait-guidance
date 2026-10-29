@@ -731,3 +731,52 @@ test("T24 relativeAngles: shelf L/R, 15° display, segment nearest, no elev when
   assert.equal(arcsL.arcs.length, 1);
   assert.equal(arcsL.arcs[0].kind, "lightPerson");
 });
+
+test("T25 companion: packing privacy, marksForShot, work bars, wrap, catalog lines", () => {
+  const p = M.blankProject("t25");
+  M.normalize(p);
+  assert.equal(p.exportOpts.sections.models, true);
+  assert.equal(p.exportOpts.sections.callsheet, true);
+  assert.equal(p.exportOpts.privacy.contact, false);
+  assert.equal(p.exportOpts.privacy.fee, false);
+  assert.equal(p.exportOpts.privacy.mcn, false);
+
+  const mia = M.normalizeModel({
+    id: "mia", kind: "model", name: "林夏", height: 168, paid: true,
+    work: { start: "09:00", end: "11:00" },
+    looks: [{ id: "l1", name: "白衬衫", photos: [{ file: "a.jpg" }] }],
+  });
+  p.people.push(mia);
+  p.time = { ...p.time, date: "2026-11-08", start: "09:00", end: "14:00", venueFrom: "08:00", venueTo: "14:00", bufferMin: 0, makeupMin: 0, setupMin: 0 };
+  const A = p.layout.setups[0];
+  const mark = M.newElement("mark", 2, 2);
+  mark.personId = "mia"; mark.ref = "mia"; mark.shotIds = ["s1"];
+  A.elements.push(mark);
+  p.scenes.push({ id: "sc", name: "s", setupId: A.id, personIds: ["mia"], lookIds: ["l1"] });
+  // 09:00 起拍 150′ → 11:30，越过收工 11:00
+  p.shots.push({ id: "s1", sceneId: "sc", order: 0, size: "half", minutes: 150, personIds: ["mia"], lookIds: ["l1"], refs: [], status: "planned" });
+  M.normalize(p);
+
+  assert.equal(M.marksForShot(p, "s1").length, 1);
+  assert.equal(M.marksForShot(p, "s1")[0].id, mark.id);
+  const bars = M.paidWorkBars(p);
+  assert.equal(bars.length, 1);
+  assert.equal(bars[0].from, 9 * 60);
+  assert.equal(bars[0].to, 11 * 60);
+  const schItem = M.schedule(p).items.find(i => i.type === "shot" && i.shotId === "s1");
+  assert.ok(schItem.end > 11 * 60);
+  const wraps = M.wrapReminders(p, { withinMin: 30 });
+  assert.ok(wraps.some(w => w.personId === "mia" && w.over));
+  assert.ok(M.checks(p).some(c => c.code === "paidOverWork"));
+  assert.equal(M.formatShotLightRel({ label: "L1", alphaDeg: 45 }, "左", "伦勃朗光"), "L1 伦勃朗光 45° 左");
+
+  const lines = M.gearCatalogLines({
+    power_ws: 600,
+    guide_number_m: [{ value: 87, with: "bare" }],
+    weight_kg: 3.3,
+    diameter_cm: 90,
+    source_url: "https://example.com/g",
+  });
+  assert.ok(lines.some(l => l.key === "power" && l.value.includes("600")));
+  assert.ok(lines.some(l => l.key === "url" && l.link));
+});

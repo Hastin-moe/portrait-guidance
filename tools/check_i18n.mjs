@@ -36,7 +36,10 @@ const DYN = {
   "mood.asp.": ["light", "tone", "comp", "wardrobe", "pose", "makeup", "scene"],
   "prog.col": ["Planned", "Shooting", "Done", "Skipped"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
-  "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],
+  "ppl.": ["1", "2", "group"],
+  "ex.sec.": ["cover", "overview", "schedule", "people", "models", "callsheet", "gear", "layout", "shots"],
+  "ex.priv.": ["contact", "fee", "mcn"],
+  "gear.cat.": ["power", "gn", "lux", "weight", "size", "url", "source"],
   "sch.buf.": ["light", "look"],
   "lr.kind.": ["flash", "continuous", "unknown"], "lr.w.": ["noSubject", "outOfBeam", "gap", "badPower", "mixed"], "lr.dot.": ["0", "1", "2"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop", "personWindow"],
 };

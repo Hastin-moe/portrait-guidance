@@ -126,7 +126,7 @@ export function renderLayout(p, setupId, opts = {}) {
   const setup = M.setupById(p, setupId);
   const lab = labels(setup);
   const hl = opts.highlight || null;
-  const dim = id => hl && !(hl.cameraId === id || (hl.lightIds && hl.lightIds.has(id)));
+  const dim = id => hl && !(hl.cameraId === id || (hl.lightIds && hl.lightIds.has(id)) || (hl.markIds && hl.markIds.has(id)) || (hl.personIds && hl.personIds.has(id)));
 
   svg.append(s("rect", { x: 0, y: 0, width: w, height: d, fill: C.panel, stroke: C.line, "stroke-width": 0.03 }));
   const u = p.layout.underlay;

@@ -1,8 +1,9 @@
-// S8 进度看板：拍摄当天记录镜头状态，并导出分镜时间窗
+// S8 进度看板：拍摄当天记录镜头状态，并导出分镜时间窗；站位缩略 / 收工提醒（T25）
 import { h, toast, isTyping } from "../ui.js";
 import { t } from "../i18n.js";
 import { S, commit, fileUrl } from "../store.js";
 import * as M from "../model.js";
+import { renderLayout } from "../canvas.js";
 import { personName, lookName, setupName, cameraName, poseName, emptyState } from "./common.js";
 
 const COLS = [
@@ -157,13 +158,27 @@ export function render(ctx) {
         },
       }));
 
+    const marks = M.marksForShot(p, s.id);
+    const markThumb = marks[0] ? h("div.mark-thumb", {
+      title: t("prog.markThumb"),
+      onclick: e => { e.stopPropagation(); ctx.go("layout", { setup: marks[0].setupId, selected: marks[0].id }); },
+    }, (() => {
+      const svg = renderLayout(p, marks[0].setupId, {
+        selectedId: marks[0].id,
+        highlight: { markIds: new Set([marks[0].id]), cameraId: r.cameraId },
+        grid: false, rulers: false, pad: 0.4, labels: false, underlayUrl: fileUrl,
+      });
+      return svg;
+    })()) : null;
+
     return h("div.pcard" + (on ? ".on" : ""), {
       tabindex: 0,
       onclick: () => { st.focus = s.id; ctx.rerender(); },
       "data-shot": s.id,
     },
       h("div.nm", `${nos.get(s.id)} · ${poseName(s.poseId) || t("prog.noPose")}`),
-      (s.refs || [])[0] ? h("img", { src: fileUrl(s.refs[0]), alt: "", style: { width: "100%", borderRadius: "6px", marginTop: "6px", maxHeight: "80px", objectFit: "cover" } }) : null,
+      markThumb,
+      !markThumb && (s.refs || [])[0] ? h("img", { src: fileUrl(s.refs[0]), alt: "", style: { width: "100%", borderRadius: "6px", marginTop: "6px", maxHeight: "80px", objectFit: "cover" } }) : null,
       h("div.meta", t("prog.plan") + " " + plan),
       timeRow(t("prog.started"), "startedAt"),
       timeRow(t("prog.completed"), "completedAt"),
@@ -175,6 +190,14 @@ export function render(ctx) {
       h("div.row", h("b", t(label)), h("span.small.mut", String(by[k].length))),
       by[k].length ? h("div", { style: { display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" } }, by[k].map(card))
         : h("p.small.mut", t("prog.colEmpty")))));
+
+  const wraps = M.wrapReminders(p);
+  const wrapBanner = wraps.length ? h("div.card.wrap-warn",
+    h("b", t("prog.wrapTitle")),
+    h("ul.small", wraps.slice(0, 4).map(w => h("li",
+      w.over
+        ? t("prog.wrapOver", { name: w.name, shot: nos.get(w.shotId) })
+        : t("prog.wrapSoon", { name: w.name, shot: nos.get(w.shotId), n: Math.max(0, w.remainMin) }))))) : null;
 
   const summary = h("div.card",
     h("div.row.wrap", { style: { gap: "16px" } },
@@ -205,7 +228,7 @@ export function render(ctx) {
   }
 
   return {
-    main: h("div", h("h2.pt", t("step.progress")), h("p.sub", t("progress.sub")), summary, board),
+    main: h("div", h("h2.pt", t("step.progress")), h("p.sub", t("progress.sub")), summary, wrapBanner, board),
     panel,
     onKey(e) {
       if (isTyping(e) || !st.focus) return;

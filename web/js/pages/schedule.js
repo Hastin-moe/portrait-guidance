@@ -25,6 +25,25 @@ export function render(ctx) {
   const row = (label, bars) => h("div.ln", h("div.lab", { title: typeof label === "string" ? label : "" }, label), h("div.track", { style: { width: width + "px", "--hour": 60 * PX + "px", backgroundPosition: `${x(Math.ceil(startAxis / 60) * 60)}px 0` } },
     bars, h("div.limit", { style: { left: x(sch.avail.to) + "px" }, title: t("sch.availEnd", { t: M.fmtMin(sch.avail.to) }) })));
   const rows = [];
+  // T25：付费模特工作时间背景条
+  const workBars = M.paidWorkBars(p);
+  for (const w of workBars) {
+    const from = w.from ?? startAxis;
+    const to = w.to ?? endAxis;
+    const overShots = sch.items.filter(it => it.type === "shot" && it.end > (w.to ?? Infinity)).filter(it => {
+      const s = p.shots.find(y => y.id === it.shotId);
+      return s && M.resolveShot(p, s).personIds.includes(w.personId);
+    });
+    rows.push(row(
+      h("span", t("sch.workOf", { name: w.name || personName(p, w.personId) })),
+      [
+        h("div.bar.work", {
+          style: { left: x(from) + "px", width: Math.max(8, (to - from) * PX) + "px" },
+          title: `${M.fmtMin(from)}–${M.fmtMin(to)}`,
+        }, `${M.fmtMin(from)}–${M.fmtMin(to)}`),
+        overShots.length ? h("span.blab.over", { style: { left: (x(w.to) + 6) + "px", color: "var(--y)" } }, t("sch.workOver", { n: overShots.length })) : null,
+      ]));
+  }
   for (const c of calls) {
     const label = c.role === "setup" ? t("time.setupCrew") : personName(p, c.personId);
     const end = c.role === "model" ? sch.start : sch.start;
@@ -67,8 +86,10 @@ export function render(ctx) {
   const main = h("div", h("h2.pt", t("step.schedule")), h("p.sub", (p.time.date ? fmtDate(p.time.date) + " · " : "") + t("sch.sub", { buf: p.time.bufferMin })), kpi, legend, gantt);
 
   const list = M.checks(p).filter(c => c.page === "schedule");
+  const paidOver = list.filter(c => c.code === "paidOverWork");
   const panel = h("div",
     h("h4", t("panel.checks")), issuesList(p, list, ctx.go),
+    paidOver.length ? [h("h4", t("sch.workOverTitle")), h("p.small.mut", t("sch.workOverHelp"))] : null,
     sch.overMin > 0 ? [h("h4", t("sch.cutTitle")), h("p.small.mut", t("sch.cutHelp", { m: sch.overMin })),
       h("ul.issues-list", sch.cuttable.map(id => { const s = p.shots.find(y => y.id === id); return h("li", { onclick: () => ctx.go("shots", { focus: id }) }, h("span", `${nos.get(id)} ${poseName(s.poseId) || ""} · ${s.minutes}′`)); })),
       sch.cuttable.length ? h("button.sm.danger", { disabled: ro || null, onclick: async () => {

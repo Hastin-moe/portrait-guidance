@@ -171,7 +171,19 @@ export function normalize(p) {
   p.schedule = d(p.schedule, { locks: {} });
   p.schedule.locks = p.schedule.locks || {};
   p.ui = d(p.ui, { columns: ["no", "ref", "size", "model", "pose", "min", "pri", "check"], collapsed: {} });
-  p.exportOpts = d(p.exportOpts, { sections: { cover: true, overview: true, schedule: true, people: true, gear: true, layout: true, shots: true }, lang: "", refs: true, paper: "A4" });
+  p.exportOpts = d(p.exportOpts, {
+    sections: {
+      cover: true, overview: true, schedule: true, people: true, models: true, callsheet: true,
+      gear: true, layout: true, shots: true,
+    },
+    privacy: { contact: false, fee: false, mcn: false },
+    lang: "", refs: true, paper: "A4",
+  });
+  p.exportOpts.sections = d(p.exportOpts.sections, {
+    cover: true, overview: true, schedule: true, people: true, models: true, callsheet: true,
+    gear: true, layout: true, shots: true,
+  });
+  p.exportOpts.privacy = d(p.exportOpts.privacy, { contact: false, fee: false, mcn: false });
   return p;
 }
 
@@ -284,6 +296,81 @@ export function marksForPerson(p, personId) {
     }
   }
   return out;
+}
+
+/** 镜头关联的站位点：优先 shotIds，否则同布置图上该模特的站位 */
+export function marksForShot(p, shotId) {
+  const out = [];
+  for (const s of p.layout?.setups || []) {
+    for (const e of s.elements || []) {
+      if (e.kind !== "mark") continue;
+      if ((e.shotIds || []).includes(shotId)) out.push({ ...e, setupId: s.id });
+    }
+  }
+  if (out.length) return out;
+  const shot = p.shots.find(x => x.id === shotId);
+  if (!shot) return out;
+  const r = resolveShot(p, shot);
+  const setup = setupById(p, r.setupId);
+  if (!setup) return out;
+  for (const e of setup.elements || []) {
+    if (e.kind !== "mark") continue;
+    const pid = e.personId || e.ref;
+    if (r.personIds.includes(pid)) out.push({ ...e, setupId: setup.id });
+  }
+  return out;
+}
+
+/** 付费模特工作时段（分钟），供 S7 背景条 */
+export function paidWorkBars(p) {
+  return models(p).filter(m => m.paid).map(m => {
+    const win = modelWorkWindow(m);
+    return {
+      personId: m.id,
+      name: m.name || "",
+      from: toMin(win.from),
+      to: toMin(win.to),
+      arrive: toMin(m.work?.arrive),
+    };
+  }).filter(b => b.from != null || b.to != null);
+}
+
+/**
+ * S8：付费模特快到 / 已过收工的提醒。
+ * withinMin：镜头计划结束距收工不足该分钟数时提醒。
+ */
+export function wrapReminders(p, { withinMin = 30 } = {}) {
+  const sch = schedule(p);
+  const out = [];
+  const seen = new Set();
+  for (const m of models(p)) {
+    if (!m.paid) continue;
+    const wrap = toMin(modelWorkWindow(m).to);
+    if (wrap == null) continue;
+    for (const it of sch.items) {
+      if (it.type !== "shot") continue;
+      const shot = p.shots.find(s => s.id === it.shotId);
+      if (!shot || shot.status === "done" || shot.status === "skipped") continue;
+      const r = resolveShot(p, shot);
+      if (!r.personIds.includes(m.id)) continue;
+      if (it.end <= wrap - withinMin) continue;
+      const key = m.id + ":" + shot.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        personId: m.id, name: m.name || "", shotId: shot.id,
+        wrap, end: it.end, over: it.end > wrap,
+        remainMin: wrap - it.end,
+      });
+    }
+  }
+  return out;
+}
+
+/** S5 灯位关系短句：L1 伦勃朗光 45° 左 */
+export function formatShotLightRel(row, sideLabel, keyLabel) {
+  if (!row) return "";
+  return `${row.label} ${keyLabel} ${row.alphaDeg}° ${sideLabel}`;
 }
 
 export function setLookCount(person, n, namer = i => String(i + 1)) {
@@ -1552,4 +1639,30 @@ export function formatLightHud(row, sideLabel, keyLabel) {
   if (row.elevDeg != null) parts.push(`β ${row.elevDeg}°`);
   if (row.dSlant != null) parts.push(`${row.dSlant.toFixed(2)} m∴`);
   return parts.join(" · ");
+}
+
+/** 目录条目里用于器材二级层的光电 / 尺寸摘要行 */
+export function gearCatalogLines(entry) {
+  if (!entry) return [];
+  const lines = [];
+  if (entry.power_ws != null) lines.push({ key: "power", value: entry.power_ws + " Ws" });
+  const gn = entry.guide_number_m;
+  if (Array.isArray(gn) && gn[0]?.value != null) lines.push({ key: "gn", value: `GN ${gn[0].value}` + (gn[0].with ? ` (${gn[0].with})` : "") });
+  else if (gn && typeof gn === "object" && gn.value != null) lines.push({ key: "gn", value: `GN ${gn.value}` });
+  else if (typeof gn === "number") lines.push({ key: "gn", value: `GN ${gn}` });
+  if (entry.illuminance && typeof entry.illuminance === "object") {
+    const first = Object.values(entry.illuminance).find(v => v && (v.lux != null || typeof v === "number"));
+    if (first != null) {
+      const lux = typeof first === "number" ? first : first.lux;
+      if (lux != null) lines.push({ key: "lux", value: lux + " lx @1m" });
+    }
+  }
+  if (entry.weight_kg != null) lines.push({ key: "weight", value: entry.weight_kg + " kg" });
+  const size = entry.diameter_cm
+    ? `ø${entry.diameter_cm} cm`
+    : (entry.width_cm && entry.height_cm ? `${entry.width_cm}×${entry.height_cm}` + (entry.depth_cm ? `×${entry.depth_cm}` : "") + " cm" : "");
+  if (size) lines.push({ key: "size", value: size });
+  if (entry.source_url) lines.push({ key: "url", value: entry.source_url, link: true });
+  else if (entry.source) lines.push({ key: "source", value: entry.source });
+  return lines;
 }
