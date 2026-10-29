@@ -2,6 +2,7 @@
 import { h, menu, promptDlg, confirmDlg, pickFiles, toast, download, isTyping } from "../ui.js";
 import { t } from "../i18n.js";
 import { S, commit, fileUrl, uploadImages, readonly } from "../store.js";
+// S.poses used for mark ↔ pose binding
 import * as M from "../model.js";
 import { renderLayout, venueSize, labels, elementLabel, svgToPng, paintRelationLayer } from "../canvas.js";
 import { inp, fld, sel, issuesList, emptyState, chip } from "./common.js";
@@ -12,7 +13,7 @@ import { catalogCache, loadCatalogs } from "../gear-presets.js";
 
 const ARCH = ["wall", "window", "door", "pillar", "text"];
 const SET = ["backdrop", "light", "camera", "person", "prop", "board"];
-const ICON = { wall: "▬", window: "▭", door: "◜", pillar: "■", text: "T", backdrop: "▤", light: "◉", camera: "◧", person: "●", prop: "◇", board: "▮" };
+const ICON = { wall: "▬", window: "▭", door: "◜", pillar: "■", text: "T", backdrop: "▤", light: "◉", camera: "◧", person: "●", mark: "◎", prop: "◇", board: "▮" };
 
 // 按住空格拖动 = 平移画布
 let spaceDown = false;
@@ -69,6 +70,7 @@ export function renderLayoutPage(ctx, mode = "plan") {
     if (ro) return toast(t("final.locked"));
     const e = M.newElement(kind, Math.round(x / (grid / 2)) * (grid / 2), Math.round(y / (grid / 2)) * (grid / 2));
     if (ref) e.ref = ref;
+    if (kind === "mark" && ref) { e.personId = ref; e.ref = ref; }
     if (kind === "camera") { e.rot = 180; }
     if (kind === "board" && ref) {
       const sz = M.boardSizeM(M.gearByKey(p, ref));
@@ -238,6 +240,8 @@ export function renderLayoutPage(ctx, mode = "plan") {
     boards.map(g => dragItem(g.model || t("gear.type.absorb"), "board", g.key, `${usage.get(g.key) || 0}/${g.qty || 0}`)),
     M.models(p).length ? h("div.hd", t("layout.fromPeople")) : null,
     M.models(p).map(m => dragItem(m.name, "person", m.id)),
+    M.models(p).length ? h("div.hd", t("layout.marks")) : null,
+    M.models(p).map(m => dragItem(t("layout.markOf", { n: m.name }), "mark", m.id)),
     p.props.length ? h("div.hd", t("layout.fromProps")) : null,
     p.props.map(x => dragItem(x.name || "—", "prop", x.id)));
 
@@ -557,9 +561,12 @@ function renderElementEdit(ctx, mode, setup) {
     return { main, panel };
   }
 
-  // 非灯：单页编辑（显示系坐标）+ 机位/人物关系摘要
+  // 非灯：单页编辑（显示系坐标）+ 机位/人物/站位关系摘要
   const bindOpts = e.kind === "board" ? M.gearList(p).filter(g => g.type === "absorb").map(g => [g.key, g.model || t("gear.type.absorb")])
-    : e.kind === "person" ? M.models(p).map(m => [m.id, m.name]) : e.kind === "prop" ? p.props.map(x => [x.id, x.name || "—"]) : null;
+    : e.kind === "person" || e.kind === "mark" ? M.models(p).map(m => [m.id, m.name])
+      : e.kind === "prop" ? p.props.map(x => [x.id, x.name || "—"]) : null;
+  const poseOpts = S.poses.map(po => [po.id, po.name]);
+  const shotOpts = M.orderedShots(p).map(s => [s.id, M.shotNumbers(p).get(s.id)]);
   const relSum = (() => {
     if (e.kind !== "camera" && e.kind !== "person" && e.kind !== "mark") return null;
     const rel = M.relativeAngles(p, (f.setup || setup).id, (e.kind === "person" || e.kind === "mark") ? e.id : null);
@@ -578,7 +585,22 @@ function renderElementEdit(ctx, mode, setup) {
     return [h("h4", t("layout.relations")), h("p.small.mut", t("layout.relHelp")), ...bits];
   })();
   body = editForm([
-    bindOpts ? fld(t("layout.bind"), sel(bindOpts, e.ref, v => commit(q => { findEl(q, e.id).e.ref = v; }), { emptyLabel: t("layout.unbound") })) : null,
+    e.kind === "mark" ? [
+      fld(t("layout.markPerson"), sel(bindOpts || [], e.personId || e.ref || "", v => commit(q => {
+        const el = findEl(q, e.id).e; el.personId = v; el.ref = v;
+      }), { emptyLabel: t("layout.unbound") })),
+      fld(t("layout.markPose"), sel(poseOpts, e.poseId || "", v => commit(q => { findEl(q, e.id).e.poseId = v; }))),
+      h("div", h("label", t("layout.markShots")),
+        h("div.chips", shotOpts.map(([id, lab]) => h("span.chip" + ((e.shotIds || []).includes(id) ? "" : ".plain"), {
+          onclick: () => commit(q => {
+            const el = findEl(q, e.id).e;
+            const arr = el.shotIds || (el.shotIds = []);
+            const i = arr.indexOf(id);
+            if (i >= 0) arr.splice(i, 1); else arr.push(id);
+          }),
+        }, lab)))),
+      fld(t("layout.label"), inp(() => e.label || "", (q, v) => { findEl(q, e.id).e.label = v; })),
+    ] : bindOpts ? fld(t("layout.bind"), sel(bindOpts, e.ref, v => commit(q => { findEl(q, e.id).e.ref = v; }), { emptyLabel: t("layout.unbound") })) : null,
     e.kind === "text" ? fld(t("layout.label"), inp(() => e.label, (q, v) => { findEl(q, e.id).e.label = v; })) : null,
     h("p.small.mut", t("layout.originHelp")),
     h("div.grid2", fld("X (m)", setDispXY("x")), fld("Y (m)", setDispXY("y"))),

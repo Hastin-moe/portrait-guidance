@@ -35,6 +35,11 @@ export function elementLabel(p, setup, e, lab = labels(setup), lang) {
   if (e.kind === "light") { const g = e.ref && M.gearByKey(p, e.ref); return lab.get(e.id) + (g ? " · " + g.model : ""); }
   if (e.kind === "camera") return lab.get(e.id) + " · " + (e.focal || 50) + "mm";
   if (e.kind === "person") { const ps = e.ref && M.personById(p, e.ref); return ps ? ps.name : t("el.person", null, lang); }
+  if (e.kind === "mark") {
+    const ps = M.personById(p, e.personId || e.ref);
+    const base = ps ? ps.name : t("el.mark", null, lang);
+    return e.label ? `${base} · ${e.label}` : base + " · " + t("el.mark", null, lang);
+  }
   if (e.kind === "prop") { const pr = e.ref && p.props.find(x => x.id === e.ref); return pr ? pr.name : t("el.prop", null, lang); }
   if (e.kind === "board") { const g = e.ref && M.gearByKey(p, e.ref); return g ? (g.model || t("el.board", null, lang)) : t("el.board", null, lang); }
   if (e.kind === "text") return e.label || "";
@@ -196,6 +201,10 @@ export function renderLayout(p, setupId, opts = {}) {
       case "person":
         g.append(s("circle", { r: 0.22, fill: C.fg, ...(selStroke || {}) }));
         g.append(s("path", { d: "M0.2 -0.07 L0.32 0 L0.2 0.07 Z", fill: C.fg })); break;
+      case "mark":
+        g.append(s("circle", { r: 0.18, fill: "none", stroke: C.acc, "stroke-width": sel ? 0.06 : 0.04 }));
+        g.append(s("circle", { r: 0.06, fill: C.acc }));
+        g.append(s("path", { d: "M0.16 -0.06 L0.28 0 L0.16 0.06 Z", fill: C.acc })); break;
       case "text":
         g.append(s("text", { "font-size": 0.26, fill: C.fg, "text-anchor": "middle", y: 0.09 }, e.label || t("el.text", null, opts.lang)));
         if (sel) g.append(s("rect", { x: -0.6, y: -0.2, width: 1.2, height: 0.4, fill: "none", stroke: C.acc, "stroke-width": 0.03 })); break;
@@ -203,7 +212,7 @@ export function renderLayout(p, setupId, opts = {}) {
     // 命中区域：细长的墙和窗也容易点中
     if (opts.editable) g.append(s("rect", { x: -Math.max(e.w || 0.5, 0.5) / 2, y: -Math.max(e.h || 0.5, 0.5) / 2, width: Math.max(e.w || 0.5, 0.5), height: Math.max(e.h || 0.5, 0.5), fill: "transparent" }));
     layer.append(g);
-    if (opts.labels !== false && (e.kind === "light" || e.kind === "camera" || e.kind === "person" || e.kind === "prop" || e.kind === "board")) {
+    if (opts.labels !== false && (e.kind === "light" || e.kind === "camera" || e.kind === "person" || e.kind === "mark" || e.kind === "prop" || e.kind === "board")) {
       const txt = e.kind === "light" || e.kind === "camera" ? lab.get(e.id) : elementLabel(p, setup, e, lab, opts.lang);
       let lx = e.x, ly = e.y + 0.48, anchor = "middle";
       if (e.kind === "board") {

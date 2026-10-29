@@ -18,11 +18,11 @@ for (const f of files) {
 const DYN = {
   "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear", "ex"],
   "status.": ["draft", "pending", "final"], "dot.": ["0", "1", "2"],
-  "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "board", "text"],
+  "el.": ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "mark", "prop", "board", "text"],
   "size.": ["full", "knee", "half", "bust", "close", "xclose"], "pri.": ["must", "opt"],
   "gear.type.": ["light", "modifier", "absorb", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"],
   "gear.src.": ["own", "rent", "venue"], "prop.": ["todo", "ready"],
-  "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty"],
+  "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty", "paidNoHours", "paidOverWork", "lookNotReady", "paidNoLicense"],
   "mood.src.": ["none", "x", "xhs", "web", "ai", "own", "upload", "paste", "pinterest", "google", "huaban"],
   "ref.plat.": ["xhs", "pinterest", "google", "huaban"],
   "layout.side.": ["left", "right", "front", "back", "same", "leftFront", "leftBack", "rightFront", "rightBack"],

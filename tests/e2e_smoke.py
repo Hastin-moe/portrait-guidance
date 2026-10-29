@@ -66,7 +66,7 @@ def main(shots_dir=None):
         assert pg.locator(".edit-form").count() >= 1
         tabs.nth(4).click()
         pg.wait_for_timeout(120)
-        assert "T19" in pg.locator(".edit-body").inner_text()
+        assert "付费模特" in pg.locator(".edit-body").inner_text()
         tabs.nth(2).click()
         pg.wait_for_timeout(120)
         pg.click("button.edit-back")

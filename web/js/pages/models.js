@@ -3,8 +3,8 @@ import { h, menu, toast, seg, confirmDlg } from "../ui.js";
 import { t } from "../i18n.js";
 import { S, commit, fileUrl, readonly } from "../store.js";
 import * as M from "../model.js";
-import { inp, fld, tagsInput, issuesList, emptyState, sel } from "./common.js";
-import { editShell, editForm, editPlaceholder } from "../editlayer.js";
+import { inp, fld, tagsInput, issuesList, emptyState, sel, poseById } from "./common.js";
+import { editShell, editForm } from "../editlayer.js";
 import { openRefPicker } from "../refimages.js";
 
 const SOURCES = ["", "x", "xhs", "web", "ai", "own", "upload", "paste", "pinterest", "google", "huaban"];
@@ -13,7 +13,7 @@ const PERSON_TABS = [
   { id: "photos", label: "edit.tab.photos" },
   { id: "looks", label: "edit.tab.looks" },
   { id: "role", label: "edit.tab.role" },
-  { id: "pay", label: "edit.tab.pay", later: "edit.later.pay" },
+  { id: "pay", label: "edit.tab.pay" },
 ];
 
 export function render(ctx) {
@@ -310,8 +310,86 @@ function renderPersonEdit(ctx, id) {
       fld(t("model.roleScenes"), set("roleScenes")),
       fld(t("model.roleNotes"), set("roleNotes")),
     ]);
+  } else if (tab === "pay") {
+    const marks = M.marksForPerson(p, x.id);
+    const setWork = (k, type) => inp(() => x.work?.[k] ?? "", (q, v) => {
+      const m = M.personById(q, x.id);
+      if (!m.work) m.work = {};
+      m.work[k] = v;
+      if (k === "start") m.availFrom = v;
+      if (k === "end") m.availTo = v;
+    }, { type });
+    const setMcn = k => inp(() => x.mcn?.[k] ?? "", (q, v) => {
+      const m = M.personById(q, x.id);
+      if (!m.mcn) m.mcn = {};
+      m.mcn[k] = v;
+    });
+    body = editForm([
+      h("label.row", h("input", {
+        type: "checkbox", disabled: ro || null, checked: !!x.paid,
+        onchange: e => commit(q => { M.personById(q, x.id).paid = e.target.checked; }),
+      }), " ", t("model.paidToggle")),
+      !x.paid ? h("p.small.mut", t("model.paidOffHelp")) : [
+        h("h4", t("model.workHours")),
+        h("div.grid2", fld(t("model.arrive"), setWork("arrive", "time")), fld(t("model.workStart"), setWork("start", "time"))),
+        h("div.grid2", fld(t("model.workEnd"), setWork("end", "time")), fld(t("model.overtime"), sel(
+          [["", "—"], ["hourly", t("model.ot.hourly")], ["none", t("model.ot.none")]],
+          x.work?.overtime || "",
+          v => commit(q => { const m = M.personById(q, x.id); if (!m.work) m.work = {}; m.work.overtime = v; }),
+          { allowEmpty: false },
+        ))),
+        h("div.grid2", fld(t("model.lunchFrom"), setWork("lunchFrom", "time")), fld(t("model.lunchTo"), setWork("lunchTo", "time"))),
+        fld(t("model.hourlyNote"), setWork("hourlyNote")),
+
+        h("h4", t("model.poseList")),
+        h("p.small.mut", t("model.poseListHelp")),
+        h("div.row", h("button.sm", { disabled: ro || null, onclick: e => {
+          const used = new Set(x.poseIds || []);
+          menu(e.currentTarget,
+            S.poses.filter(po => !used.has(po.id)).map(po => ({ value: po.id, label: po.name })),
+            { onPick: id2 => commit(q => {
+              const m = M.personById(q, x.id);
+              if (!m.poseIds) m.poseIds = [];
+              if (!m.poseIds.includes(id2)) m.poseIds.push(id2);
+            }) });
+        } }, "＋ " + t("model.addPose"))),
+        !(x.poseIds || []).length ? h("p.mut", t("model.noPoses")) : h("div", (x.poseIds || []).map((pid, i) => {
+          const po = poseById(pid);
+          return h("div.row", { style: { marginBottom: "4px" } },
+            h("span", `${i + 1}. ${po?.name || pid}`), h("span.spacer"),
+            h("button.sm.ghost", { disabled: ro || i === 0 || null, onclick: () => commit(q => {
+              const a = M.personById(q, x.id).poseIds; [a[i - 1], a[i]] = [a[i], a[i - 1]];
+            }) }, "↑"),
+            h("button.sm.ghost", { disabled: ro || i >= (x.poseIds.length - 1) || null, onclick: () => commit(q => {
+              const a = M.personById(q, x.id).poseIds; [a[i + 1], a[i]] = [a[i], a[i + 1]];
+            }) }, "↓"),
+            h("button.sm.ghost", { disabled: ro || null, onclick: () => commit(q => {
+              M.personById(q, x.id).poseIds.splice(i, 1);
+            }) }, "×"));
+        })),
+
+        h("h4", t("model.marks")),
+        h("p.small.mut", t("model.marksHelp")),
+        h("div.row",
+          h("span", t("model.marksN", { n: marks.length })),
+          h("button.sm", { onclick: () => {
+            if (marks[0]) ctx.go("layout", { setup: marks[0].setupId, selected: marks[0].id });
+            else ctx.go("layout");
+          } }, t("model.viewMarks"))),
+
+        h("h4", t("model.mcn")),
+        h("p.small.mut", t("model.mcnHelp")),
+        fld(t("model.mcn.agency"), setMcn("agency")),
+        h("div.grid2", fld(t("model.mcn.agent"), setMcn("agent")), fld(t("model.mcn.agentContact"), setMcn("agentContact"))),
+        fld(t("model.mcn.contractNo"), setMcn("contractNo")),
+        h("div.grid2", fld(t("model.mcn.licenseUse"), setMcn("licenseUse")), fld(t("model.mcn.licensePlatform"), setMcn("licensePlatform"))),
+        fld(t("model.mcn.licenseUntil"), setMcn("licenseUntil")),
+        h("div.grid2", fld(t("model.mcn.fee"), setMcn("fee")), fld(t("model.mcn.settle"), setMcn("settle"))),
+        fld(t("model.mcn.note"), setMcn("note")),
+      ],
+    ]);
   } else {
-    body = editPlaceholder(t(tabDef.later));
+    body = editForm([h("p.mut", "—")]);
   }
 
   const main = editShell({

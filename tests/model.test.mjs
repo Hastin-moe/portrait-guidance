@@ -583,6 +583,31 @@ test("T23 display coords, 15° snap, shelf side and key names", () => {
   assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
 });
 
+test("T19 paid work window, marks, checks", () => {
+  const p = M.blankProject("t");
+  M.normalize(p);
+  const m = M.normalizeModel({
+    id: "mia", kind: "model", name: "林夏", height: 168, paid: true,
+    work: { start: "09:00", end: "12:00" }, looks: [{ id: "l1", name: "a", status: "todo" }],
+    mcn: {},
+  });
+  p.people.push(m);
+  assert.deepEqual(M.modelWorkWindow(m), { from: "09:00", to: "12:00" });
+  const A = p.layout.setups[0];
+  const mark = M.newElement("mark", 2, 2);
+  mark.personId = "mia"; mark.ref = "mia"; mark.poseId = "p1";
+  A.elements.push(mark);
+  M.normalize(p);
+  assert.equal(M.marksForPerson(p, "mia").length, 1);
+  const list = M.checks(p);
+  assert.ok(list.some(c => c.code === "paidNoLicense"));
+  // 无镜头时不应因 lookNotReady；加镜头后应提示待准备服装
+  p.scenes.push({ id: "sc", name: "s", setupId: A.id, personIds: ["mia"], lookIds: ["l1"] });
+  p.shots.push({ id: "s1", sceneId: "sc", order: 0, size: "half", minutes: 30, lookIds: ["l1"], personIds: ["mia"], refs: ["x.jpg"] });
+  const list2 = M.checks(p);
+  assert.ok(list2.some(c => c.code === "lookNotReady"));
+});
+
 test("T20 mood aspects normalize and labels", () => {
   const p = M.normalize({ overview: {}, mood: [{ id: "m1", file: "a.jpg", note: "x", aspects: ["light", "nope", "tone"] }] });
   assert.equal(p.overview.moodStyle, "");

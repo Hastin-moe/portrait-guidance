@@ -115,12 +115,20 @@ export function checkText(p, c, lang) {
   if (c.code === "lockConflict") params.shot = nos.get(c.id) || "";
   if (c.code === "gearOver") { const g = M.gearByKey(p, c.id); params.gear = g ? g.model || t("gear.type." + g.type) : ""; params.setup = (M.setupById(p, c.setupId) || {}).name || ""; }
   if (c.code === "unbound" || c.code === "setupEmpty") params.setup = (M.setupById(p, c.setupId) || {}).name || c.setup || "";
+  if (c.personId) params.name = (M.personById(p, c.personId) || {}).name || "";
+  if (c.code === "paidOverWork" || c.code === "lookNotReady") params.shot = nos.get(c.id) || "";
   return t("chk." + c.code, params, lang);
 }
 
 export function issuesList(p, list, go) {
   if (!list.length) return h("p.mut.small", "✓ " + t("chk.none"));
-  return h("ul.issues-list", list.map(c => h("li", { onclick: () => go(c.page, c.page === "shots" ? { focus: c.id } : c.page === "layout" ? { setup: c.setupId, selected: c.id } : {}) },
+  return h("ul.issues-list", list.map(c => h("li", { onclick: () => {
+    if (c.page === "shots") go("shots", { focus: c.id });
+    else if (c.page === "layout") go("layout", { setup: c.setupId, selected: c.id });
+    else if (c.page === "models" && c.personId) go("models", { edit: { kind: "person", id: c.personId } });
+    else if (c.page === "schedule" && c.id) go("schedule", { focus: c.id });
+    else go(c.page);
+  } },
     h("span." + c.level, c.level === "error" ? "●" : c.level === "warn" ? "▲" : "ℹ"), h("span", checkText(p, c)))));
 }
 

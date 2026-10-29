@@ -158,8 +158,8 @@ export function normalize(p) {
     if (e.gel == null) e.gel = "";
     if (e.barnDoors == null) e.barnDoors = false;
   };
-  for (const e of p.layout.base) normLightLux(e);
-  for (const s of p.layout.setups) for (const e of s.elements) normLightLux(e);
+  for (const e of p.layout.base) { normLightLux(e); normalizeElement(e); }
+  for (const s of p.layout.setups) for (const e of s.elements) { normLightLux(e); normalizeElement(e); }
   if (!p.layout.setups.some(s => s.id === p.layout.activeSetup)) p.layout.activeSetup = p.layout.setups[0].id;
   p.scenes = Array.isArray(p.scenes) ? p.scenes : [];
   p.shots = Array.isArray(p.shots) ? p.shots : [];
@@ -246,7 +246,44 @@ export function normalizeModel(x) {
   if (x.roleScenes == null) x.roleScenes = "";
   if (x.roleNotes == null) x.roleNotes = "";
   if (x.paid == null) x.paid = false;
+  if (!x.work || typeof x.work !== "object") x.work = {};
+  for (const k of ["arrive", "start", "end", "lunchFrom", "lunchTo", "overtime", "hourlyNote"]) {
+    if (x.work[k] == null) x.work[k] = "";
+  }
+  if (!["", "hourly", "none"].includes(x.work.overtime)) x.work.overtime = "";
+  if (!Array.isArray(x.poseIds)) x.poseIds = [];
+  if (!x.mcn || typeof x.mcn !== "object") x.mcn = {};
+  for (const k of ["agency", "agent", "agentContact", "contractNo", "licenseUse", "licensePlatform", "licenseUntil", "fee", "settle", "note"]) {
+    if (x.mcn[k] == null) x.mcn[k] = "";
+  }
+  // 付费工作时段与旧 avail 字段对齐（排程仍读 avail*）
+  if (x.paid) {
+    if (x.work.start && !x.availFrom) x.availFrom = x.work.start;
+    if (x.work.end && !x.availTo) x.availTo = x.work.end;
+  }
   return x;
+}
+
+/** 模特工作时间窗（付费优先 work.*） */
+export function modelWorkWindow(m) {
+  if (!m) return { from: "", to: "" };
+  if (m.paid && (m.work?.start || m.work?.end)) {
+    return { from: m.work.start || m.availFrom || "", to: m.work.end || m.availTo || "" };
+  }
+  return { from: m.availFrom || "", to: m.availTo || "" };
+}
+
+/** 某模特在所有布光方案里的站位点 */
+export function marksForPerson(p, personId) {
+  const out = [];
+  for (const s of p.layout?.setups || []) {
+    for (const e of s.elements || []) {
+      if (e.kind !== "mark") continue;
+      const pid = e.personId || e.ref;
+      if (pid === personId) out.push({ ...e, setupId: s.id });
+    }
+  }
+  return out;
 }
 
 export function setLookCount(person, n, namer = i => String(i + 1)) {
@@ -559,7 +596,10 @@ export function availability(p, personIds = null) {
   const ms = models(p).filter(m => !personIds || personIds.includes(m.id));
   let limit = null;
   for (const m of ms) {
-    const e = toMin(m.availTo);
+    const win = modelWorkWindow(m);
+    const e = toMin(win.to);
+    const s = toMin(win.from);
+    if (s != null) from = Math.max(from, s);
     if (e != null) to = Math.min(to, e);
     if (e != null && (limit == null || e < limit.at)) limit = { personId: m.id, at: e };
   }
@@ -713,6 +753,37 @@ export function checks(p) {
     const sch = schedule(p);
     if (sch.overMin > 0) add("warn", "overTime", "schedule", { minutes: sch.overMin });
     for (const c of sch.conflicts) add("warn", "lockConflict", "schedule", { id: c.shotId });
+    for (const item of sch.items) {
+      if (item.type !== "shot") continue;
+      const shot = p.shots.find(s => s.id === item.shotId);
+      if (!shot) continue;
+      const r = resolveShot(p, shot);
+      for (const pid of r.personIds) {
+        const m = personById(p, pid);
+        if (!m?.paid) continue;
+        const lim = toMin(modelWorkWindow(m).to);
+        if (lim != null && item.end > lim) add("warn", "paidOverWork", "schedule", { id: shot.id, personId: pid });
+      }
+    }
+  }
+  for (const shot of p.shots) {
+    const r = resolveShot(p, shot);
+    for (const lid of r.lookIds) {
+      const look = allLooks(p).find(l => l.id === lid);
+      if (look && look.status === "todo") {
+        add("warn", "lookNotReady", "models", { id: shot.id, lookId: lid, personId: look.personId });
+        break;
+      }
+    }
+  }
+  for (const m of models(p)) {
+    if (!m.paid) continue;
+    const win = modelWorkWindow(m);
+    if (!(win.from && win.to)) add("warn", "paidNoHours", "models", { personId: m.id });
+    const lic = m.mcn || {};
+    if (!(lic.licenseUse || lic.licensePlatform || lic.licenseUntil)) {
+      add("info", "paidNoLicense", "models", { personId: m.id });
+    }
   }
   if (p.status === "final" && p.props.some(x => x.status !== "ready")) add("info", "propsNotReady", "site");
   return out;
@@ -792,7 +863,7 @@ export function completeness(p) {
 }
 
 // ---------- 布置图几何 ----------
-export const ELEMENT_KINDS = ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "prop", "board", "text"];
+export const ELEMENT_KINDS = ["wall", "window", "door", "pillar", "backdrop", "light", "camera", "person", "mark", "prop", "board", "text"];
 export const BASE_KINDS = new Set(["wall", "window", "door", "pillar", "text"]);
 
 export function newElement(kind, x, y) {
@@ -808,9 +879,25 @@ export function newElement(kind, x, y) {
   });
   if (kind === "camera") Object.assign(e, { focal: 50, label: "" });
   if (kind === "person") Object.assign(e, { ref: "" });
+  if (kind === "mark") Object.assign(e, { personId: "", poseId: "", shotIds: [], label: "", ref: "" });
   if (kind === "prop") Object.assign(e, { ref: "" });
   if (kind === "board") Object.assign(e, { ref: "" });
   if (kind === "text") Object.assign(e, { label: "" });
+  return e;
+}
+
+/** 规范化场地图元素（站位点字段） */
+export function normalizeElement(e) {
+  if (!e || typeof e !== "object") return e;
+  if (e.kind === "mark") {
+    if (e.personId == null) e.personId = e.ref || "";
+    if (e.ref == null) e.ref = e.personId || "";
+    if (!e.personId && e.ref) e.personId = e.ref;
+    if (!e.ref && e.personId) e.ref = e.personId;
+    if (e.poseId == null) e.poseId = "";
+    if (!Array.isArray(e.shotIds)) e.shotIds = [];
+    if (e.label == null) e.label = "";
+  }
   return e;
 }
 

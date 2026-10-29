@@ -61,6 +61,12 @@ def main():
         "people": [
             {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00",
              "roleName": "窗边独白", "rolePitch": "安静、被光吸引的人", "roleTraits": ["安静", "清冷"],
+             "paid": True,
+             "work": {"arrive": "08:30", "start": "09:00", "end": "13:00", "lunchFrom": "", "lunchTo": "", "overtime": "hourly", "hourlyNote": ""},
+             "poseIds": ["pose-lean", "pose-back"],
+             "mcn": {"agency": "示例经纪", "agent": "阿陈", "agentContact": "", "contractNo": "MCN-2026-01",
+                     "licenseUse": "作品集", "licensePlatform": "小红书 / 官网", "licenseUntil": "2027-12",
+                     "fee": "", "settle": "", "note": ""},
              "looks": looks},
             {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "",
              "roleName": "来访者", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
@@ -89,6 +95,8 @@ def main():
                            {"id": "a-bd1", "kind": "board", "x": 6.5, "y": 1.2, "rot": 90, "w": 2.4, "h": 0.05, "ref": "o:og5"},
                            {"id": "a-c1", "kind": "camera", "x": 6.2, "y": 3.6, "rot": 205, "focal": 85},
                            {"id": "a-p1", "kind": "person", "x": 3.2, "y": 1.4, "rot": 160, "ref": "mia"},
+                           {"id": "a-m1", "kind": "mark", "x": 3.5, "y": 2.0, "rot": 160, "personId": "mia", "ref": "mia",
+                            "poseId": "pose-lean", "shotIds": ["s1"], "label": "窗边主站位"},
                            {"id": "a-pr1", "kind": "prop", "x": 3.4, "y": 0.5, "rot": 0, "w": 2.6, "h": 0.2, "ref": "pr1"}]},
                        {"id": "B", "name": "B", "elements": [
                            {"id": "b-bd", "kind": "backdrop", "x": 4, "y": 5.6, "rot": 0, "w": 2.7, "h": 0.1},
