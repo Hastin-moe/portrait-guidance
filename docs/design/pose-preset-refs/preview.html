@@ -1,33 +1,155 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>动作预设例图 · 视觉试验</title>
+<title>动作预设例图 · 小A / 小B</title>
 <style>
   body{margin:0;font:15px/1.45 -apple-system,"PingFang SC",sans-serif;background:#f3f2ef;color:#1c1c1a}
-  main{max-width:960px;margin:0 auto;padding:28px 20px 48px}
+  main{max-width:1100px;margin:0 auto;padding:28px 20px 48px}
   h1{font-size:22px;font-weight:650;margin:0 0 6px}
-  p{margin:0 0 22px;color:#5c5a55}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  h2{font-size:17px;font-weight:650;margin:28px 0 8px}
+  p{margin:0 0 16px;color:#5c5a55}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   figure{margin:0;background:#fff;border:1px solid #e4e2dc;border-radius:10px;overflow:hidden}
   img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#fff}
-  figcaption{padding:10px 12px;font-size:13px}
+  figcaption{padding:8px 10px;font-size:12px}
   .tag{color:#74726c}
-  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .note{font-size:13px;color:#74726c;margin:-6px 0 18px}
+  @media(max-width:720px){.grid3{grid-template-columns:1fr}}
 </style>
 <main>
-  <h1>动作预设例图 · 视觉试验</h1>
-  <p>白墙无缝环幕 · 影棚柔光 · 无道具无水印。先看这 3 张规格是否能当「预设调出」缩略图。</p>
+  <h1>动作预设例图 · 模特对照</h1>
+  <p>白墙无缝环幕 · 影棚柔光。产品缩略图现为小B 知更鸟 cos 全套 30 张。</p>
+
+  <h2>小A · 日常便装（保留对照）</h2>
+  <p class="note">早期三连；产品侧已归档到 <code>web/img/pose-presets/archive-xiao-a/</code>。</p>
+  <div class="grid3">
+    <figure><img src="lookback.jpg" alt="小A 回眸"><figcaption><b>回眸</b><div class="tag">pose-back · 小A</div></figcaption></figure>
+    <figure><img src="chinrest.jpg" alt="小A 托腮"><figcaption><b>托腮</b><div class="tag">pose-chin · 小A</div></figcaption></figure>
+    <figure><img src="frontstand.jpg" alt="小A 正面"><figcaption><b>正面站立</b><div class="tag">sp-stand-front · 小A</div></figcaption></figure>
+  </div>
+
+  <h2>小B · 知更鸟 cos（全套 30）</h2>
+  <p class="note">设定 + 服装图解见 <code>models/</code>。文件 <code>xiao-b/{id}.jpg</code> = 产品 <code>/static/img/pose-presets/{id}.jpg</code>。</p>
   <div class="grid">
     <figure>
-      <img src="lookback.jpg" alt="回眸">
-      <figcaption><b>回眸</b><div class="tag">pose-back · 近景/特写</div></figcaption>
+      <img src="xiao-b/pose-lean.jpg" alt="窗边倚靠">
+      <figcaption><b>窗边倚靠</b><div class="tag">pose-lean · 小B</div></figcaption>
     </figure>
     <figure>
-      <img src="chinrest.jpg" alt="托腮">
-      <figcaption><b>托腮</b><div class="tag">pose-chin · 特写/半身</div></figcaption>
+      <img src="xiao-b/pose-back.jpg" alt="回眸">
+      <figcaption><b>回眸</b><div class="tag">pose-back · 小B</div></figcaption>
     </figure>
     <figure>
-      <img src="frontstand.jpg" alt="正面站立">
-      <figcaption><b>正面站立</b><div class="tag">sp-stand-front · 全身/七分</div></figcaption>
+      <img src="xiao-b/pose-chin.jpg" alt="托腮">
+      <figcaption><b>托腮</b><div class="tag">pose-chin · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/pose-sit.jpg" alt="并肩坐">
+      <figcaption><b>并肩坐</b><div class="tag">pose-sit · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-stand-front.jpg" alt="正面站立">
+      <figcaption><b>正面站立</b><div class="tag">sp-stand-front · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-contrapposto.jpg" alt="歇脚站姿">
+      <figcaption><b>歇脚站姿</b><div class="tag">sp-contrapposto · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-walk.jpg" alt="向前走">
+      <figcaption><b>向前走</b><div class="tag">sp-walk · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-sit-cross.jpg" alt="翘腿坐">
+      <figcaption><b>翘腿坐</b><div class="tag">sp-sit-cross · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-sit-forward.jpg" alt="前倾坐">
+      <figcaption><b>前倾坐</b><div class="tag">sp-sit-forward · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-lie-side.jpg" alt="侧躺">
+      <figcaption><b>侧躺</b><div class="tag">sp-lie-side · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-squat.jpg" alt="蹲姿">
+      <figcaption><b>蹲姿</b><div class="tag">sp-squat · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-lean-wall.jpg" alt="靠墙">
+      <figcaption><b>靠墙</b><div class="tag">sp-lean-wall · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-hand-hair.jpg" alt="撩发">
+      <figcaption><b>撩发</b><div class="tag">sp-hand-hair · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-hand-face.jpg" alt="手挡半脸">
+      <figcaption><b>手挡半脸</b><div class="tag">sp-hand-face · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-over-shoulder.jpg" alt="过肩看">
+      <figcaption><b>过肩看</b><div class="tag">sp-over-shoulder · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-profile.jpg" alt="侧面剪影">
+      <figcaption><b>侧面剪影</b><div class="tag">sp-profile · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-look-down.jpg" alt="低头沉思">
+      <figcaption><b>低头沉思</b><div class="tag">sp-look-down · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-laugh.jpg" alt="开怀笑">
+      <figcaption><b>开怀笑</b><div class="tag">sp-laugh · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-book.jpg" alt="读书遮脸">
+      <figcaption><b>读书遮脸</b><div class="tag">sp-book · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-curtain.jpg" alt="掀帘">
+      <figcaption><b>掀帘</b><div class="tag">sp-curtain · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-flower.jpg" alt="持花">
+      <figcaption><b>持花</b><div class="tag">sp-flower · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-chair-straddle.jpg" alt="跨坐椅背">
+      <figcaption><b>跨坐椅背</b><div class="tag">sp-chair-straddle · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-floor-sit.jpg" alt="席地而坐">
+      <figcaption><b>席地而坐</b><div class="tag">sp-floor-sit · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-stretch.jpg" alt="伸懒腰">
+      <figcaption><b>伸懒腰</b><div class="tag">sp-stretch · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-hands-pocket.jpg" alt="插袋站">
+      <figcaption><b>插袋站</b><div class="tag">sp-hands-pocket · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-mirror.jpg" alt="对镜">
+      <figcaption><b>对镜</b><div class="tag">sp-mirror · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-couple-lean.jpg" alt="两人相倚">
+      <figcaption><b>两人相倚</b><div class="tag">sp-couple-lean · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-couple-walk.jpg" alt="并肩走">
+      <figcaption><b>并肩走</b><div class="tag">sp-couple-walk · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-group-look.jpg" alt="三人看向一点">
+      <figcaption><b>三人看向一点</b><div class="tag">sp-group-look · 小B</div></figcaption>
+    </figure>
+    <figure>
+      <img src="xiao-b/sp-close-eye.jpg" alt="闭眼特写">
+      <figcaption><b>闭眼特写</b><div class="tag">sp-close-eye · 小B</div></figcaption>
     </figure>
   </div>
 </main>

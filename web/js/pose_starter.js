@@ -1,16 +1,22 @@
 // T21 起步动作库：约 30 个常用人像动作；白墙影棚例图按需挂在 PRESET_THUMBS
 import { uid, normalizePose } from "./model.js";
 
-/** 预设 id → web/img/pose-presets 文件名（有图的先挂上，其余字母占位） */
-export const PRESET_THUMBS = {
-  "pose-back": "lookback.jpg",
-  "pose-chin": "chinrest.jpg",
-  "sp-stand-front": "frontstand.jpg",
-};
+/** 起步预设例图：小B 知更鸟 cos，文件名 = 预设 id.jpg（见 web/img/pose-presets/） */
+export const PRESET_THUMB_IDS = [
+  "pose-lean", "pose-back", "pose-chin", "pose-sit", "sp-stand-front",
+  "sp-contrapposto", "sp-walk", "sp-sit-cross", "sp-sit-forward", "sp-lie-side",
+  "sp-squat", "sp-lean-wall", "sp-hand-hair", "sp-hand-face", "sp-over-shoulder",
+  "sp-profile", "sp-look-down", "sp-laugh", "sp-book", "sp-curtain",
+  "sp-flower", "sp-chair-straddle", "sp-floor-sit", "sp-stretch", "sp-hands-pocket",
+  "sp-mirror", "sp-couple-lean", "sp-couple-walk", "sp-group-look", "sp-close-eye",
+];
+
+/** @deprecated 兼容旧测试/调用；键为预设 id，值为文件名 */
+export const PRESET_THUMBS = Object.fromEntries(PRESET_THUMB_IDS.map(id => [id, id + ".jpg"]));
 
 export function presetThumbUrl(presetId) {
-  const f = PRESET_THUMBS[presetId];
-  return f ? `/static/img/pose-presets/${f}` : "";
+  if (!presetId || !PRESET_THUMBS[presetId]) return "";
+  return `/static/img/pose-presets/${PRESET_THUMBS[presetId]}`;
 }
 
 /** 从起步预设克隆一条可写入动作库的副本（新 id；有例图则作封面 url） */

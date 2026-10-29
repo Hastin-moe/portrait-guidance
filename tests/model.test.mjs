@@ -659,13 +659,14 @@ test("preset recall clones with new id and optional thumb url", async () => {
   assert.equal(a.presetId, "pose-back");
   assert.equal(a.name, "回眸");
   assert.ok(a.steps.length);
-  assert.equal(presetThumbUrl("pose-back"), "/static/img/pose-presets/lookback.jpg");
-  assert.equal(M.poseCoverHref(a), "/static/img/pose-presets/lookback.jpg");
-  assert.ok(Object.keys(PRESET_THUMBS).length >= 3);
+  assert.equal(presetThumbUrl("pose-back"), "/static/img/pose-presets/pose-back.jpg");
+  assert.equal(M.poseCoverHref(a), "/static/img/pose-presets/pose-back.jpg");
+  assert.equal(Object.keys(PRESET_THUMBS).length, STARTER_POSES.length);
   const lean = STARTER_POSES.find(x => x.id === "pose-lean");
   const c = clonePresetPose(lean);
   assert.equal(c.presetId, "pose-lean");
-  assert.equal(M.poseCoverHref(c), "");
+  assert.equal(M.poseCoverHref(c), "/static/img/pose-presets/pose-lean.jpg");
+  assert.ok(STARTER_POSES.every(x => PRESET_THUMBS[x.id]));
 });
 
 test("T18 model profile: normalize looks/photos/role, cover, incomplete", () => {
