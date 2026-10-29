@@ -163,10 +163,15 @@ export function render(ctx) {
       title: t("prog.markThumb"),
       onclick: e => { e.stopPropagation(); ctx.go("layout", { setup: marks[0].setupId, selected: marks[0].id }); },
     }, (() => {
-      const svg = renderLayout(p, marks[0].setupId, {
-        selectedId: marks[0].id,
-        highlight: { markIds: new Set([marks[0].id]), cameraId: r.cameraId },
-        grid: false, rulers: false, pad: 0.4, labels: false, underlayUrl: fileUrl,
+      // T26 F10：以首个站位点为中心裁 3 m × 2 m；只画站位/机位/灯与光束
+      const mk = marks[0];
+      const svg = renderLayout(p, mk.setupId, {
+        selectedId: mk.id,
+        highlight: { markIds: new Set([mk.id]), cameraId: r.cameraId },
+        grid: false, rulers: false, pad: 0, labels: false, underlayUrl: null,
+        cropKinds: new Set(["mark", "camera", "light"]),
+        viewBox: `${mk.x - 1.5} ${mk.y - 1} 3 2`,
+        solidMark: true,
       });
       return svg;
     })()) : null;
