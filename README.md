@@ -9,6 +9,8 @@
 
 **中文 · English · 日本語 · 한국어**　|　本机运行，不用联网，不用账号　|　只用 Python 标准库，零依赖
 
+设计文档：[中文](docs/design/zh.md) · [English](docs/design/en.md) · [日本語](docs/design/ja.md) · [한국어](docs/design/ko.md)　|　[English summary](#english) · [日本語の概要](#日本語) · [한국어 요약](#한국어)
+
 ---
 
 ## 目录
@@ -16,12 +18,15 @@
 - [它解决什么问题](#它解决什么问题)
 - [快速开始](#快速开始)
 - [一次拍摄的完整流程](#一次拍摄的完整流程)
+- [截图一览](#截图一览)
 - [几个关键设计](#几个关键设计)
 - [数据与隐私](#数据与隐私)
 - [版本与进度](#版本与进度)
 - [路线图](#路线图)
+- [设计文档与工作记录](#设计文档与工作记录)
 - [开发](#开发)
 - [协作方式](#协作方式)
+- [English · 日本語 · 한국어](#english)
 
 ---
 
@@ -38,6 +43,14 @@
 这个工具把这些整理成一份**结构化的项目**。各部分互相关联：分镜引用模特的服装套组和动作库里的动作，时间轴按分镜自动排程，场地图上的灯位直接用来估算光比。所以改一处，其他地方会跟着更新，也能检查出矛盾，比如付费模特的收工时间排不下所有镜头、某个镜头引用的服装还没准备。
 
 它的目标不是替你决定怎么拍，而是让你**拍之前想得更完整、现场少翻资料**。
+
+### 整体结构
+
+<p align="center"><img src="docs/design/figures/zh-architecture.svg" width="88%" alt="总体架构：两大模块、四个子模块共用一份项目数据"></p>
+
+工具分成两大块：**前期策划**（信息录入、场地布置与可视化）和**现场与后期**（拍摄管理、选片）。四个子模块共用同一份项目数据，前面录入的模特、器材、灯位，后面的分镜、时间轴、进度看板直接引用。拍完后，进度看板记下的每镜实际时间交给 Photo-cull 按镜头分组；选片发现某一镜没有合格片时，可以回到现场管理标记补拍。
+
+目前已实现的是前期策划和现场管理（S0–S9 与 EX）。AI 可视化和选片接入还在设计阶段，详见[设计文档](docs/design/zh.md)。
 
 ## 快速开始
 
@@ -79,6 +92,20 @@ python3 tools/make_demo.py
   <img src="docs/screenshots/0.3.0/zh-ex.png" width="49%" alt="EX 光比：估算与实测对照">
   <img src="docs/screenshots/0.3.0/zh-s9.png" width="49%" alt="S9 预览导出：策划案版式">
 </p>
+
+## 截图一览
+
+0.3.0 中文界面（1440 × 900）。点开看大图。每个版本的四语截图、深色模式和 1280 px 窄窗口截图都在 [`docs/screenshots/`](docs/screenshots/)。
+
+| <img src="docs/screenshots/0.3.0/zh-s0.png" width="260" alt="S0 项目列表"> | <img src="docs/screenshots/0.3.0/zh-s1.png" width="260" alt="S1 基础信息"> | <img src="docs/screenshots/0.3.0/zh-s2.png" width="260" alt="S2 场地与器材"> |
+|:---:|:---:|:---:|
+| S0 项目列表 | S1 基础信息 | S2 场地与器材 |
+| <img src="docs/screenshots/0.3.0/zh-s3.png" width="260" alt="S3 模特与样图"> | <img src="docs/screenshots/0.3.0/zh-s4.png" width="260" alt="S4 动作库"> | <img src="docs/screenshots/0.3.0/zh-s5.png" width="260" alt="S5 分镜表"> |
+| S3 模特与样图 | S4 动作库 | S5 分镜表 |
+| <img src="docs/screenshots/0.3.0/zh-s6.png" width="260" alt="S6 场地图"> | <img src="docs/screenshots/0.3.0/zh-s6-3d.png" width="260" alt="S6 机位三维预览"> | <img src="docs/screenshots/0.3.0/zh-s7.png" width="260" alt="S7 时间轴"> |
+| S6 场地图 | S6 机位三维预览 | S7 时间轴 |
+| <img src="docs/screenshots/0.3.0/zh-s8.png" width="260" alt="S8 进度看板"> | <img src="docs/screenshots/0.3.0/zh-s9.png" width="260" alt="S9 预览导出"> | <img src="docs/screenshots/0.3.0/zh-ex.png" width="260" alt="EX 光比"> |
+| S8 进度看板 | S9 预览导出 | EX 光比 |
 
 ## 几个关键设计
 
@@ -158,6 +185,21 @@ S6 场地图和 EX 光比读写的是同一份 `project.layout` 数据。在任�
 - AI 起草、文字转布置、AI 意向图、AI 分镜建议
 - 现场简化版、分享给客户
 
+## 设计文档与工作记录
+
+| 文档 | 内容 |
+|---|---|
+| [设计文档](docs/design/)（[中文](docs/design/zh.md) · [English](docs/design/en.md) · [日本語](docs/design/ja.md) · [한국어](docs/design/ko.md)） | 方案与模块设计全文：功能规格 A–J、一致性检查规则、GUI 界定、页面清单与线框图、交互规则、数据模型、分期，以及 AI 生图验证、成本估算、Photo-cull 联动等暂缓部分的评估 |
+| [`docs/design/figures/`](docs/design/figures/) | 总体架构图、布置图页和分镜页线框图，四种语言各一套 SVG |
+| [`docs/工作意向确认-0.4.0.md`](docs/工作意向确认-0.4.0.md) | 0.4.0 的需求范围和 Hastin 签署的选项（Q1–Q3） |
+| [`交接板.md`](交接板.md) | 全部任务卡和状态，是开发协作的唯一需求来源 |
+| [`交接日志.md`](交接日志.md) | 每张卡做了什么、跑了哪些测试 |
+| [`docs/gear-catalog/`](docs/gear-catalog/) | 器材目录的字段说明（SCHEMA）和每条参数的出处（REFERENCES） |
+| [`docs/ex-backlog/`](docs/ex-backlog/) | EX 光比的后续设计：布置同步、世光 L-858D 测光表导入草案 |
+| [`docs/handoff-claude-review-2026-10-29.md`](docs/handoff-claude-review-2026-10-29.md) | 交给 Claude 复核的说明（T12、T13） |
+
+设计文档以 Claude 上的在线版为原稿，仓库里的是导出副本。改设计时先改在线版，再重新导出。
+
 ## 开发
 
 ### 代码结构
@@ -209,6 +251,24 @@ python3 tests/e2e_smoke.py                 # 浏览器流程（需要 Playwright
 
 ### 与 Photo-cull 的关系
 Photo-cull 是同一作者的选片工具，和这个工具一样是本机程序。S8 进度看板导出的 `.plan.json` 记录了每一镜的实际拍摄时间段，Photo-cull 读入后可以按镜头自动给照片分组。
+
+## English
+
+**portrait-guidance** is a shoot-planning tool for portrait photographers. It walks you from “what do I want to shoot” to a finished plan: models and looks, a mood board that says what each reference is for, a pose library, a scene-grouped shot list, a top-down lighting layout with beams and relative angles, an auto-built shoot-day timeline, a progress board for the day itself, and a printable plan in Chinese, English, Japanese or Korean.
+
+It runs locally (`python3 server.py`, Python standard library only), stores everything as JSON under `~/Documents/portrait-guidance/`, and needs no account or network. Full design: [docs/design/en.md](docs/design/en.md).
+
+## 日本語
+
+**portrait-guidance** はポートレート撮影の企画ツールです。モデルとルック、参考画像ごとに「何を借りるか」を書くムードボード、ポーズ集、シーン単位のショットリスト、光束と相対角度を表示する俯瞰の配置図、自動で組む撮影日のタイムライン、当日の進行ボードを経て、中国語・英語・日本語・韓国語で印刷できる企画書にまとめます。
+
+ローカルで動き（`python3 server.py`、Python 標準ライブラリのみ）、データは `~/Documents/portrait-guidance/` に JSON で保存されます。アカウントもネット接続も不要です。設計書：[docs/design/ja.md](docs/design/ja.md)
+
+## 한국어
+
+**portrait-guidance**는 인물 사진가를 위한 촬영 기획 도구입니다. 모델과 룩, 참고 이미지마다 무엇을 참고할지 적는 무드보드, 포즈 라이브러리, 장면별 샷 리스트, 광속과 상대 각도를 보여 주는 부감 배치도, 자동으로 짜는 촬영일 타임라인, 당일 진행 보드를 거쳐 중국어·영어·일본어·한국어로 인쇄할 수 있는 기획안을 만듭니다.
+
+로컬에서 실행되고(`python3 server.py`, Python 표준 라이브러리만 사용) 데이터는 `~/Documents/portrait-guidance/`에 JSON으로 저장됩니다. 계정이나 인터넷 연결이 필요 없습니다. 설계 문서: [docs/design/ko.md](docs/design/ko.md)
 
 ---
 
