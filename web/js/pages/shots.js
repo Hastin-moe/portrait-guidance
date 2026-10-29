@@ -338,41 +338,45 @@ function drawer(ctx, s, k) {
 
   const refs = s.refs || [];
   const ref = refs[st.refIdx];
+  const moodRef = ref ? M.moodByFile(p, ref) : null;
+  const refAsp = moodRef ? M.moodAspectLabels(moodRef.aspects, t) : [];
   const refBox = h("div.refstrip", ref ? h("img", { src: fileUrl(ref), alt: "" }) : t("shots.noRefLong"),
     h("div.nav",
       refs.length > 1 ? h("button.sm", { onclick: () => { st.refIdx = (st.refIdx - 1 + refs.length) % refs.length; ctx.rerender(); } }, "‹") : null,
       refs.length > 1 ? h("button.sm", { onclick: () => { st.refIdx = (st.refIdx + 1) % refs.length; ctx.rerender(); } }, "›") : null));
-  const refActs = h("div.row.wrap", { style: { marginTop: "6px" } },
-    h("span.small.mut", refs.length ? `${st.refIdx + 1} / ${refs.length}` : ""), h("span.spacer"),
-    h("button.sm", { disabled: ro || null, onclick: async () => {
-      const pose = poseById(s.poseId);
-      const cues = pose ? [pose.cues?.weight, pose.cues?.hands, pose.cues?.gaze].filter(Boolean).join("；") : "";
-      const items = await openRefPicker({
-        allowMood: true, multiple: true,
-        size: s.size ? t("size." + s.size) : "",
-        poseName: pose?.name || "", poseCues: cues,
-      });
-      if (!items?.length) return;
-      // 镜头 refs 仍存文件名（兼容旧项目）；来源写在同源情绪板项上（搜索/AI 时同步落一条）
-      const files = [];
-      commit(q => {
-        const shot = q.shots.find(x => x.id === s.id);
-        for (const it of items) {
-          files.push(it.file);
-          if (it.source && it.source !== "own" && it.source !== "upload" && it.source !== "paste") {
-            if (!q.mood.some(m => m.file === it.file)) {
-              q.mood.push({
-                id: M.uid(), file: it.file, note: "", tags: [],
-                source: it.source, url: it.url || "",
-                x: 4 + Math.random() * 60, y: 4 + Math.random() * 50,
-              });
+  const refActs = h("div",
+    h("div.row.wrap", { style: { marginTop: "6px" } },
+      h("span.small.mut", refs.length ? `${st.refIdx + 1} / ${refs.length}` : ""), h("span.spacer"),
+      h("button.sm", { disabled: ro || null, onclick: async () => {
+        const pose = poseById(s.poseId);
+        const cues = pose ? [pose.cues?.weight, pose.cues?.hands, pose.cues?.gaze].filter(Boolean).join("；") : "";
+        const items = await openRefPicker({
+          allowMood: true, multiple: true,
+          size: s.size ? t("size." + s.size) : "",
+          poseName: pose?.name || "", poseCues: cues,
+        });
+        if (!items?.length) return;
+        const files = [];
+        commit(q => {
+          const shot = q.shots.find(x => x.id === s.id);
+          for (const it of items) {
+            files.push(it.file);
+            if (it.source && it.source !== "own" && it.source !== "upload" && it.source !== "paste") {
+              if (!q.mood.some(m => m.file === it.file)) {
+                q.mood.push(M.normalizeMoodItem({
+                  id: M.uid(), file: it.file, note: "", tags: [], aspects: [],
+                  source: it.source, url: it.url || "",
+                  x: 4 + Math.random() * 60, y: 4 + Math.random() * 50,
+                }));
+              }
             }
           }
-        }
-        shot.refs = [...new Set([...(shot.refs || []), ...files])];
-      });
-    } }, t("ref.add")),
-    ref && !ro ? h("button.sm.ghost", { title: t("common.remove"), onclick: () => upd({ refs: refs.filter(x => x !== ref) }) }, "×") : null);
+          shot.refs = [...new Set([...(shot.refs || []), ...files])];
+        });
+      } }, t("ref.add")),
+      ref && !ro ? h("button.sm.ghost", { title: t("common.remove"), onclick: () => upd({ refs: refs.filter(x => x !== ref) }) }, "×") : null),
+    refAsp.length ? h("p.small", { style: { marginTop: "6px" } }, t("mood.borrowLine", { list: refAsp.join("、") })) : null,
+    moodRef?.note ? h("p.small.mut", moodRef.note) : null);
 
   // ⑤ 机位与布光缩略图：只高亮本镜机位和用到的灯
   const setup = M.setupById(p, r.setupId);

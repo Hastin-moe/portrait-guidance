@@ -75,11 +75,11 @@ export function render(ctx) {
       for (const it of items) {
         const id = M.uid();
         if (!first) first = id;
-        q.mood.push({
-          id, file: it.file, note: "", tags: [],
+        q.mood.push(M.normalizeMoodItem({
+          id, file: it.file, note: "", tags: [], aspects: [],
           source: it.source || "", url: it.url || "",
           x: 4 + Math.random() * 60, y: 4 + Math.random() * 50,
-        });
+        }));
       }
     });
     if (first) ctx.openEdit("mood", first);
@@ -89,25 +89,55 @@ export function render(ctx) {
 
   const srcLabel = m => m.source ? t("mood.src." + m.source) : "";
   const openMood = id => ctx.openEdit("mood", id);
+  st.aspect = st.aspect || "";
+  const moodList = st.aspect
+    ? p.mood.filter(m => (m.aspects || []).includes(st.aspect))
+    : p.mood;
+
+  // 说明条：首次展开，收起后记住
+  const HELP_KEY = "pg.moodHelpCollapsed";
+  if (st.moodHelpOpen == null) st.moodHelpOpen = localStorage.getItem(HELP_KEY) !== "1";
+  const moodHelp = h("div.mood-help" + (st.moodHelpOpen ? ".open" : ""),
+    h("div.row", h("b", t("mood.helpTitle")), h("span.spacer"),
+      h("button.sm.ghost", { onclick: () => {
+        st.moodHelpOpen = !st.moodHelpOpen;
+        localStorage.setItem(HELP_KEY, st.moodHelpOpen ? "0" : "1");
+        ctx.rerender();
+      } }, st.moodHelpOpen ? t("mood.helpCollapse") : t("mood.helpExpand"))),
+    st.moodHelpOpen ? h("div.mood-help-body",
+      h("p", t("mood.helpBody")),
+      h("ol.mood-steps",
+        h("li", t("mood.step1")),
+        h("li", t("mood.step2")),
+        h("li", t("mood.step3")))) : null);
+
+  const styleBox = h("div.mood-style",
+    fld(t("mood.style"), h("textarea", {
+      rows: 2, disabled: ro || null, placeholder: t("mood.stylePh"),
+      value: p.overview.moodStyle || "",
+      oninput: e => commit(q => { q.overview.moodStyle = e.target.value; }, { soft: true, group: "moodStyle" }),
+      onchange: () => commit(q => q),
+    })));
+
+  const aspectFilter = h("div.row.wrap", { style: { gap: "6px", marginBottom: "8px" } },
+    h("span.small.mut", t("mood.filterAsp")),
+    h("span.chip" + (!st.aspect ? "" : ".plain"), { onclick: () => { st.aspect = ""; ctx.rerender(); } }, t("mood.aspAll")),
+    ...M.MOOD_ASPECTS.map(a => h("span.chip" + (st.aspect === a ? "" : ".plain"), {
+      onclick: () => { st.aspect = st.aspect === a ? "" : a; ctx.rerender(); },
+    }, t("mood.asp." + a))));
+
   let board;
   if (!p.mood.length) board = null;
+  else if (!moodList.length) board = h("p.mut", t("mood.noMatch"));
   else if (st.view === "grid") {
-    board = h("div.mood", p.mood.map(m => {
-      const cap = [m.note, ...(m.tags || []), srcLabel(m)].filter(Boolean).join(" · ");
-      return h("div.it", {
-        tabindex: 0,
-        onclick: () => openMood(m.id),
-        onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openMood(m.id); } },
-      }, h("img", { src: fileUrl(m.file), alt: m.note || "", loading: "lazy" }),
-        m.source === "ai" ? h("span.ai-badge", "AI") : null,
-        cap ? h("div.cap", cap) : null);
-    }));
+    board = h("div.mood.cards", moodList.map(m => moodGridCard(ctx, m, srcLabel, openMood, ro, p)));
   } else {
     board = h("div.mood.free");
-    for (const m of p.mood) {
+    for (const m of moodList) {
       const it = h("div.it", { style: { left: (m.x ?? 5) + "%", top: (m.y ?? 5) + "%" },
         onclick: e => { if (e.detail === 2) openMood(m.id); } },
-        h("img", { src: fileUrl(m.file), alt: "", draggable: "false" }));
+        h("img", { src: fileUrl(m.file), alt: "", draggable: "false" }),
+        m.source === "ai" ? h("span.ai-badge", "AI") : null);
       it.addEventListener("pointerdown", e => {
         if (e.detail > 1) return;
         const r = board.getBoundingClientRect();
@@ -132,7 +162,9 @@ export function render(ctx) {
   const moodCard = h("div.card",
     h("div.row", h("h3", { style: { margin: 0 } }, t("ov.mood") + ` (${p.mood.length})`), h("span.spacer"),
       seg([["grid", t("ov.grid")], ["free", t("ov.free")]], st.view, v => { st.view = v; ctx.rerender(); })),
-    h("div", { style: { height: "10px" } }), zone, h("div", { style: { height: "10px" } }), board);
+    moodHelp, styleBox, aspectFilter,
+    h("div", { style: { height: "6px" } }), board || null,
+    h("div", { style: { height: "10px" } }), zone);
 
   const panel = h("div",
     h("h4", t("panel.checks")), issuesList(p, M.checks(p).filter(c => c.page === "models"), ctx.go),
@@ -142,6 +174,56 @@ export function render(ctx) {
     main: h("div", h("h2.pt", t("step.models")), h("p.sub", t("models.sub")), peopleCard, moodCard),
     panel,
   };
+}
+
+function moodGridCard(ctx, m, srcLabel, openMood, ro, p) {
+  const usedIn = p.shots.filter(s => (s.refs || []).includes(m.file));
+  const nos = M.shotNumbers(p);
+  const urlOk = /^https?:\/\//i.test(m.url || "");
+  return h("div.mood-card",
+    h("div.mood-card-media", {
+      tabindex: 0,
+      onclick: () => openMood(m.id),
+      onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openMood(m.id); } },
+    },
+      h("img", { src: fileUrl(m.file), alt: m.note || "", loading: "lazy" }),
+      m.source === "ai" ? h("span.ai-badge", "AI") : null),
+    h("div.mood-card-side",
+      fld(t("ov.note"), inp(() => m.note, (q, v) => { q.mood.find(x => x.id === m.id).note = v; }, { placeholder: t("mood.notePh") })),
+      h("div.small.mut", { style: { marginBottom: "4px" } }, t("mood.aspects")),
+      h("div.chips", M.MOOD_ASPECTS.map(a => h("span.chip" + ((m.aspects || []).includes(a) ? "" : ".plain"), {
+        onclick: e => {
+          e.stopPropagation();
+          if (ro) return;
+          commit(q => {
+            const x = q.mood.find(z => z.id === m.id);
+            const arr = x.aspects || (x.aspects = []);
+            const i = arr.indexOf(a);
+            if (i >= 0) arr.splice(i, 1); else arr.push(a);
+          });
+        },
+      }, t("mood.asp." + a)))),
+      h("p.small.mut", [
+        srcLabel(m),
+        urlOk ? h("a", { href: m.url, target: "_blank", rel: "noopener", onclick: e => e.stopPropagation() }, " ↗") : null,
+      ].filter(Boolean)),
+      h("div.row.wrap", { style: { gap: "4px", marginTop: "4px" } },
+        h("span.small.mut", t("ov.usedIn") + "："),
+        usedIn.length ? usedIn.map(s => h("span.chip", { onclick: e => { e.stopPropagation(); ctx.go("shots", { focus: s.id }); } }, nos.get(s.id))) : h("span.small.mut", "—"),
+        h("button.sm", {
+          disabled: !p.shots.length || ro || null,
+          onclick: e => {
+            e.stopPropagation();
+            menu(e.currentTarget,
+              M.orderedShots(p).map(s => ({ value: s.id, label: nos.get(s.id) })),
+              { onPick: id2 => commit(q => {
+                const s = q.shots.find(x => x.id === id2);
+                s.refs = [...new Set([...(s.refs || []), m.file])];
+              }) });
+          },
+        }, "＋ " + t("ov.setRef"))),
+      h("button.sm.ghost", { onclick: e => { e.stopPropagation(); openMood(m.id); } }, t("mood.openEdit")),
+    ));
 }
 
 function renderPersonEdit(ctx, id) {
@@ -301,6 +383,7 @@ function renderMoodEdit(ctx, id) {
   const p = S.project, ro = readonly();
   const m = p.mood.find(x => x.id === id);
   if (!m) { ctx.closeEdit(); return render(ctx); }
+  M.normalizeMoodItem(m);
   const list = p.mood;
   const idx = list.findIndex(x => x.id === id);
   const shotNos = M.shotNumbers(p);
@@ -309,8 +392,21 @@ function renderMoodEdit(ctx, id) {
 
   const body = editForm([
     h("img", { src: fileUrl(m.file), style: { width: "100%", maxWidth: "420px", borderRadius: "8px" }, alt: "" }),
-    fld(t("ov.note"), inp(() => m.note, (q, v) => { q.mood.find(x => x.id === m.id).note = v; })),
-    fld(t("ov.tags"), tagsInput([...m.tags], v => commit(q => { q.mood.find(x => x.id === m.id).tags = v; }), t("ov.tagsPh"))),
+    fld(t("ov.note"), inp(() => m.note, (q, v) => { q.mood.find(x => x.id === m.id).note = v; }, { placeholder: t("mood.notePh") })),
+    h("h4", t("mood.aspects")),
+    h("p.small.mut", t("mood.aspectsHelp")),
+    h("div.chips", M.MOOD_ASPECTS.map(a => h("span.chip" + ((m.aspects || []).includes(a) ? "" : ".plain"), {
+      onclick: () => {
+        if (ro) return;
+        commit(q => {
+          const x = q.mood.find(z => z.id === m.id);
+          const arr = x.aspects || (x.aspects = []);
+          const i = arr.indexOf(a);
+          if (i >= 0) arr.splice(i, 1); else arr.push(a);
+        });
+      },
+    }, t("mood.asp." + a)))),
+    fld(t("ov.tags"), tagsInput([...(m.tags || [])], v => commit(q => { q.mood.find(x => x.id === m.id).tags = v; }), t("ov.tagsPh"))),
     fld(t("mood.source"), h("select", {
       disabled: ro || null,
       onchange: e => commit(q => { q.mood.find(x => x.id === m.id).source = e.target.value; }),
@@ -335,10 +431,12 @@ function renderMoodEdit(ctx, id) {
     body,
   });
 
+  const aspTxt = M.moodAspectLabels(m.aspects, t).join("、");
   const panel = h("div",
     h("h4", t("edit.summary")),
     h("img", { src: fileUrl(m.file), style: { width: "100%", borderRadius: "8px" }, alt: "" }),
     h("p.small.mut", m.note || "—"),
+    aspTxt ? h("p.small", t("mood.borrowLine", { list: aspTxt })) : null,
     h("h4", t("ov.usedIn")),
     usedIn.length ? h("div.chips", usedIn.map(s => h("span.chip", shotNos.get(s.id)))) : h("p.small.mut", t("ov.notUsed")));
 

@@ -105,12 +105,10 @@ export function normalize(p) {
   p.schema = SCHEMA;
   p.name = p.name || "";
   p.status = p.status || "draft";                 // draft | pending | final
-  p.overview = d(p.overview, { theme: "", keywords: [], client: "", purpose: "" });
+  p.overview = d(p.overview, { theme: "", keywords: [], client: "", purpose: "", moodStyle: "" });
+  if (p.overview.moodStyle == null) p.overview.moodStyle = "";
   p.mood = Array.isArray(p.mood) ? p.mood : [];
-  for (const m of p.mood) {
-    if (m.source == null) m.source = "";
-    if (m.url == null) m.url = "";
-  }
+  for (const m of p.mood) normalizeMoodItem(m);
   p.time = d(p.time, { date: "", start: "09:00", end: "17:00", venueFrom: "", venueTo: "", makeupMin: 60, setupMin: 30, bufferMin: 10, timezone: "Asia/Shanghai" });
   if (!p.time.timezone) p.time.timezone = "Asia/Shanghai";
   p.people = Array.isArray(p.people) ? p.people : [];
@@ -283,6 +281,33 @@ export function allLooks(p) {
   return out;
 }
 export const lookById = (p, id) => allLooks(p).find(l => l.id === id);
+
+// ---------- 情绪板（T20） ----------
+/** 固定七个借鉴点 */
+export const MOOD_ASPECTS = ["light", "tone", "comp", "wardrobe", "pose", "makeup", "scene"];
+
+export function normalizeMoodItem(m) {
+  if (!m || typeof m !== "object") return m;
+  if (!m.id) m.id = uid();
+  if (m.note == null) m.note = "";
+  if (!Array.isArray(m.tags)) m.tags = [];
+  if (!Array.isArray(m.aspects)) m.aspects = [];
+  m.aspects = m.aspects.filter(a => MOOD_ASPECTS.includes(a));
+  if (m.source == null) m.source = "";
+  if (m.url == null) m.url = "";
+  if (m.x == null) m.x = 5;
+  if (m.y == null) m.y = 5;
+  if (m.file == null) m.file = "";
+  return m;
+}
+
+export function moodByFile(p, file) {
+  return (p.mood || []).find(m => m.file === file) || null;
+}
+
+export function moodAspectLabels(aspects, tFn) {
+  return (aspects || []).filter(a => MOOD_ASPECTS.includes(a)).map(a => tFn("mood.asp." + a));
+}
 
 // ---------- 动作库（T21） ----------
 export const POSE_DIMS = ["mood", "stance", "focus", "prop", "scene"];

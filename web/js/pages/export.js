@@ -55,11 +55,16 @@ export function buildDoc(p, L, o) {
       h("table", h("tr", h("th", T("ov.keywords")), h("td", p.overview.keywords.join("、") || "—")),
         p.overview.client ? h("tr", h("th", T("ov.client")), h("td", p.overview.client)) : null,
         p.overview.purpose ? h("tr", h("th", T("ov.purpose")), h("td", p.overview.purpose)) : null),
+      p.overview.moodStyle ? h("p", { style: { whiteSpace: "pre-wrap", marginTop: "10px" } },
+        h("b", T("mood.style") + "："), p.overview.moodStyle) : null,
       p.mood.length ? h("div.moodgrid", p.mood.slice(0, 16).map(m => {
         const src = m.source ? T("mood.src." + m.source) : "";
+        const asp = M.moodAspectLabels(m.aspects, T).join("、");
         return h("div", { style: { textAlign: "center" } },
           h("img", { src: fileUrl(m.file), alt: m.note || "" }),
-          src ? h("div", { style: { fontSize: "11px", color: "#74726c", marginTop: "4px" } }, src) : null);
+          m.note ? h("div", { style: { fontSize: "11px", marginTop: "4px" } }, m.note) : null,
+          asp ? h("div", { style: { fontSize: "11px", color: "#74726c" } }, T("mood.borrowLine", { list: asp })) : null,
+          src ? h("div", { style: { fontSize: "11px", color: "#74726c", marginTop: "2px" } }, src) : null);
       })) : null));
   }
   if (sec.schedule !== false && p.shots.length) {

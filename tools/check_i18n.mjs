@@ -33,6 +33,7 @@ const DYN = {
   "model.lookSrc.": ["own", "rent", "studio", "brand"],
   "model.lookSt.": ["todo", "ready", "onsite"],
   "pose.dim.": ["mood", "stance", "focus", "prop", "scene"],
+  "mood.asp.": ["light", "tone", "comp", "wardrobe", "pose", "makeup", "scene"],
   "prog.col": ["Planned", "Shooting", "Done", "Skipped"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
   "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],

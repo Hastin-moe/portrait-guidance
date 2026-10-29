@@ -583,6 +583,16 @@ test("T23 display coords, 15° snap, shelf side and key names", () => {
   assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
 });
 
+test("T20 mood aspects normalize and labels", () => {
+  const p = M.normalize({ overview: {}, mood: [{ id: "m1", file: "a.jpg", note: "x", aspects: ["light", "nope", "tone"] }] });
+  assert.equal(p.overview.moodStyle, "");
+  assert.deepEqual(p.mood[0].aspects, ["light", "tone"]);
+  assert.equal(M.moodByFile(p, "a.jpg")?.id, "m1");
+  assert.deepEqual(M.MOOD_ASPECTS.length, 7);
+  const labels = M.moodAspectLabels(["light", "tone"], k => ({ "mood.asp.light": "光线", "mood.asp.tone": "色调" })[k]);
+  assert.deepEqual(labels, ["光线", "色调"]);
+});
+
 test("T21 pose normalize, cover, dims filter", () => {
   const old = M.normalizePose({ id: "p1", name: "回眸", image: "a.jpg", imageSource: "ai", tags: ["情绪"], cues: { weight: "x" } });
   assert.equal(old.images.length, 1);

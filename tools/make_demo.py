@@ -42,16 +42,18 @@ def main():
         files.append(name)
     looks = [{"id": "lk-mia-1", "name": "白衬衫"}, {"id": "lk-mia-2", "name": "米色针织"}]
     p.update({
-        "overview": {"theme": "上午的窗光落在室内，人物安静、松弛，画面低饱和、偏暖。", "keywords": ["窗光", "柔和", "低饱和"], "client": "", "purpose": "作品集"},
+        "overview": {"theme": "上午的窗光落在室内，人物安静、松弛，画面低饱和、偏暖。", "keywords": ["窗光", "柔和", "低饱和"], "client": "", "purpose": "作品集",
+                     "moodStyle": "低饱和窗光，暗部克制，肤色偏暖；动作松弛、不摆拍。"},
         "mood": [
-            {"id": f"m{i}", "file": f, "note": n, "tags": [], "source": src, "url": url,
+            {"id": f"m{i}", "file": f, "note": n, "tags": [], "aspects": asp, "source": src, "url": url,
              "x": 5 + 15 * i, "y": 10 + 8 * (i % 3)}
-            for i, (f, n, src, url) in enumerate(zip(
+            for i, (f, n, src, url, asp) in enumerate(zip(
                 files,
-                ["窗边逆光", "冷调对比", "暖色肤色", "暗部层次", "柔和高光", "绿植点缀"],
+                ["窗光从左后方来，暗部别补", "冷调对比，肤色保留一点暖", "暖色肤色，半身构图", "暗部层次，少补光", "柔和高光，妆发干净", "绿植点缀场景"],
                 ["x", "xhs", "web", "own", "ai", ""],
                 ["https://x.com/example/status/1", "https://www.xiaohongshu.com/explore/abc",
                  "https://example.com/ref", "", "", ""],
+                [["light", "tone"], ["tone", "comp"], ["tone", "makeup"], ["light"], ["light", "makeup"], ["scene", "wardrobe"]],
             ))
         ],
         "time": {"date": "2026-11-08", "start": "10:00", "end": "13:00", "timezone": "Asia/Shanghai",
