@@ -152,6 +152,13 @@ export function normalize(p) {
     if (e.luxNote == null) e.luxNote = "";
     if (e.luxMeter == null) e.luxMeter = "";
     if (e.faceFstop == null) e.faceFstop = "";
+    // T23 / Q7：灯位中心高人工后填；俯仰向下为负；光效附件
+    if (e.heightM == null) e.heightM = "";
+    if (e.pitchDeg == null) e.pitchDeg = 0;
+    if (e.honeycombDeg == null) e.honeycombDeg = "";
+    if (e.diffusionLayers == null) e.diffusionLayers = 0;
+    if (e.gel == null) e.gel = "";
+    if (e.barnDoors == null) e.barnDoors = false;
   };
   for (const e of p.layout.base) normLightLux(e);
   for (const s of p.layout.setups) for (const e of s.elements) normLightLux(e);
@@ -571,6 +578,8 @@ export function newElement(kind, x, y) {
   if (size) [e.w, e.h] = size;
   if (kind === "light") Object.assign(e, {
     beam: 60, modifier: "", modifierRef: "", power: "", ref: "",
+    heightM: "", pitchDeg: 0,
+    honeycombDeg: "", diffusionLayers: 0, gel: "", barnDoors: false,
     // 实测照度（lux）：厂商标称另见 catalogs；此处留给现场测光录入
     exitLux: "", faceLux: "", faceFstop: "", luxNote: "", luxMeter: "",
   });
@@ -841,4 +850,107 @@ export function defaultAiPrompt(project, { size = "", poseName = "", poseCues = 
   if (poseName) parts.push(poseName);
   if (poseCues) parts.push(poseCues);
   return parts.filter(Boolean).join("。");
+}
+
+// ---------- T23 / Q3：棚左下角显示系 + 15° 档 ----------
+/** 取最近的 15° 档（输入用） */
+export function snapDeg15(deg) {
+  const n = Number(deg);
+  if (!isFinite(n)) return 0;
+  const s = Math.round(n / 15) * 15;
+  return ((s % 360) + 360) % 360;
+}
+
+/** 相对夹角显示：四舍五入到最近 15°，落到 (−180, 180] */
+export function roundRelDeg15(deg) {
+  const n = Number(deg);
+  if (!isFinite(n)) return 0;
+  let s = Math.round(n / 15) * 15;
+  while (s > 180) s -= 360;
+  while (s <= -180) s += 360;
+  return s;
+}
+
+/**
+ * 存储系 → 显示系（棚左下角原点，Y 向上；rot 0°=+X、逆时针）
+ * 存储系：y 向下，rot 顺时针（屏幕）
+ */
+export function toDisplayXY(venue, x, y) {
+  const d = Number(venue?.d) || 0;
+  return { x: Number(x) || 0, y: d - (Number(y) || 0) };
+}
+export function fromDisplayXY(venue, x, y) {
+  const d = Number(venue?.d) || 0;
+  return { x: Number(x) || 0, y: d - (Number(y) || 0) };
+}
+export function toDisplayRot(rot) {
+  return ((360 - (Number(rot) || 0)) % 360 + 360) % 360;
+}
+export function fromDisplayRot(rot) {
+  return ((360 - (Number(rot) || 0)) % 360 + 360) % 360;
+}
+
+/** 棚坐标左右：目标相对被摄者 X（显示系）更小为左 */
+export function shelfSide(sx, sy, tx, ty) {
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.abs(dx) < 1e-6) return dy > 0 ? "back" : dy < 0 ? "front" : "same";
+  return dx < 0 ? "left" : "right";
+}
+
+/** 棚坐标方位角（显示系）：从被摄者指向目标，0°=+X 逆时针，再取 15° 档 */
+export function shelfAzimuth15(sx, sy, tx, ty) {
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.hypot(dx, dy) < 1e-9) return 0;
+  let deg = Math.atan2(dy, dx) * 180 / Math.PI; // (−180, 180]
+  if (deg < 0) deg += 360;
+  return snapDeg15(deg);
+}
+
+/** 光位名：按相对被摄者朝向的 |α|（已 15° 档） */
+export function lightKeyName(absAlpha15) {
+  const a = Math.abs(Number(absAlpha15) || 0);
+  if (a <= 0) return "front";
+  if (a <= 30) return "shortFront";
+  if (a === 45) return "rembrandt";
+  if (a <= 90) return "side";
+  if (a <= 135) return "sideBack";
+  return "back";
+}
+
+/** 向量相对朝向的有符号夹角（显示系），再 round 到 15° */
+export function relAngleToHeading15(sx, sy, headingDeg, tx, ty) {
+  const th = (Number(headingDeg) || 0) * Math.PI / 180;
+  const fx = Math.cos(th), fy = Math.sin(th);
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.hypot(dx, dy) < 1e-9) return 0;
+  const raw = Math.atan2(fx * dy - fy * dx, fx * dx + fy * dy) * 180 / Math.PI;
+  return roundRelDeg15(raw);
+}
+
+/** 灯水平朝向对准被摄者：显示系 aim，再换回存储 rot，并取 15° 档 */
+export function aimRotStorageToward(venue, light, subject) {
+  const L = toDisplayXY(venue, light.x, light.y);
+  const S = toDisplayXY(venue, subject.x, subject.y);
+  const az = shelfAzimuth15(L.x, L.y, S.x, S.y); // 从灯指向被摄者
+  return fromDisplayRot(az);
+}
+
+/** 解析当前被摄者（站位 mark 留给 T19；现回退 person / ex.subjectId） */
+export function resolveSubject(p, setup, preferredId) {
+  const els = [...(setup?.elements || [])];
+  if (preferredId) {
+    const hit = els.find(e => e.id === preferredId) || p.layout.base.find(e => e.id === preferredId);
+    if (hit) return hit;
+  }
+  const sid = setup?.ex?.subjectId;
+  if (sid) {
+    const byRef = els.find(e => e.kind === "person" && e.ref === sid);
+    if (byRef) return byRef;
+    const byId = els.find(e => e.id === sid);
+    if (byId) return byId;
+  }
+  return els.find(e => e.kind === "person") || null;
 }

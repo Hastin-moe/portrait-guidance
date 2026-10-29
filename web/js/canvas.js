@@ -77,18 +77,21 @@ export function renderLayout(p, setupId, opts = {}) {
   // 先画光束和视角，再画实体，避免遮挡
   for (const { e } of els) {
     if (e.kind === "light") {
-      layer.append(s("path", { d: wedge(e.x, e.y, e.rot || 0, Number(e.beam) || 60, 1.6), fill: e.ref ? C.acc : C.warn, opacity: dim(e.id) ? 0.04 : 0.13, "pointer-events": "none" }));
-      // 灯前修饰器平面投影（沿光轴）
+      // T23：修饰器画在灯前；光束从修饰器开口发出（无修饰器则从灯心）
       const mod = e.modifierRef && M.gearByKey(p, e.modifierRef);
+      const rad = (e.rot || 0) * Math.PI / 180;
+      let bx = e.x, by = e.y;
       if (mod) {
         const { depth, width } = M.modifierSizeM(mod);
-        const rad = (e.rot || 0) * Math.PI / 180;
         const cx = e.x + Math.cos(rad) * (depth / 2 + 0.22);
         const cy = e.y + Math.sin(rad) * (depth / 2 + 0.22);
-        const g = s("g", { transform: `translate(${cx} ${cy}) rotate(${e.rot || 0})`, "pointer-events": "none", opacity: dim(e.id) ? 0.25 : 0.85 });
-        g.append(s("rect", { x: -depth / 2, y: -width / 2, width: depth, height: width, fill: "none", stroke: C.acc, "stroke-width": 0.03, "stroke-dasharray": "0.06 0.04" }));
+        bx = e.x + Math.cos(rad) * (depth + 0.22);
+        by = e.y + Math.sin(rad) * (depth + 0.22);
+        const g = s("g", { transform: `translate(${cx} ${cy}) rotate(${e.rot || 0})`, "pointer-events": "none", opacity: dim(e.id) ? 0.25 : 0.9 });
+        g.append(s("rect", { x: -depth / 2, y: -width / 2, width: depth, height: width, fill: C.panel, stroke: C.acc, "stroke-width": 0.035 }));
         layer.append(g);
       }
+      layer.append(s("path", { d: wedge(bx, by, e.rot || 0, Number(e.beam) || 60, 1.6), fill: e.ref ? C.acc : C.warn, opacity: dim(e.id) ? 0.04 : 0.13, "pointer-events": "none" }));
     }
     if (e.kind === "camera") layer.append(s("path", { d: wedge(e.x, e.y, e.rot || 0, M.fovDeg(e.focal), 2.4), fill: "none", stroke: C.fg, "stroke-width": 0.02, "stroke-dasharray": "0.08 0.06", opacity: dim(e.id) ? 0.15 : 0.7, "pointer-events": "none" }));
   }

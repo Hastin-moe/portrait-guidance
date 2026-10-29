@@ -563,3 +563,22 @@ test("T22 ref search URLs and AI cost helpers", () => {
   assert.equal(M.aiImageCostUsd(99), Math.round(8 * M.AI_IMAGE_USD * 100) / 100);
   assert.match(M.defaultAiPrompt(p, { size: "半身", poseName: "回眸" }), /窗光人像/);
 });
+
+test("T23 display coords, 15° snap, shelf side and key names", () => {
+  const venue = { w: 8, d: 6 };
+  assert.deepEqual(M.toDisplayXY(venue, 2, 1), { x: 2, y: 5 });
+  assert.deepEqual(M.fromDisplayXY(venue, 2, 5), { x: 2, y: 1 });
+  assert.equal(M.toDisplayRot(90), 270);
+  assert.equal(M.fromDisplayRot(270), 90);
+  assert.equal(M.snapDeg15(50), 45);
+  assert.equal(M.snapDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(38), 45);
+  assert.equal(M.shelfSide(4, 3, 2, 3), "left");
+  assert.equal(M.shelfSide(4, 3, 6, 3), "right");
+  assert.equal(M.lightKeyName(45), "rembrandt");
+  assert.equal(M.lightKeyName(0), "front");
+  const light = { x: 1, y: 3 }, sub = { x: 4, y: 3 };
+  // display: light (1,3), subject (4,3) → aim +X → display rot 0 → storage 0
+  assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
+});
