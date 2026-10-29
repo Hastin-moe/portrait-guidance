@@ -245,7 +245,7 @@ function renderPersonEdit(ctx, id) {
     body = editForm([
       h("div.grid2", fld(t("time.name"), set("name")), fld(t("model.alias"), set("alias"))),
       h("div.grid2", fld(t("model.gender"), set("gender")), fld(t("model.ageBand"), set("ageBand"))),
-      h("div.grid2", fld(t("time.height") + " (cm)", set("height", "number")), fld(t("model.weight"), set("weight", "number"))),
+      h("div.grid2", fld(t("time.height"), set("height", "number")), fld(t("model.weight"), set("weight", "number"))),
       h("div.grid2", fld(t("model.bust"), set("bust")), fld(t("model.waist"), set("waist"))),
       h("div.grid2", fld(t("model.hips"), set("hips")), fld(t("time.size"), set("size"))),
       h("div.grid2", fld(t("model.topSize"), set("topSize")), fld(t("model.pantSize"), set("pantSize"))),
@@ -435,9 +435,9 @@ function lookEditor(person, l, i, lookAt, ro, p) {
       fld(t("model.lookSource"), sel(srcOpts, l.source || "", v => commit(q => { lookAt(q, i).source = v; }), { allowEmpty: false })),
       fld(t("model.lookStatus"), sel(stOpts, l.status || "todo", v => commit(q => { lookAt(q, i).status = v; }), { allowEmpty: false }))),
     fld(t("model.lookOwner"), inp(() => l.owner, (q, v) => { lookAt(q, i).owner = v; })),
-    h("h4", t("model.lookItems"), h("span", h("button.sm", { disabled: ro || null, onclick: () => commit(q => {
+    h("div.sec-head", h("h4", t("model.lookItems")), h("button.sm", { disabled: ro || null, onclick: () => commit(q => {
       lookAt(q, i).items.push(M.blankLookItem("top"));
-    }) }, "＋"))),
+    }) }, "＋ " + t("model.addItem"))),
     (l.items || []).map((it, j) => h("div.grid2", { style: { marginBottom: "6px" } },
       fld(t("model.part"), sel(M.LOOK_PARTS.map(pt => [pt, t("model.part." + pt)]), it.part, v => commit(q => { lookAt(q, i).items[j].part = v; }), { allowEmpty: false })),
       fld(t("model.color"), inp(() => it.color, (q, v) => { lookAt(q, i).items[j].color = v; })),
