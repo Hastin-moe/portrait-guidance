@@ -57,8 +57,11 @@ def main():
         "time": {"date": "2026-11-08", "start": "10:00", "end": "13:00", "timezone": "Asia/Shanghai",
                  "venueFrom": "09:00", "venueTo": "13:30", "makeupMin": 60, "setupMin": 30, "bufferMin": 10},
         "people": [
-            {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00", "looks": looks},
-            {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
+            {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00",
+             "roleName": "窗边独白", "rolePitch": "安静、被光吸引的人", "roleTraits": ["安静", "清冷"],
+             "looks": looks},
+            {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "",
+             "roleName": "来访者", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
             {"id": "mk", "kind": "staff", "name": "小唐", "role": "化妆", "contact": ""},
         ],
         "venue": {"name": "白日摄影棚 2 号厅", "address": "", "contact": "", "indoor": True, "w": 8, "d": 6, "h": 3.2, "photos": [files[0]],

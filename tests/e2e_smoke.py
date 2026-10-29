@@ -50,9 +50,29 @@ def main(shots_dir=None):
         pg.locator(".edit-form input").first.fill("林夏")
         pg.keyboard.press("Tab")
         pg.wait_for_timeout(200)
+        # T18 档案标签：工作照 / 服装 / 角色可点开（付费仍占位）
+        tabs = pg.locator(".edit-tabs button.edit-tab")
+        assert tabs.count() == 5
+        labels = [tabs.nth(i).inner_text() for i in range(5)]
+        assert labels == ["基本信息", "工作照", "服装", "角色", "付费选项"], labels
+        tabs.nth(1).click()
+        pg.wait_for_timeout(120)
+        assert "工作照" in pg.locator(".edit-body").inner_text()
+        tabs.nth(2).click()
+        pg.wait_for_timeout(120)
+        assert pg.get_by_role("button", name="＋ 添加套组").count() >= 1
+        tabs.nth(3).click()
+        pg.wait_for_timeout(120)
+        assert pg.locator(".edit-form").count() >= 1
+        tabs.nth(4).click()
+        pg.wait_for_timeout(120)
+        assert "T19" in pg.locator(".edit-body").inner_text()
+        tabs.nth(2).click()
+        pg.wait_for_timeout(120)
         pg.click("button.edit-back")
         pg.wait_for_selector("main.page h2.pt:has-text('模特与样图')")
         assert "林夏" in pg.locator(".pcard").first.inner_text()
+        assert pg.locator(".pcard-warn").count() >= 1, "未填身高时列表角标提醒"
         pg.set_viewport_size({"width": 1440, "height": 900})
         pg.get_by_role("button", name="＋ 添加模特").click()
         pg.wait_for_selector(".edit-layer")

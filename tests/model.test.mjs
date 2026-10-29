@@ -583,6 +583,43 @@ test("T23 display coords, 15° snap, shelf side and key names", () => {
   assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
 });
 
+test("T18 model profile: normalize looks/photos/role, cover, incomplete", () => {
+  const bare = { id: "m", kind: "model", name: "", height: "" };
+  M.normalizeModel(bare);
+  assert.equal(bare.alias, "");
+  assert.deepEqual(bare.photos, []);
+  assert.equal(bare.roleName, "");
+  assert.equal(bare.paid, false);
+  assert.ok(M.modelProfileIncomplete(bare));
+  bare.name = "林夏";
+  bare.height = 168;
+  bare.looks = [{ name: "" }];
+  M.normalizeModel(bare);
+  assert.ok(M.modelProfileIncomplete(bare));
+  bare.looks[0].name = "白衬衫";
+  assert.equal(M.modelProfileIncomplete(bare), false);
+  bare.photos = [{ file: "a.jpg", note: null, cover: false }, { file: "b.jpg", cover: true }];
+  M.normalizeModel(bare);
+  assert.equal(bare.photos[0].note, "");
+  assert.equal(M.modelCoverFile(bare), "b.jpg");
+  const look = M.blankLook("套 A");
+  assert.equal(look.status, "todo");
+  assert.deepEqual(look.items, []);
+  look.items.push(M.blankLookItem("shoes"));
+  M.normalizeLook(look);
+  assert.equal(look.items[0].part, "shoes");
+  assert.ok(M.LOOK_PARTS.includes("top"));
+  assert.ok(M.LOOK_SOURCES.includes("rent"));
+  assert.ok(M.LOOK_STATUSES.includes("onsite"));
+  const p = M.blankProject();
+  p.people.push({ id: "old", kind: "model", name: "旧", height: 170, looks: [{ id: "l1", name: "旧造型" }] });
+  M.normalize(p);
+  const m = M.personById(p, "old");
+  assert.equal(m.looks[0].status, "todo");
+  assert.equal(m.alias, "");
+  assert.equal(M.modelCoverFile(m), "");
+});
+
 test("T24 relativeAngles: shelf L/R, 15° display, segment nearest, no elev when height empty", () => {
   const { p, A } = sample();
   // 存储：人物朝上屏 = rot 270 → 显示朝 +Y（后）；灯在人物左侧（X 更小）

@@ -116,7 +116,7 @@ export function normalize(p) {
   p.people = Array.isArray(p.people) ? p.people : [];
   for (const x of p.people) {
     x.kind = x.kind || "model";
-    if (x.kind === "model") x.looks = Array.isArray(x.looks) ? x.looks : [];
+    if (x.kind === "model") normalizeModel(x);
   }
   p.venue = d(p.venue, { libId: "", name: "", address: "", contact: "", indoor: true, w: "", d: "", h: "",
     photos: [], windowDir: "", daylight: "", surfaces: "", power: "", zones: "", gear: [] });
@@ -177,17 +177,104 @@ export function normalize(p) {
   return p;
 }
 
-// ---------- 人员与造型 ----------
+// ---------- 人员与造型（T18 档案字段） ----------
+export const LOOK_PARTS = ["top", "bottom", "outer", "shoes", "acc"];
+export const LOOK_SOURCES = ["", "own", "rent", "studio", "brand"];
+export const LOOK_STATUSES = ["todo", "ready", "onsite"];
+
 export const models = p => p.people.filter(x => x.kind === "model");
 export const staff = p => p.people.filter(x => x.kind === "staff");
 export const personById = (p, id) => p.people.find(x => x.id === id);
 
+export function blankLookItem(part = "top") {
+  return { id: uid(), part, color: "", material: "", note: "" };
+}
+
+export function blankLook(name = "") {
+  return {
+    id: uid(), name: name || "",
+    items: [], source: "", owner: "", status: "todo", photos: [],
+  };
+}
+
+export function normalizeLook(l) {
+  if (!l || typeof l !== "object") return blankLook();
+  if (!l.id) l.id = uid();
+  if (l.name == null) l.name = "";
+  if (!Array.isArray(l.items)) l.items = [];
+  for (const it of l.items) {
+    if (!it.id) it.id = uid();
+    if (!LOOK_PARTS.includes(it.part)) it.part = "top";
+    if (it.color == null) it.color = "";
+    if (it.material == null) it.material = "";
+    if (it.note == null) it.note = "";
+  }
+  if (!LOOK_SOURCES.includes(l.source)) l.source = "";
+  if (l.owner == null) l.owner = "";
+  if (!LOOK_STATUSES.includes(l.status)) l.status = "todo";
+  if (!Array.isArray(l.photos)) l.photos = [];
+  for (const ph of l.photos) {
+    if (ph.note == null) ph.note = "";
+  }
+  return l;
+}
+
+export function normalizeModel(x) {
+  x.looks = Array.isArray(x.looks) ? x.looks.map(normalizeLook) : [];
+  if (x.alias == null) x.alias = "";
+  if (x.gender == null) x.gender = "";
+  if (x.ageBand == null) x.ageBand = "";
+  if (x.weight == null) x.weight = "";
+  if (x.bust == null) x.bust = "";
+  if (x.waist == null) x.waist = "";
+  if (x.hips == null) x.hips = "";
+  if (x.topSize == null) x.topSize = "";
+  if (x.pantSize == null) x.pantSize = "";
+  if (x.shoeSize == null) x.shoeSize = "";
+  if (x.hair == null) x.hair = "";
+  if (x.skin == null) x.skin = "";
+  if (x.features == null) x.features = "";
+  if (x.contact == null) x.contact = "";
+  if (x.note == null) x.note = "";
+  if (!Array.isArray(x.photos)) x.photos = [];
+  for (const ph of x.photos) {
+    if (ph.note == null) ph.note = "";
+    if (ph.cover == null) ph.cover = false;
+  }
+  if (x.roleName == null) x.roleName = "";
+  if (x.rolePitch == null) x.rolePitch = "";
+  if (!Array.isArray(x.roleTraits)) x.roleTraits = [];
+  if (x.roleRelations == null) x.roleRelations = "";
+  if (x.roleScenes == null) x.roleScenes = "";
+  if (x.roleNotes == null) x.roleNotes = "";
+  if (x.paid == null) x.paid = false;
+  return x;
+}
+
 export function setLookCount(person, n, namer = i => String(i + 1)) {
   n = Math.max(0, Math.min(20, Math.floor(Number(n) || 0)));
   const looks = person.looks || (person.looks = []);
-  while (looks.length < n) looks.push({ id: uid(), name: namer(looks.length) });
+  while (looks.length < n) looks.push(blankLook(namer(looks.length)));
   looks.length = n;
+  looks.forEach(normalizeLook);
   return person;
+}
+
+/** 工作照封面文件名；无则空 */
+export function modelCoverFile(m) {
+  const photos = m?.photos || [];
+  const hit = photos.find(ph => ph.cover && ph.file) || photos.find(ph => ph.file);
+  return hit?.file || "";
+}
+
+/** 列表角标：姓名 / 身高 / 服装套组名未齐 */
+export function modelProfileIncomplete(m) {
+  if (!m) return true;
+  if (!(m.name || "").trim()) return true;
+  if (!(Number(m.height) > 0)) return true;
+  if (!(m.looks || []).length) return true;
+  if ((m.looks || []).some(l => !(l.name || "").trim())) return true;
+  return false;
 }
 
 export function allLooks(p) {

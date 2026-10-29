@@ -1,19 +1,18 @@
-// S3 模特与样图：列表 + T17 二级编辑层（基本信息先迁入；工作照/服装/角色/付费选项留给 T18/T19）
+// S3 模特与样图：列表 + T18 二级档案（基本 / 工作照 / 服装 / 角色；付费 → T19）
 import { h, menu, toast, seg, confirmDlg } from "../ui.js";
 import { t } from "../i18n.js";
 import { S, commit, fileUrl, readonly } from "../store.js";
 import * as M from "../model.js";
-import { inp, fld, tagsInput, issuesList, emptyState } from "./common.js";
+import { inp, fld, tagsInput, issuesList, emptyState, sel } from "./common.js";
 import { editShell, editForm, editPlaceholder } from "../editlayer.js";
 import { openRefPicker } from "../refimages.js";
 
 const SOURCES = ["", "x", "xhs", "web", "ai", "own", "upload", "paste", "pinterest", "google", "huaban"];
-// 标签页：基本信息本卡可编；其余留给 T18/T19（占位文案，不猜字段）
 const PERSON_TABS = [
   { id: "basic", label: "edit.tab.basic" },
-  { id: "photos", label: "edit.tab.photos", later: "edit.later.photos" },
-  { id: "looks", label: "edit.tab.looks", later: "edit.later.looks" },
-  { id: "role", label: "edit.tab.role", later: "edit.later.role" },
+  { id: "photos", label: "edit.tab.photos" },
+  { id: "looks", label: "edit.tab.looks" },
+  { id: "role", label: "edit.tab.role" },
   { id: "pay", label: "edit.tab.pay", later: "edit.later.pay" },
 ];
 
@@ -29,7 +28,10 @@ export function render(ctx) {
   const addPerson = () => {
     const id = M.uid();
     commit(q => {
-      const x = { id, kind: "model", name: t("time.modelN", { n: M.models(q).length + 1 }), height: "", size: "", availFrom: "", availTo: "" };
+      const x = M.normalizeModel({
+        id, kind: "model", name: t("time.modelN", { n: M.models(q).length + 1 }),
+        height: "", size: "", availFrom: "", availTo: "",
+      });
       M.setLookCount(x, 1, i => t("time.lookN", { n: i + 1 }));
       q.people.push(x);
     });
@@ -38,13 +40,25 @@ export function render(ctx) {
 
   const ms = M.models(p);
   const openPerson = id => ctx.openEdit("person", id);
-  const pcard = x => h("div.pcard", {
-    tabindex: 0,
-    onclick: () => openPerson(x.id),
-    onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openPerson(x.id); } },
-  },
-    h("div.nm", x.name || "—"),
-    h("div.meta", [x.height && x.height + " cm", x.size, t("time.looksN", { n: (x.looks || []).length }), x.availTo && t("time.until", { t: x.availTo })].filter(Boolean).join(" · ")));
+  const pcard = x => {
+    const cover = M.modelCoverFile(x);
+    const incomplete = M.modelProfileIncomplete(x);
+    return h("div.pcard", {
+      tabindex: 0,
+      onclick: () => openPerson(x.id),
+      onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openPerson(x.id); } },
+    },
+      cover ? h("img.pcard-cover", { src: fileUrl(cover), alt: "" }) : h("div.pcard-cover.ph", (x.name || "?").slice(0, 1)),
+      incomplete ? h("span.pcard-warn", { title: t("model.incompleteHelp") }, "!") : null,
+      x.paid ? h("span.pcard-paid", t("model.paidBadge")) : null,
+      h("div.nm", x.name || "—", x.alias ? h("span.mut", " · " + x.alias) : null),
+      x.roleName ? h("div.role", x.roleName) : null,
+      h("div.meta", [
+        x.height && x.height + " cm",
+        t("time.looksN", { n: (x.looks || []).length }),
+        x.availTo && t("time.until", { t: x.availTo }),
+      ].filter(Boolean).join(" · ")));
+  };
 
   const peopleCard = h("div.card",
     h("div.row", h("h3", { style: { margin: 0 } }, t("time.models") + ` (${ms.length})`), h("span.spacer"),
@@ -74,7 +88,6 @@ export function render(ctx) {
     h("button.sm", { disabled: ro || null, onclick: addMoodViaPicker }, "＋ " + t("ref.add")));
 
   const srcLabel = m => m.source ? t("mood.src." + m.source) : "";
-  // t() 缺 key 时仍返回 key 本身；上面够用
   const openMood = id => ctx.openEdit("mood", id);
   let board;
   if (!p.mood.length) board = null;
@@ -143,27 +156,77 @@ function renderPersonEdit(ctx, id) {
 
   const set = (k, type) => inp(() => x[k], (q, v) => { M.personById(q, x.id)[k] = v; }, { type });
   const usedBy = p.shots.filter(s => M.resolveShot(p, s).personIds.includes(x.id)).length + p.scenes.filter(sc => sc.personIds.includes(x.id)).length;
+  const lookAt = (q, i) => M.personById(q, x.id).looks[i];
 
   let body;
   if (tab === "basic") {
     body = editForm([
-      fld(t("time.name"), set("name")),
-      h("div.grid2", fld(t("time.height"), set("height", "number")), fld(t("time.size"), set("size"))),
+      h("div.grid2", fld(t("time.name"), set("name")), fld(t("model.alias"), set("alias"))),
+      h("div.grid2", fld(t("model.gender"), set("gender")), fld(t("model.ageBand"), set("ageBand"))),
+      h("div.grid2", fld(t("time.height") + " (cm)", set("height", "number")), fld(t("model.weight"), set("weight", "number"))),
+      h("div.grid2", fld(t("model.bust"), set("bust")), fld(t("model.waist"), set("waist"))),
+      h("div.grid2", fld(t("model.hips"), set("hips")), fld(t("time.size"), set("size"))),
+      h("div.grid2", fld(t("model.topSize"), set("topSize")), fld(t("model.pantSize"), set("pantSize"))),
+      fld(t("model.shoeSize"), set("shoeSize")),
+      h("div.grid2", fld(t("model.hair"), set("hair")), fld(t("model.skin"), set("skin"))),
+      fld(t("model.features"), set("features")),
+      fld(t("model.contact"), set("contact"), t("model.contactHelp")),
+      fld(t("model.note"), set("note")),
       h("div.grid2", fld(t("time.availFrom"), set("availFrom", "time")), fld(t("time.availTo"), set("availTo", "time"))),
-      h("h4", t("time.looks"), h("span", h("button.sm", { disabled: ro || null, onclick: () => commit(q => { const y = M.personById(q, x.id); M.setLookCount(y, y.looks.length + 1, i => t("time.lookN", { n: i + 1 })); }) }, "＋"))),
-      h("p.small.mut", t("time.looksHelp")),
-      x.looks.map((l, i) => h("div.row", { style: { marginBottom: "4px" } },
-        inp(() => l.name, (q, v) => { M.personById(q, x.id).looks[i].name = v; }),
-        h("button.sm.ghost", { disabled: ro || null, title: t("common.delete"), onclick: async () => {
-          const n = p.shots.filter(s => (s.lookIds || []).includes(l.id)).length + p.scenes.filter(sc => (sc.lookIds || []).includes(l.id)).length;
-          if (n && !await confirmDlg(t("common.deleteTitle"), t("ref.affects", { n }))) return;
-          commit(q => { M.personById(q, x.id).looks.splice(i, 1); });
-        } }, "×"))),
       h("div.row", { style: { marginTop: "14px" } }, h("button.sm.danger", { disabled: ro || null, onclick: async () => {
         if (usedBy && !await confirmDlg(t("common.deleteTitle"), t("ref.affects", { n: usedBy }), { danger: true, ok: t("common.delete") })) return;
         ctx.closeEdit();
         commit(q => { q.people = q.people.filter(y => y.id !== x.id); });
       } }, t("common.delete"))),
+    ]);
+  } else if (tab === "photos") {
+    body = editForm([
+      h("p.small.mut", t("model.photosHelp")),
+      h("button.sm.primary", { disabled: ro || null, onclick: async () => {
+        const items = await openRefPicker({ allowMood: false, multiple: true });
+        if (!items?.length) return;
+        commit(q => {
+          const m = M.personById(q, x.id);
+          const first = !m.photos.length;
+          for (const it of items) m.photos.push({ file: it.file, note: "", cover: first && m.photos.length === 0 });
+          if (first && m.photos[0]) m.photos[0].cover = true;
+        });
+      } }, "＋ " + t("ref.add")),
+      !(x.photos || []).length ? h("p.mut", t("model.noPhotos")) : h("div.photo-grid", x.photos.map((ph, i) => h("div.photo-card",
+        h("img", { src: fileUrl(ph.file), alt: "" }),
+        ph.cover ? h("span.badge", t("model.cover")) : null,
+        fld(t("model.photoNote"), inp(() => ph.note, (q, v) => { M.personById(q, x.id).photos[i].note = v; }, { placeholder: t("model.photoNotePh") })),
+        h("div.row.wrap",
+          h("button.sm", { disabled: ro || ph.cover || null, onclick: () => commit(q => {
+            const m = M.personById(q, x.id);
+            for (const p2 of m.photos) p2.cover = false;
+            m.photos[i].cover = true;
+          }) }, t("model.setCover")),
+          h("button.sm.danger", { disabled: ro || null, onclick: () => commit(q => {
+            const m = M.personById(q, x.id);
+            const was = m.photos[i].cover;
+            m.photos.splice(i, 1);
+            if (was && m.photos[0]) m.photos[0].cover = true;
+          }) }, t("common.delete"))),
+      ))),
+    ]);
+  } else if (tab === "looks") {
+    body = editForm([
+      h("p.small.mut", t("model.looksHelp")),
+      h("div.row", h("button.sm", { disabled: ro || null, onclick: () => commit(q => {
+        const y = M.personById(q, x.id);
+        y.looks.push(M.blankLook(t("time.lookN", { n: y.looks.length + 1 })));
+      }) }, "＋ " + t("model.addLook"))),
+      !(x.looks || []).length ? h("p.mut", t("model.noLooks")) : x.looks.map((l, i) => lookEditor(x, l, i, lookAt, ro, p)),
+    ]);
+  } else if (tab === "role") {
+    body = editForm([
+      fld(t("model.roleName"), set("roleName")),
+      fld(t("model.rolePitch"), set("rolePitch")),
+      fld(t("model.roleTraits"), tagsInput([...(x.roleTraits || [])], v => commit(q => { M.personById(q, x.id).roleTraits = v; }), t("model.roleTraitsPh"))),
+      fld(t("model.roleRelations"), set("roleRelations")),
+      fld(t("model.roleScenes"), set("roleScenes")),
+      fld(t("model.roleNotes"), set("roleNotes")),
     ]);
   } else {
     body = editPlaceholder(t(tabDef.later));
@@ -180,10 +243,13 @@ function renderPersonEdit(ctx, id) {
     body,
   });
 
+  const cover = M.modelCoverFile(x);
   const panel = h("div",
     h("h4", t("edit.summary")),
-    h("p", h("b", x.name || "—")),
-    h("p.small.mut", [x.height && x.height + " cm", x.size, t("time.looksN", { n: (x.looks || []).length })].filter(Boolean).join(" · ") || "—"),
+    cover ? h("img", { src: fileUrl(cover), style: { width: "100%", borderRadius: "8px", marginBottom: "8px" }, alt: "" }) : null,
+    h("p", h("b", x.name || "—"), x.roleName ? h("span.mut", " · " + x.roleName) : null),
+    h("p.small.mut", [x.height && x.height + " cm", t("time.looksN", { n: (x.looks || []).length })].filter(Boolean).join(" · ") || "—"),
+    M.modelProfileIncomplete(x) ? h("p.small", { style: { color: "var(--y)" } }, "▲ " + t("model.incompleteHelp")) : null,
     h("h4", t("edit.usedBy")),
     h("p.small.mut", usedBy ? t("edit.usedByN", { n: usedBy }) : t("ov.notUsed")),
     h("h4", t("panel.checks")),
@@ -192,6 +258,43 @@ function renderPersonEdit(ctx, id) {
   return { main, panel, onKey: e => {
     if (e.key === "Enter" && !e.target.matches("input,textarea,select,button")) { e.preventDefault(); }
   } };
+}
+
+function lookEditor(person, l, i, lookAt, ro, p) {
+  const srcOpts = M.LOOK_SOURCES.map(s => [s, s ? t("model.lookSrc." + s) : "—"]);
+  const stOpts = M.LOOK_STATUSES.map(s => [s, t("model.lookSt." + s)]);
+  return h("div.look-block",
+    h("div.row", h("b", t("model.lookSet") + " " + (i + 1)), h("span.spacer"),
+      h("button.sm.ghost", { disabled: ro || null, title: t("common.delete"), onclick: async () => {
+        const n = p.shots.filter(s => (s.lookIds || []).includes(l.id)).length + p.scenes.filter(sc => (sc.lookIds || []).includes(l.id)).length;
+        if (n && !await confirmDlg(t("common.deleteTitle"), t("ref.affects", { n }))) return;
+        commit(q => { M.personById(q, person.id).looks.splice(i, 1); });
+      } }, "×")),
+    fld(t("model.lookName"), inp(() => l.name, (q, v) => { lookAt(q, i).name = v; })),
+    h("div.grid2",
+      fld(t("model.lookSource"), sel(srcOpts, l.source || "", v => commit(q => { lookAt(q, i).source = v; }), { allowEmpty: false })),
+      fld(t("model.lookStatus"), sel(stOpts, l.status || "todo", v => commit(q => { lookAt(q, i).status = v; }), { allowEmpty: false }))),
+    fld(t("model.lookOwner"), inp(() => l.owner, (q, v) => { lookAt(q, i).owner = v; })),
+    h("h4", t("model.lookItems"), h("span", h("button.sm", { disabled: ro || null, onclick: () => commit(q => {
+      lookAt(q, i).items.push(M.blankLookItem("top"));
+    }) }, "＋"))),
+    (l.items || []).map((it, j) => h("div.grid2", { style: { marginBottom: "6px" } },
+      fld(t("model.part"), sel(M.LOOK_PARTS.map(pt => [pt, t("model.part." + pt)]), it.part, v => commit(q => { lookAt(q, i).items[j].part = v; }), { allowEmpty: false })),
+      fld(t("model.color"), inp(() => it.color, (q, v) => { lookAt(q, i).items[j].color = v; })),
+      fld(t("model.material"), inp(() => it.material, (q, v) => { lookAt(q, i).items[j].material = v; })),
+      h("div.row", fld(t("model.itemNote"), inp(() => it.note, (q, v) => { lookAt(q, i).items[j].note = v; })),
+        h("button.sm.ghost", { disabled: ro || null, onclick: () => commit(q => { lookAt(q, i).items.splice(j, 1); }) }, "×")),
+    )),
+    h("div.row", h("button.sm", { disabled: ro || null, onclick: async () => {
+      const items = await openRefPicker({ allowMood: false, multiple: true });
+      if (!items?.length) return;
+      commit(q => { for (const it of items) lookAt(q, i).photos.push({ file: it.file, note: "" }); });
+    } }, "＋ " + t("model.lookPhotos"))),
+    (l.photos || []).length ? h("div.row.wrap", l.photos.map((ph, pi) => h("div.photo-thumb",
+      h("img", { src: fileUrl(ph.file), alt: "" }),
+      h("button.sm.ghost", { disabled: ro || null, onclick: () => commit(q => { lookAt(q, i).photos.splice(pi, 1); }) }, "×"),
+    ))) : null,
+  );
 }
 
 function renderMoodEdit(ctx, id) {
