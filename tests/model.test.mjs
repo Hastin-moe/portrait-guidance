@@ -582,3 +582,50 @@ test("T23 display coords, 15° snap, shelf side and key names", () => {
   // display: light (1,3), subject (4,3) → aim +X → display rot 0 → storage 0
   assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
 });
+
+test("T24 relativeAngles: shelf L/R, 15° display, segment nearest, no elev when height empty", () => {
+  const { p, A } = sample();
+  // 存储：人物朝上屏 = rot 270 → 显示朝 +Y（后）；灯在人物左侧（X 更小）
+  const person = { ...M.newElement("person", 4, 3), rot: 270, ref: "mia" };
+  const lightL = { ...M.newElement("light", 2, 3), heightM: "" };
+  const lightR = { ...M.newElement("light", 6, 3), heightM: 2.0 };
+  const cam = M.newElement("camera", 4, 5);
+  const backdrop = { ...M.newElement("backdrop", 4, 0.5), w: 3, h: 0.1, rot: 0 };
+  A.elements = [person, lightL, lightR, cam];
+  p.layout.base.push(backdrop);
+  // 往返含边界角
+  for (const r of [0, 90, 359]) assert.equal(M.fromDisplayRot(M.toDisplayRot(r)), r % 360 === 359 ? 359 : r);
+
+  const rel = M.relativeAngles(p, A.id, person.id);
+  assert.equal(rel.subject.id, person.id);
+  const L = rel.lights.find(x => x.lightId === lightL.id);
+  const R = rel.lights.find(x => x.lightId === lightR.id);
+  assert.ok(L && R);
+  assert.equal(L.side, "left"); // 棚坐标：X 更小
+  assert.equal(R.side, "right");
+  assert.equal(L.alphaDeg, 90);
+  assert.equal(L.elevDeg, null); // 灯高空 → 无高度角
+  assert.equal(L.dSlant, null);
+  assert.ok(R.elevDeg != null);
+  assert.ok(R.dSlant != null);
+  assert.equal(M.roundRelDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(38), 45);
+  assert.equal(M.snapDeg15(50), 45);
+  // 线段最近点：人物 (4,3) 到水平背景 y=0.5、x∈[2.5,5.5] → 点 (4,0.5)
+  assert.ok(rel.backdrop);
+  assert.ok(Math.abs(rel.backdrop.dMin - 2.5) < 1e-6);
+  assert.ok(Math.abs(rel.backdrop.to.x - 4) < 1e-6);
+  assert.ok(Math.abs(rel.backdrop.to.y - 0.5) < 1e-6);
+  // 光位名边界（15° 档）
+  assert.equal(M.lightKeyName(0), "front");
+  assert.equal(M.lightKeyName(15), "shortFront");
+  assert.equal(M.lightKeyName(30), "shortFront");
+  assert.equal(M.lightKeyName(45), "rembrandt");
+  assert.equal(M.lightKeyName(90), "side");
+  assert.equal(M.lightKeyName(135), "sideBack");
+  assert.equal(M.lightKeyName(150), "back");
+  // 选中灯时只画该灯弧
+  const arcsL = M.relationArcs(p, A.id, lightL.id);
+  assert.equal(arcsL.arcs.length, 1);
+  assert.equal(arcsL.arcs[0].kind, "lightPerson");
+});

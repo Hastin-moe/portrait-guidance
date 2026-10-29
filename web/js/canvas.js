@@ -41,8 +41,75 @@ export function elementLabel(p, setup, e, lab = labels(setup), lang) {
   return t("el." + e.kind, null, lang);
 }
 
+const polar = (cx, cy, deg, r) => {
+  const a = deg * Math.PI / 180;
+  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+};
+
+/** 量角器扇形：从被摄者朝向扫到目标（存储系 SVG，顺时针为正） */
+function protractorPath(from, to, headingStorage, r) {
+  const dx = to.x - from.x, dy = to.y - from.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 1e-6) return null;
+  const radius = r ?? Math.min(1.15, Math.max(0.4, d * 0.38));
+  const a0 = Number(headingStorage) || 0;
+  let a1 = Math.atan2(dy, dx) * 180 / Math.PI;
+  let sweep = a1 - a0;
+  while (sweep > 180) sweep -= 360;
+  while (sweep <= -180) sweep += 360;
+  a1 = a0 + sweep;
+  const p0 = polar(from.x, from.y, a0, radius);
+  const p1 = polar(from.x, from.y, a1, radius);
+  const large = Math.abs(sweep) > 180 ? 1 : 0;
+  const sweepFlag = sweep >= 0 ? 1 : 0; // SVG y↓ 顺时针 = 1
+  return {
+    radius, a0, a1, sweep,
+    tip: polar(from.x, from.y, a0, radius + 0.18),
+    mid: polar(from.x, from.y, a0 + sweep / 2, radius * 0.72),
+    d: `M${from.x} ${from.y} L${p0.x} ${p0.y} A${radius} ${radius} 0 ${large} ${sweepFlag} ${p1.x} ${p1.y} Z`,
+  };
+}
+
+/** 清空并重画关系叠加层（距离线 + 量角器弧）；拖动时也可调用 */
+export function paintRelationLayer(svg, arcs = [], distances = [], opts = {}) {
+  const C = opts.literal ? LIT : VAR;
+  let g = svg.querySelector("g[data-rel-layer]");
+  if (!g) {
+    g = s("g", { "data-rel-layer": "1", "pointer-events": "none" });
+    svg.append(g);
+  }
+  while (g.firstChild) g.removeChild(g.firstChild);
+  for (const dd of distances || []) {
+    const mx = (dd.from.x + dd.to.x) / 2, my = (dd.from.y + dd.to.y) / 2;
+    g.append(s("line", { x1: dd.from.x, y1: dd.from.y, x2: dd.to.x, y2: dd.to.y, stroke: C.acc, "stroke-width": 0.025, "stroke-dasharray": "0.1 0.06" }));
+    g.append(s("text", { x: mx, y: my - 0.08, "font-size": 0.22, fill: C.acc, "text-anchor": "middle", "font-weight": 600 }, (dd.d ?? 0).toFixed(1) + " m"));
+  }
+  for (const arc of arcs || []) {
+    const geo = protractorPath(arc.from, arc.to, arc.headingStorage);
+    if (!geo || Math.abs(geo.sweep) < 1e-3) continue;
+    g.append(s("path", { d: geo.d, fill: C.acc, opacity: 0.14 }));
+    g.append(s("line", {
+      x1: arc.from.x, y1: arc.from.y,
+      x2: geo.tip.x, y2: geo.tip.y,
+      stroke: C.acc, "stroke-width": 0.02, "stroke-dasharray": "0.06 0.04",
+    }));
+    const bits = [];
+    if (arc.label) bits.push(arc.label);
+    bits.push(`${arc.alphaDeg}°`);
+    if (arc.sideLabel) bits.push(arc.sideLabel);
+    if (arc.keyLabel) bits.push(arc.keyLabel);
+    if (arc.viewLabelText) bits.push(arc.viewLabelText);
+    if (arc.elevDeg != null) bits.push(`β ${arc.elevDeg}°`);
+    g.append(s("text", {
+      x: geo.mid.x, y: geo.mid.y, "font-size": 0.2, fill: C.acc,
+      "text-anchor": "middle", "font-weight": 600,
+    }, bits.join(" · ")));
+  }
+  return g;
+}
+
 /**
- * opts: { literal: 导出时用固定颜色, selectedId, highlight: {cameraId, lightIds:Set}, grid, labels, legend, distances, pad, underlayUrl }
+ * opts: { literal, selectedId, highlight, grid, labels, legend, distances, arcs, pad, underlayUrl }
  */
 export function renderLayout(p, setupId, opts = {}) {
   const C = opts.literal ? LIT : VAR;
@@ -68,8 +135,12 @@ export function renderLayout(p, setupId, opts = {}) {
     for (let y = 0; y <= d + 1e-6; y += step) g.append(s("line", { x1: 0, y1: y, x2: w, y2: y, stroke: Math.abs(y % 1) < 1e-6 ? C.gridMajor : C.grid, "stroke-width": 0.012 }));
     svg.append(g);
     if (opts.rulers !== false) {
+      // 标尺显示棚左下角系：X 同存储；Y 标成 venue.d − y_storage
       for (let x = 0; x <= w + 1e-6; x += 1) svg.append(s("text", { x, y: -0.15, "font-size": 0.18, fill: C.mut, "text-anchor": "middle" }, x + (x === 0 ? " m" : "")));
-      for (let y = 1; y <= d + 1e-6; y += 1) svg.append(s("text", { x: -0.15, y: y + 0.06, "font-size": 0.18, fill: C.mut, "text-anchor": "end" }, y));
+      for (let y = 0; y <= d + 1e-6; y += 1) {
+        const yDisp = Math.round((d - y) * 1000) / 1000;
+        svg.append(s("text", { x: -0.15, y: y + 0.06, "font-size": 0.18, fill: C.mut, "text-anchor": "end" }, yDisp));
+      }
     }
   }
   const layer = s("g", {});
@@ -149,12 +220,8 @@ export function renderLayout(p, setupId, opts = {}) {
     }
   }
   svg.append(layer);
-  // 距离标注
-  for (const dd of opts.distances || []) {
-    const mx = (dd.from.x + dd.to.x) / 2, my = (dd.from.y + dd.to.y) / 2;
-    svg.append(s("line", { x1: dd.from.x, y1: dd.from.y, x2: dd.to.x, y2: dd.to.y, stroke: C.acc, "stroke-width": 0.025, "stroke-dasharray": "0.1 0.06", "pointer-events": "none" }));
-    svg.append(s("text", { x: mx, y: my - 0.08, "font-size": 0.22, fill: C.acc, "text-anchor": "middle", "font-weight": 600, "pointer-events": "none" }, dd.d.toFixed(1) + " m"));
-  }
+  // T24：距离线 + 量角器弧
+  paintRelationLayer(svg, opts.arcs || [], opts.distances || [], opts);
   if (opts.legend && setup) {
     const y = d + pad * 0.6 + 0.3;
     const items = setup.elements.filter(e => e.kind === "light" || e.kind === "camera" || e.kind === "board").map(e => {

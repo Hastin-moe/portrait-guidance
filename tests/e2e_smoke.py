@@ -93,7 +93,8 @@ def main(shots_dir=None):
         assert float(xin()) > x0, "拖动后 X 变大"
         pg.keyboard.press("r")
         pg.wait_for_timeout(200)
-        assert rin() == "15", "R 旋转 15°"
+        # 面板朝向是显示系（0°=+X 逆时针）；R 与快捷条 ↻ 同为存储 +15° → 显示 345°
+        assert rin() == "345", "R 旋转 15°（显示系）"
         snap("layout")
         # EX 光比：同一份布置；在 EX 里移动灯，回到场地图位置也变了（T14）
         pg.click("nav.steps a.extra")

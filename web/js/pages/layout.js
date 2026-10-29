@@ -3,7 +3,7 @@ import { h, menu, promptDlg, confirmDlg, pickFiles, toast, download, isTyping } 
 import { t } from "../i18n.js";
 import { S, commit, fileUrl, uploadImages, readonly } from "../store.js";
 import * as M from "../model.js";
-import { renderLayout, venueSize, labels, elementLabel, svgToPng } from "../canvas.js";
+import { renderLayout, venueSize, labels, elementLabel, svgToPng, paintRelationLayer } from "../canvas.js";
 import { inp, fld, sel, issuesList, emptyState, chip } from "./common.js";
 import { openCamView3d } from "./camview.js";
 import { ratiosFor, annotate, summaryPanel, readingBlock } from "./expanel.js";
@@ -29,6 +29,21 @@ function findEl(p, id) {
 function svgPoint(svg, x, y) {
   const pt = svg.createSVGPoint(); pt.x = x; pt.y = y;
   return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+/** 画布弧标签：棚坐标左右 / 光位名 / 景别（已本地化） */
+function decorateArcs(arcs) {
+  return (arcs || []).map(a => ({
+    ...a,
+    sideLabel: a.side ? t("layout.side." + a.side) : "",
+    keyLabel: a.keyName ? t("layout.key." + a.keyName) : "",
+    viewLabelText: a.viewLabel ? t("layout.view." + a.viewLabel) : "",
+  }));
+}
+
+function relationPack(p, setupId, focusId, overrides = null) {
+  const pack = M.relationArcs(p, setupId, focusId, overrides);
+  return { ...pack, arcs: decorateArcs(pack.arcs) };
 }
 
 export function render(ctx) { return renderLayoutPage(ctx, "plan"); }
@@ -65,12 +80,18 @@ export function renderLayoutPage(ctx, mode = "plan") {
 
   // ---------- 画布 ----------
   const stage = h("div.stage" + (st.calib ? ".calibrating" : ""));
+  const rel0 = st.selected ? relationPack(p, setup.id, st.selected) : { distances: [], arcs: [] };
   const svg = renderLayout(p, setup.id, { editable: true, selectedId: st.selected, underlayUrl: fileUrl, gridM: grid,
-    distances: st.selected ? M.distances(p, setup.id, (findEl(p, st.selected) || {}).e) : [] });
+    distances: rel0.distances, arcs: rel0.arcs });
   if (st.vb) svg.setAttribute("viewBox", st.vb.join(" "));
   const res = isEx ? ratiosFor(p, setup, ctx.rerender) : null;
   if (isEx) annotate(svg, res);
   stage.append(svg);
+  const refreshRel = (overrides = null) => {
+    if (!st.selected) { paintRelationLayer(svg, [], [], {}); return; }
+    const pack = relationPack(p, setup.id, st.selected, overrides);
+    paintRelationLayer(svg, pack.arcs, pack.distances, {});
+  };
   // T23 快捷条：选中后出现在画布下方
   if (st.selected && !ro) {
     const sel = findEl(p, st.selected);
@@ -121,6 +142,7 @@ export function renderLayoutPage(ctx, mode = "plan") {
       if (Math.abs(drag.nx - drag.ox) + Math.abs(drag.ny - drag.oy) > 0) drag.moved = true;
       const e = findEl(p, drag.id).e;
       drag.g.setAttribute("transform", `translate(${drag.nx} ${drag.ny}) rotate(${e.rot || 0})`);
+      refreshRel({ [drag.id]: { x: drag.nx, y: drag.ny } });
     } else if (pan) {
       const r = svg.getBoundingClientRect();
       const k = pan.vb[2] / r.width;
@@ -262,15 +284,56 @@ export function renderLayoutPage(ctx, mode = "plan") {
       : e.kind === "board" ? M.gearList(p).filter(g => g.type === "absorb").map(g => [g.key, `${g.model || t("gear.type.absorb")} (${t("gear.src." + g.source)})`])
       : e.kind === "person" ? M.models(p).map(m => [m.id, m.name]) : e.kind === "prop" ? p.props.map(x => [x.id, x.name || "—"]) : null;
     const modOpts = M.gearList(p).filter(g => g.type === "modifier").map(g => [g.key, g.model || t("gear.type.modifier")]);
-    const dists = M.distances(p, setup.id, e);
+    const pack = relationPack(p, setup.id, e.id);
     const used = e.kind === "camera" ? p.scenes.filter(s => s.cameraId === e.id).length + p.shots.filter(s => s.cameraId === e.id).length : 0;
+    // 属性面板 X/Y/朝向：棚左下角显示系（§9.2 #10 / §9.4）
+    const disp = M.toDisplayXY(p.venue, e.x, e.y);
+    const dispRot = M.toDisplayRot(e.rot || 0);
+    const setPanelXY = (axis) => h("input", {
+      type: "number", step: 0.1, disabled: ro || null, value: axis === "x" ? disp.x : disp.y,
+      onchange: ev => {
+        const v = Number(ev.target.value);
+        const cur = M.toDisplayXY(p.venue, e.x, e.y);
+        if (axis === "x") cur.x = v; else cur.y = v;
+        const stg = M.fromDisplayXY(p.venue, cur.x, cur.y);
+        commit(q => { const el = findEl(q, e.id).e; el.x = +stg.x.toFixed(3); el.y = +stg.y.toFixed(3); });
+      },
+    });
+    const setPanelRot = () => h("input", {
+      type: "number", step: 15, disabled: ro || null, value: dispRot,
+      onchange: ev => commit(q => { findEl(q, e.id).e.rot = M.fromDisplayRot(M.snapDeg15(ev.target.value)); }),
+    });
+    const relLines = (() => {
+      const rel = pack.rel;
+      if (!rel?.subject) return null;
+      const lines = [];
+      if (e.kind === "light") {
+        const L = rel.lights.find(x => x.lightId === e.id);
+        if (L) lines.push(M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName)));
+      } else if (e.kind === "camera" && rel.camera) {
+        const C = rel.camera;
+        lines.push(`${C.label} · ${C.dXY.toFixed(2)} m · ${C.azDeg}°（${t("layout.side." + C.side)}）· ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°`);
+      } else if (e.kind === "person" || e.kind === "mark") {
+        for (const L of rel.lights) lines.push(M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName)));
+        if (rel.camera) {
+          const C = rel.camera;
+          lines.push(`${C.label} · ${C.dXY.toFixed(2)} m · ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°（${t("layout.side." + C.side)}）`);
+        }
+        if (rel.backdrop) lines.push(`${t("dist.personBackdrop")} · ${rel.backdrop.dMin.toFixed(2)} m · ${t("layout.side." + rel.backdrop.side)}`);
+        if (rel.window) lines.push(`${t("dist.personWindow")} · ${rel.window.dMin.toFixed(2)} m · ${rel.window.azDeg}°（${t("layout.side." + rel.window.side)}）`);
+      } else if (pack.distances.length) {
+        for (const x of pack.distances) lines.push(`${t("dist." + x.kind)}：${x.d.toFixed(2)} m`);
+      }
+      return lines.length ? [h("h4", t("layout.relations")), ...lines.map(txt => h("div.small", txt))] : null;
+    })();
     panel = h("div",
       h("h4", `${t("el." + e.kind)}${lab.get(e.id) ? " · " + lab.get(e.id) : ""}`, h("span.small.mut", f.base ? t("layout.baseLayer") : `${t("layout.setup")} ${(f.setup || setup).name}`)),
       bindOpts ? fld(t("layout.bind"), sel(bindOpts, e.ref, v => commit(q => { findEl(q, e.id).e.ref = v; }), { emptyLabel: t("layout.unbound") }),
         !e.ref ? h("span", { style: { color: "var(--y)" } }, "▲ " + t("layout.unboundHelp")) : null) : null,
       e.kind === "text" ? fld(t("layout.label"), upd("label")) : null,
-      h("div.grid2", fld("X (m)", upd("x", "number")), fld("Y (m)", upd("y", "number"))),
-      fld(t("layout.rot") + " (°)", upd("rot", "number")),
+      h("p.small.mut", t("layout.originHelp")),
+      h("div.grid2", fld("X (m)", setPanelXY("x")), fld("Y (m)", setPanelXY("y"))),
+      fld(t("layout.rot") + " (°)", setPanelRot()),
       e.w != null ? h("div.grid2", fld(t("layout.len") + " (m)", upd("w", "number")), fld(t("layout.thick") + " (m)", upd("h", "number"))) : null,
       e.kind === "light" ? [h("div.grid2", fld(t("layout.beam") + " (°)", upd("beam", "number")), fld(t("layout.power"), upd("power"))),
         fld(t("layout.modifierRef"), sel(modOpts, e.modifierRef || "", v => commit(q => {
@@ -287,9 +350,9 @@ export function renderLayoutPage(ctx, mode = "plan") {
         h("button.sm.primary", { style: { marginTop: "8px" }, onclick: () => openCamView3d(p, setup.id, e) }, t("cam3d.open")),
         h("p.small.mut", t("cam3d.openHelp")),
         used ? h("p.small.mut", t("layout.camUsed", { n: used })) : null] : null,
-      dists.length ? [h("h4", t("layout.distances")), dists.map(x => h("div.small", `${t("dist." + x.kind)}：${x.d.toFixed(2)} m`))] : null,
+      relLines,
       h("div.row", { style: { marginTop: "14px" } },
-        h("button.sm", { disabled: ro || null, onclick: () => commit(q => { const g = findEl(q, e.id).e; g.rot = ((g.rot || 0) + 15) % 360; }) }, "↻ 15°"),
+        h("button.sm", { disabled: ro || null, onclick: () => commit(q => { const g = findEl(q, e.id).e; g.rot = M.snapDeg15((g.rot || 0) + 15); }) }, "↻ 15°"),
         h("button.sm", { disabled: ro || null, onclick: () => dup(e.id) }, t("common.duplicate")),
         h("button.sm.danger", { disabled: ro || null, onclick: () => del(e.id) }, t("common.delete"))));
   } else if (isEx) {
@@ -459,36 +522,24 @@ function renderElementEdit(ctx, mode, setup) {
         readingBlock(p, f.setup || setup, e, findEl, { mode: isEx ? "ex" : "plan", res: isEx ? ratiosFor(p, f.setup || setup, ctx.rerender) : null, go: ctx.go }),
       ]);
     } else {
-      // 关系：距离现算；夹角完整表归 T24，这里给已定的方位/左右预览
-      const sub = subject;
-      const rows = [];
-      if (sub) {
-        const Sxy = M.toDisplayXY(p.venue, sub.x, sub.y);
-        const Lxy = M.toDisplayXY(p.venue, e.x, e.y);
-        const dxy = Math.hypot(Lxy.x - Sxy.x, Lxy.y - Sxy.y);
-        const side = M.shelfSide(Sxy.x, Sxy.y, Lxy.x, Lxy.y);
-        const az = M.shelfAzimuth15(Sxy.x, Sxy.y, Lxy.x, Lxy.y);
-        const head = M.toDisplayRot(sub.rot || 0);
-        const alpha = M.relAngleToHeading15(Sxy.x, Sxy.y, head, Lxy.x, Lxy.y);
-        const key = M.lightKeyName(Math.abs(alpha));
-        let slant = null, elev = null;
-        if (e.heightM !== "" && e.heightM != null && isFinite(Number(e.heightM))) {
-          const faceH = 1.55;
-          const dh = Number(e.heightM) - faceH;
-          slant = Math.hypot(dxy, dh);
-          elev = Math.atan2(dh, dxy) * 180 / Math.PI;
-        }
-        rows.push(h("tr", h("td", lab.get(e.id) || "L"), h("td", dxy.toFixed(2) + " m"),
-          h("td", slant != null ? slant.toFixed(2) + " m" : "—"),
-          h("td", `${az}°`), h("td", t("layout.side." + side)),
-          h("td", `${Math.abs(alpha)}° · ${t("layout.key." + key)}`),
-          h("td", elev != null ? Math.round(elev) + "°" : "—")));
-      }
+      const rel = M.relativeAngles(p, (f.setup || setup).id, subject?.id);
+      const L = rel.lights.find(x => x.lightId === e.id);
+      const rows = L ? [h("tr",
+        h("td", L.label),
+        h("td", L.dXY.toFixed(2) + " m"),
+        h("td", L.dSlant != null ? L.dSlant.toFixed(2) + " m" : "—"),
+        h("td", `${L.azDeg}°`),
+        h("td", t("layout.side." + L.side)),
+        h("td", `${L.alphaDeg}° · ${t("layout.key." + L.keyName)}`),
+        h("td", L.elevDeg != null ? L.elevDeg + "°" : "—"),
+      )] : [];
       body = editForm([
         h("p.small.mut", t("layout.relHelp")),
-        sub ? h("table.grid", h("tr", h("th", "ID"), h("th", t("layout.dxy")), h("th", t("layout.dslant")), h("th", t("layout.az")), h("th", t("layout.lr")), h("th", t("layout.keyName")), h("th", t("layout.elev"))), ...rows)
+        L ? h("p.small", M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName))) : null,
+        subject ? h("table.grid",
+          h("tr", h("th", "ID"), h("th", t("layout.dxy")), h("th", t("layout.dslant")), h("th", t("layout.az")), h("th", t("layout.lr")), h("th", t("layout.keyName")), h("th", t("layout.elev"))),
+          ...rows)
           : h("p.mut", t("layout.noSubject")),
-        h("p.small.mut", t("layout.relT24")),
       ]);
     }
     const main = editShell({
@@ -506,9 +557,26 @@ function renderElementEdit(ctx, mode, setup) {
     return { main, panel };
   }
 
-  // 非灯：单页编辑（显示系坐标）
+  // 非灯：单页编辑（显示系坐标）+ 机位/人物关系摘要
   const bindOpts = e.kind === "board" ? M.gearList(p).filter(g => g.type === "absorb").map(g => [g.key, g.model || t("gear.type.absorb")])
     : e.kind === "person" ? M.models(p).map(m => [m.id, m.name]) : e.kind === "prop" ? p.props.map(x => [x.id, x.name || "—"]) : null;
+  const relSum = (() => {
+    if (e.kind !== "camera" && e.kind !== "person" && e.kind !== "mark") return null;
+    const rel = M.relativeAngles(p, (f.setup || setup).id, (e.kind === "person" || e.kind === "mark") ? e.id : null);
+    if (!rel.subject) return h("p.mut", t("layout.noSubject"));
+    const bits = [];
+    if (e.kind === "camera" && rel.camera) {
+      const C = rel.camera;
+      bits.push(h("div.small", `${C.label} · ${C.dXY.toFixed(2)} m · ${C.azDeg}°（${t("layout.side." + C.side)}）· ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°`));
+    }
+    if (e.kind === "person" || e.kind === "mark") {
+      for (const L of rel.lights) bits.push(h("div.small", M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName))));
+      if (rel.camera) bits.push(h("div.small", `${rel.camera.label} · ${rel.camera.dXY.toFixed(2)} m · ${t("layout.view." + rel.camera.viewLabel)} ${rel.camera.alphaDeg}°`));
+      if (rel.backdrop) bits.push(h("div.small", `${t("dist.personBackdrop")} · ${rel.backdrop.dMin.toFixed(2)} m`));
+      if (rel.window) bits.push(h("div.small", `${t("dist.personWindow")} · ${rel.window.dMin.toFixed(2)} m · ${t("layout.incidence")} ${rel.window.incidenceDeg}°`));
+    }
+    return [h("h4", t("layout.relations")), h("p.small.mut", t("layout.relHelp")), ...bits];
+  })();
   body = editForm([
     bindOpts ? fld(t("layout.bind"), sel(bindOpts, e.ref, v => commit(q => { findEl(q, e.id).e.ref = v; }), { emptyLabel: t("layout.unbound") })) : null,
     e.kind === "text" ? fld(t("layout.label"), inp(() => e.label, (q, v) => { findEl(q, e.id).e.label = v; })) : null,
@@ -518,6 +586,7 @@ function renderElementEdit(ctx, mode, setup) {
     e.w != null ? h("div.grid2", fld(t("layout.len") + " (m)", setNum("w")), fld(t("layout.thick") + " (m)", setNum("h"))) : null,
     e.kind === "camera" ? [fld(t("layout.focal") + " (mm)", setNum("focal")),
       h("button.sm.primary", { onclick: () => openCamView3d(p, (f.setup || setup).id, e) }, t("cam3d.open"))] : null,
+    relSum,
   ]);
   return {
     main: editShell({
