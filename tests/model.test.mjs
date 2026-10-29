@@ -552,3 +552,14 @@ test("T11-C2 Grok's untouched original sample imports cleanly", () => {
   assert.ok(!report.check.some(s => /附近没有灯/.test(s)));
   assert.ok(M.checks(p).every(c => c.level !== "error" || c.code !== "venueSize"));
 });
+
+test("T22 ref search URLs and AI cost helpers", () => {
+  const p = { overview: { theme: "窗光人像", keywords: ["窗光", "柔和"] } };
+  assert.equal(M.defaultRefSearchQuery(p), "窗光 柔和");
+  assert.match(M.refSearchUrl("xhs", "窗光"), /xiaohongshu\.com.*%E7%AA%97%E5%85%89/);
+  assert.match(M.refSearchUrl("google", "a b"), /tbm=isch/);
+  assert.equal(M.refSearchUrl("nope", "x"), "");
+  assert.equal(M.aiImageCostUsd(2), Math.round(2 * M.AI_IMAGE_USD * 100) / 100);
+  assert.equal(M.aiImageCostUsd(99), Math.round(8 * M.AI_IMAGE_USD * 100) / 100);
+  assert.match(M.defaultAiPrompt(p, { size: "半身", poseName: "回眸" }), /窗光人像/);
+});

@@ -1,11 +1,12 @@
 // S4 动作库：列表 + T17 二级编辑层（完整标签体系留给 T21）
-import { h, pickFiles, confirmDlg, promptDlg } from "../ui.js";
+import { h, confirmDlg, promptDlg } from "../ui.js";
 import { t } from "../i18n.js";
-import { S, libUrl, uploadImages, saveLibrary, commit } from "../store.js";
+import { S, libUrl, saveLibrary, commit } from "../store.js";
 import * as M from "../model.js";
 import { tagsInput, fld, emptyState } from "./common.js";
 import { SIZES } from "./shots.js";
 import { editShell, editForm } from "../editlayer.js";
+import { openRefPicker } from "../refimages.js";
 
 const PEOPLE = ["1", "2", "group"];
 
@@ -59,9 +60,24 @@ function renderPoseEdit(ctx, id) {
   const used = p ? p.shots.filter(s => s.poseId === x.id) : [];
 
   const body = editForm([
-    h("div.refstrip", { style: { aspectRatio: "1", maxWidth: "280px" } }, x.image ? h("img", { src: libUrl(x.image), alt: "" }) : "◎"),
-    h("div.row", { style: { marginTop: "6px" } }, h("button.sm", { onclick: async () => { const fs = await pickFiles({ multiple: false }); if (!fs.length) return; const [f] = await uploadImages(fs, true); x.image = f; save(); } }, t("pose.setImage")),
-      x.image ? h("button.sm.ghost", { onclick: () => { x.image = ""; save(); } }, t("common.remove")) : null),
+    h("div.refstrip", { style: { aspectRatio: "1", maxWidth: "280px", position: "relative" } },
+      x.image ? h("img", { src: libUrl(x.image), alt: "" }) : "◎",
+      x.imageSource === "ai" ? h("span.ai-badge", "AI") : null),
+    h("div.row", { style: { marginTop: "6px" } },
+      h("button.sm", { onclick: async () => {
+        const cues = [x.cues?.weight, x.cues?.hands, x.cues?.gaze].filter(Boolean).join("；");
+        const items = await openRefPicker({
+          allowMood: true, multiple: false, toLibrary: true,
+          poseName: x.name || "", poseCues: cues,
+        });
+        if (!items?.length) return;
+        const it = items[0];
+        x.image = it.file;
+        x.imageSource = it.source || "";
+        x.imageUrl = it.url || "";
+        save();
+      } }, t("ref.add")),
+      x.image ? h("button.sm.ghost", { onclick: () => { x.image = ""; x.imageSource = ""; x.imageUrl = ""; save(); } }, t("common.remove")) : null),
     fld(t("pose.name"), txt(() => x.name, v => { x.name = v; })),
     h("h4", t("pose.cues")),
     fld(t("pose.weight"), txt(() => x.cues.weight, v => { x.cues.weight = v; }, t("pose.weightPh"))),

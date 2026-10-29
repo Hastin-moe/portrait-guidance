@@ -57,6 +57,12 @@ def main(shots_dir=None):
         pg.get_by_role("button", name="＋ 添加模特").click()
         pg.wait_for_selector(".edit-layer")
         pg.click("button.edit-back")
+        # T22 参考图获取弹窗（情绪板入口）
+        pg.get_by_role("button", name="＋ 添加参考图").click()
+        pg.wait_for_selector(".refpick")
+        assert pg.get_by_role("button", name="上传").count() >= 1
+        assert pg.get_by_role("button", name="AI 生成").count() >= 1
+        pg.locator(".refpick .acts button").filter(has_text="取消").click()
         # S2 场地与器材（场地标签填尺寸；器材标签加灯）
         go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")

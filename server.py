@@ -42,7 +42,12 @@ IMAGE_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "i
 STATIC_TYPES = {".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
                 ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml",
                 ".html": "text/html; charset=utf-8", ".png": "image/png"}
-SETTINGS_DEFAULT = {"lang": "zh", "bufferMin": 10, "gridM": 0.5}
+SETTINGS_DEFAULT = {
+    "lang": "zh", "bufferMin": 10, "gridM": 0.5,
+    # T22：用户自备 Gemini API Key；模型名可改（默认按确认稿「Nano Banana」对应的图像生成模型）
+    "geminiApiKey": "",
+    "geminiModel": "gemini-2.0-flash-preview-image-generation",
+}
 LOCK = threading.Lock()
 
 
@@ -210,6 +215,67 @@ class Store:
         (folder / name).write_bytes(data)
         return name
 
+    def generate_ai_images(self, pid: str, prompt: str, count: int = 1, to_library: bool = False) -> dict:
+        """T22：用用户设置里的 Gemini Key 生成参考图。未填 Key 时拒绝。
+
+        Key 为字面量「stub」时写入 1×1 PNG（单测 / 离线冒烟，不联网）。
+        """
+        import base64
+        import urllib.error
+        import urllib.request
+
+        prompt = (prompt or "").strip()
+        if not prompt:
+            raise ValueError("empty prompt")
+        count = max(1, min(4, int(count or 1)))
+        settings = self.settings()
+        key = (settings.get("geminiApiKey") or "").strip()
+        if not key:
+            raise ValueError("missing geminiApiKey")
+        folder = (self.lib / "files") if to_library else (self.pdir(pid) / "images")
+        files = []
+        if key == "stub":
+            # 最小合法 PNG（与 tests/test_server.py 同源）
+            png = bytes.fromhex(
+                "89504e470d0a1a0a0000000d4948445200000001000000010806000000"
+                "1f15c4890000000d49444154789c6360000002000154a24f5d0000000049454e44ae426082"
+            )
+            for _ in range(count):
+                files.append(self.save_file(folder, png, "image/png"))
+            return {"files": files, "stub": True}
+
+        model = (settings.get("geminiModel") or SETTINGS_DEFAULT["geminiModel"]).strip()
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+        for _ in range(count):
+            body = json.dumps({
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=body, method="POST",
+                                         headers={"Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=90) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+            except urllib.error.HTTPError as e:
+                err = e.read().decode("utf-8", "replace")
+                raise ValueError(f"gemini HTTP {e.code}: {err[:400]}") from e
+            except urllib.error.URLError as e:
+                raise ValueError(f"gemini network: {e}") from e
+            inline = None
+            for cand in data.get("candidates") or []:
+                for part in ((cand.get("content") or {}).get("parts") or []):
+                    inline = part.get("inlineData") or part.get("inline_data")
+                    if inline:
+                        break
+                if inline:
+                    break
+            if not inline or not inline.get("data"):
+                raise ValueError("gemini returned no image")
+            raw = base64.b64decode(inline["data"])
+            mime = (inline.get("mimeType") or inline.get("mime_type") or "image/png").split(";")[0].strip()
+            files.append(self.save_file(folder, raw, mime))
+        return {"files": files}
+
     # ---- 资料库 ----
     def lib_get(self, name: str):
         return self.read_json(self.lib / f"{name}.json", [])
@@ -363,6 +429,12 @@ class Handler(BaseHTTPRequestHandler):
             if n == 3 and p[2] == "files" and m == "POST":
                 name = s.save_file(s.pdir(pid) / "images", self.body(), self.headers.get("Content-Type", ""))
                 return self.json({"file": name})
+            if n == 3 and p[2] == "ai-images" and m == "POST":
+                body = self.body_json()
+                return self.json(s.generate_ai_images(
+                    pid, str(body.get("prompt", "")),
+                    count=int(body.get("count") or 1),
+                    to_library=bool(body.get("toLibrary"))))
             if n == 3 and p[2] == "versions":
                 if m == "GET":
                     return self.json(s.list_versions(pid))

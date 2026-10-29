@@ -800,3 +800,45 @@ export function ratioText(ev) {
   const v = r >= 10 ? Math.round(r) : Math.round(r * 10) / 10;
   return ev <= 0 ? `${v}:1` : `1:${v}`;
 }
+
+// ---------- T22 参考图获取 ----------
+/** 搜索平台：打开浏览器到结果页（Q1-A），不在程序内列结果 */
+export const REF_SEARCH_PLATFORMS = ["xhs", "pinterest", "google", "huaban"];
+
+/** Gemini Nano Banana 示意单价（美元/张），仅用于费用预估展示 */
+export const AI_IMAGE_USD = 0.03;
+
+export function defaultRefSearchQuery(project) {
+  const kw = ((project?.overview?.keywords) || []).filter(Boolean);
+  const theme = (project?.overview?.theme || "").trim();
+  if (kw.length) return kw.slice(0, 4).join(" ");
+  return theme.slice(0, 40);
+}
+
+export function refSearchUrl(platform, query) {
+  const q = encodeURIComponent(String(query || "").trim());
+  if (!q) return "";
+  if (platform === "xhs") return `https://www.xiaohongshu.com/search_result?keyword=${q}`;
+  if (platform === "pinterest") return `https://www.pinterest.com/search/pins/?q=${q}`;
+  if (platform === "google") return `https://www.google.com/search?tbm=isch&q=${q}`;
+  if (platform === "huaban") return `https://huaban.com/search?q=${q}`;
+  return "";
+}
+
+export function aiImageCostUsd(count) {
+  const n = Math.max(0, Math.min(8, Math.floor(Number(count) || 0)));
+  return Math.round(n * AI_IMAGE_USD * 100) / 100;
+}
+
+/** 默认 AI 提示：项目风格 + 可选景别 / 动作要点 */
+export function defaultAiPrompt(project, { size = "", poseName = "", poseCues = "" } = {}) {
+  const parts = [];
+  const theme = (project?.overview?.theme || "").trim();
+  const kw = ((project?.overview?.keywords) || []).filter(Boolean);
+  if (theme) parts.push(theme);
+  if (kw.length) parts.push(kw.join("、"));
+  if (size) parts.push(size);
+  if (poseName) parts.push(poseName);
+  if (poseCues) parts.push(poseCues);
+  return parts.filter(Boolean).join("。");
+}

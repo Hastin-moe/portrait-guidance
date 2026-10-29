@@ -1,10 +1,11 @@
 // S6 分镜（重做版）：按场景分组 + 继承、时长预算、检查列、详情抽屉带机位与布光缩略图、批量操作（F23–F28）
-import { h, menu, modal, promptDlg, confirmDlg, toast, pickFiles, seg, isTyping } from "../ui.js";
+import { h, menu, modal, promptDlg, confirmDlg, toast, seg, isTyping } from "../ui.js";
 import { t, fmtDuration } from "../i18n.js";
-import { S, commit, fileUrl, libUrl, uploadImages, readonly, saveLibrary } from "../store.js";
+import { S, commit, fileUrl, libUrl, readonly, saveLibrary } from "../store.js";
 import * as M from "../model.js";
 import { renderLayout } from "../canvas.js";
 import { inp, area, fld, sel, chip, issuesList, checkText, personName, lookName, setupName, cameraName, poseById, poseName, sceneName, emptyState } from "./common.js";
+import { openRefPicker } from "../refimages.js";
 
 export const SIZES = ["full", "knee", "half", "bust", "close", "xclose"];
 const OPT_COLS = ["props", "camera", "setup", "notes"];
@@ -339,9 +340,34 @@ function drawer(ctx, s, k) {
       refs.length > 1 ? h("button.sm", { onclick: () => { st.refIdx = (st.refIdx + 1) % refs.length; ctx.rerender(); } }, "›") : null));
   const refActs = h("div.row.wrap", { style: { marginTop: "6px" } },
     h("span.small.mut", refs.length ? `${st.refIdx + 1} / ${refs.length}` : ""), h("span.spacer"),
-    h("button.sm", { disabled: ro || !p.mood.length || null, onclick: e => menu(e.currentTarget, p.mood.map(m => ({ value: m.file, label: m.note || m.file.slice(0, 8), hint: (m.tags || []).join(" ") })),
-      { multi: true, selected: refs, onPick: v => upd({ refs: v }) }) }, t("shots.fromMood")),
-    h("button.sm", { disabled: ro || null, onclick: async () => { const n = await uploadImages(await pickFiles()); if (n.length) upd({ refs: [...refs, ...n] }); } }, t("ov.upload")),
+    h("button.sm", { disabled: ro || null, onclick: async () => {
+      const pose = poseById(s.poseId);
+      const cues = pose ? [pose.cues?.weight, pose.cues?.hands, pose.cues?.gaze].filter(Boolean).join("；") : "";
+      const items = await openRefPicker({
+        allowMood: true, multiple: true,
+        size: s.size ? t("size." + s.size) : "",
+        poseName: pose?.name || "", poseCues: cues,
+      });
+      if (!items?.length) return;
+      // 镜头 refs 仍存文件名（兼容旧项目）；来源写在同源情绪板项上（搜索/AI 时同步落一条）
+      const files = [];
+      commit(q => {
+        const shot = q.shots.find(x => x.id === s.id);
+        for (const it of items) {
+          files.push(it.file);
+          if (it.source && it.source !== "own" && it.source !== "upload" && it.source !== "paste") {
+            if (!q.mood.some(m => m.file === it.file)) {
+              q.mood.push({
+                id: M.uid(), file: it.file, note: "", tags: [],
+                source: it.source, url: it.url || "",
+                x: 4 + Math.random() * 60, y: 4 + Math.random() * 50,
+              });
+            }
+          }
+        }
+        shot.refs = [...new Set([...(shot.refs || []), ...files])];
+      });
+    } }, t("ref.add")),
     ref && !ro ? h("button.sm.ghost", { title: t("common.remove"), onclick: () => upd({ refs: refs.filter(x => x !== ref) }) }, "×") : null);
 
   // ⑤ 机位与布光缩略图：只高亮本镜机位和用到的灯

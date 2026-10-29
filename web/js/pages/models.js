@@ -1,12 +1,13 @@
 // S3 模特与样图：列表 + T17 二级编辑层（基本信息先迁入；工作照/服装/角色/付费选项留给 T18/T19）
-import { h, menu, pickFiles, dropZone, toast, seg, confirmDlg } from "../ui.js";
+import { h, menu, toast, seg, confirmDlg } from "../ui.js";
 import { t } from "../i18n.js";
-import { S, commit, fileUrl, uploadImages, readonly } from "../store.js";
+import { S, commit, fileUrl, readonly } from "../store.js";
 import * as M from "../model.js";
 import { inp, fld, tagsInput, issuesList, emptyState } from "./common.js";
 import { editShell, editForm, editPlaceholder } from "../editlayer.js";
+import { openRefPicker } from "../refimages.js";
 
-const SOURCES = ["", "x", "xhs", "web", "ai", "own"];
+const SOURCES = ["", "x", "xhs", "web", "ai", "own", "upload", "paste", "pinterest", "google", "huaban"];
 // 标签页：基本信息本卡可编；其余留给 T18/T19（占位文案，不猜字段）
 const PERSON_TABS = [
   { id: "basic", label: "edit.tab.basic" },
@@ -51,25 +52,29 @@ export function render(ctx) {
     h("div", { style: { height: "8px" } }),
     ms.length ? h("div.cards", ms.map(pcard)) : emptyState(t("time.noModels"), t("time.noModelsBody")));
 
-  const addMood = async files => {
+  const addMoodViaPicker = async () => {
     if (ro) return toast(t("final.locked"));
-    const names = await uploadImages(files);
+    const items = await openRefPicker({ allowMood: false, multiple: true });
+    if (!items?.length) return;
     let first = null;
     commit(q => {
-      for (const f of names) {
+      for (const it of items) {
         const id = M.uid();
         if (!first) first = id;
-        q.mood.push({ id, file: f, note: "", tags: [], source: "", url: "", x: 4 + Math.random() * 60, y: 4 + Math.random() * 50 });
+        q.mood.push({
+          id, file: it.file, note: "", tags: [],
+          source: it.source || "", url: it.url || "",
+          x: 4 + Math.random() * 60, y: 4 + Math.random() * 50,
+        });
       }
     });
     if (first) ctx.openEdit("mood", first);
   };
-  const zone = dropZone(h("div.drop", t("ov.drop"), " ", h("button.sm", { onclick: async () => addMood(await pickFiles()) }, t("ov.upload"))), addMood);
+  const zone = h("div.drop", t("ov.drop"), " ",
+    h("button.sm", { disabled: ro || null, onclick: addMoodViaPicker }, "＋ " + t("ref.add")));
 
-  const srcLabel = m => {
-    const s = m.source || "";
-    return s ? t("mood.src." + (s === "" ? "none" : s)) : "";
-  };
+  const srcLabel = m => m.source ? t("mood.src." + m.source) : "";
+  // t() 缺 key 时仍返回 key 本身；上面够用
   const openMood = id => ctx.openEdit("mood", id);
   let board;
   if (!p.mood.length) board = null;
@@ -80,7 +85,9 @@ export function render(ctx) {
         tabindex: 0,
         onclick: () => openMood(m.id),
         onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); openMood(m.id); } },
-      }, h("img", { src: fileUrl(m.file), alt: m.note || "", loading: "lazy" }), cap ? h("div.cap", cap) : null);
+      }, h("img", { src: fileUrl(m.file), alt: m.note || "", loading: "lazy" }),
+        m.source === "ai" ? h("span.ai-badge", "AI") : null,
+        cap ? h("div.cap", cap) : null);
     }));
   } else {
     board = h("div.mood.free");
