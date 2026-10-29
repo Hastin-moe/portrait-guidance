@@ -94,17 +94,41 @@ export function renderLayoutPage(ctx, mode = "plan") {
     const pack = relationPack(p, setup.id, st.selected, overrides);
     paintRelationLayer(svg, pack.arcs, pack.distances, {});
   };
-  // T23 快捷条：选中后出现在画布下方
+  // T23/T26 F5：快捷条浮在选中元素旁（absolute，不进文档流）
+  let quickbar = null;
+  const placeQuickbar = () => {
+    if (!quickbar || !st.selected) return;
+    const sel = findEl(p, st.selected);
+    if (!sel) return;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const pt = svg.createSVGPoint();
+    pt.x = sel.e.x; pt.y = sel.e.y;
+    const scr = pt.matrixTransform(ctm);
+    const sr = stage.getBoundingClientRect();
+    quickbar.classList.remove("is-hidden");
+    const br = quickbar.getBoundingClientRect();
+    let left = scr.x - sr.left - br.width / 2;
+    let top = scr.y - sr.top - br.height - 12;
+    if (top < 4) top = scr.y - sr.top + 16;
+    left = Math.max(4, Math.min(Math.max(4, sr.width - br.width - 4), left));
+    top = Math.max(4, Math.min(Math.max(4, sr.height - br.height - 4), top));
+    quickbar.style.left = left + "px";
+    quickbar.style.top = top + "px";
+  };
+  const hideQuickbar = () => { if (quickbar) quickbar.classList.add("is-hidden"); };
   if (st.selected && !ro) {
     const sel = findEl(p, st.selected);
     if (sel) {
-      stage.append(h("div.quickbar",
+      quickbar = h("div.quickbar.is-hidden",
         h("span.small.mut", t("el." + sel.e.kind)),
         h("button.sm", { onclick: () => commit(q => { const g = findEl(q, sel.e.id).e; g.rot = M.snapDeg15((g.rot || 0) - 15); }) }, "↺ 15°"),
         h("button.sm", { onclick: () => commit(q => { const g = findEl(q, sel.e.id).e; g.rot = M.snapDeg15((g.rot || 0) + 15); }) }, "↻ 15°"),
         h("button.sm", { onclick: () => dup(sel.e.id) }, t("common.duplicate")),
         h("button.sm.danger", { onclick: () => del(sel.e.id) }, t("common.delete")),
-        h("button.sm.primary", { onclick: () => ctx.openEdit("element", sel.e.id) }, t("layout.editMore"))));
+        h("button.sm.primary", { onclick: () => ctx.openEdit("element", sel.e.id) }, t("layout.editMore")));
+      stage.append(quickbar);
+      requestAnimationFrame(placeQuickbar);
     }
   }
   let drag = null, pan = null;
@@ -118,19 +142,26 @@ export function renderLayoutPage(ctx, mode = "plan") {
     }
     const g = ev.target.closest("g.el");
     if (!g || spaceDown || ev.button === 1) {               // 空白处拖动 = 平移；单击空白 = 取消选择
+      hideQuickbar();
       pan = { x: ev.clientX, y: ev.clientY, vb: svg.getAttribute("viewBox").split(" ").map(Number), moved: false, clear: !g };
       svg.setPointerCapture(ev.pointerId);
       return;
     }
     const id = g.dataset.id, f = findEl(p, id);
     if (!f) return;
-    if (st.selected !== id) { st.selected = id; }
-    if (ev.detail === 2) { // 双击进二级编辑
+    // T26 F12：自判双击（重绘后 ev.detail 不可靠）
+    const now = performance.now();
+    const tap = st.lastTap;
+    if (tap && tap.id === id && now - tap.t < 350 && !tap.dragged) {
+      st.lastTap = null;
       drag = null;
       ctx.openEdit("element", id);
       return;
     }
+    st.lastTap = { id, t: now, dragged: false };
+    if (st.selected !== id) { st.selected = id; }
     if (ro) { ctx.rerender(); return; }
+    hideQuickbar();
     drag = { id, g, sx: pt.x, sy: pt.y, ox: f.e.x, oy: f.e.y, nx: f.e.x, ny: f.e.y, moved: false };
     svg.setPointerCapture(ev.pointerId);
   });
@@ -141,7 +172,10 @@ export function renderLayoutPage(ctx, mode = "plan") {
       drag.nx = Math.round((drag.ox + pt.x - drag.sx) / snap) * snap;
       drag.ny = Math.round((drag.oy + pt.y - drag.sy) / snap) * snap;
       drag.nx = Math.max(-0.5, Math.min(w + 0.5, drag.nx)); drag.ny = Math.max(-0.5, Math.min(d + 0.5, drag.ny));
-      if (Math.abs(drag.nx - drag.ox) + Math.abs(drag.ny - drag.oy) > 0) drag.moved = true;
+      if (Math.abs(drag.nx - drag.ox) + Math.abs(drag.ny - drag.oy) > 0) {
+        drag.moved = true;
+        if (st.lastTap) st.lastTap.dragged = true;
+      }
       const e = findEl(p, drag.id).e;
       drag.g.setAttribute("transform", `translate(${drag.nx} ${drag.ny}) rotate(${e.rot || 0})`);
       refreshRel({ [drag.id]: { x: drag.nx, y: drag.ny } });
@@ -150,6 +184,7 @@ export function renderLayoutPage(ctx, mode = "plan") {
       const k = pan.vb[2] / r.width;
       if (Math.abs(ev.clientX - pan.x) + Math.abs(ev.clientY - pan.y) < 3 && !pan.moved) return;
       pan.moved = true;
+      hideQuickbar();
       const vb = [pan.vb[0] - (ev.clientX - pan.x) * k, pan.vb[1] - (ev.clientY - pan.y) * k, pan.vb[2], pan.vb[3]];
       svg.setAttribute("viewBox", vb.join(" ")); st.vb = vb;
     }
@@ -159,12 +194,15 @@ export function renderLayoutPage(ctx, mode = "plan") {
       const dd = drag; drag = null;
       if (dd.moved) commit(q => { const e = findEl(q, dd.id).e; e.x = +dd.nx.toFixed(3); e.y = +dd.ny.toFixed(3); });
       else ctx.rerender();
+    } else if (pan && pan.moved) {
+      requestAnimationFrame(placeQuickbar);
     }
     if (pan && !pan.moved && pan.clear && st.selected) { st.selected = null; ctx.rerender(); }
     pan = null;
   });
   svg.addEventListener("wheel", ev => {
     ev.preventDefault();
+    hideQuickbar();
     const vb = svg.getAttribute("viewBox").split(" ").map(Number);
     const pt = svgPoint(svg, ev.clientX, ev.clientY);
     const k = Math.exp(ev.deltaY * 0.0015);
@@ -172,6 +210,7 @@ export function renderLayoutPage(ctx, mode = "plan") {
     const nvb = [pt.x - (pt.x - vb[0]) * nw / vb[2], pt.y - (pt.y - vb[1]) * nh / vb[3], nw, nh];
     svg.setAttribute("viewBox", nvb.join(" ")); st.vb = nvb;
     const z = document.querySelector("[data-zoom]"); if (z) z.textContent = Math.round(100 * (w + 1.2) / nw) + "%";
+    requestAnimationFrame(placeQuickbar);
   }, { passive: false });
   // 从清单拖入画布：灯具、人物、道具自动绑定条目
   stage.addEventListener("dragover", ev => { if (ev.dataTransfer.types.includes("text/x-pg")) ev.preventDefault(); });
