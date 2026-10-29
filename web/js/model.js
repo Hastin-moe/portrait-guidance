@@ -284,6 +284,117 @@ export function allLooks(p) {
 }
 export const lookById = (p, id) => allLooks(p).find(l => l.id === id);
 
+// ---------- 动作库（T21） ----------
+export const POSE_DIMS = ["mood", "stance", "focus", "prop", "scene"];
+/** 各组预设；存库用中文词（与现有 tags 一致），组内可加自定义 */
+export const POSE_DIM_PRESETS = {
+  mood: ["温柔", "清冷", "活泼", "慵懒", "忧郁", "自信"],
+  stance: ["站", "坐", "倚", "躺", "走", "蹲"],
+  focus: ["脸", "手", "背", "腿", "全身"],
+  prop: ["无", "椅子", "窗帘", "花"],
+  scene: ["窗边", "沙发", "户外", "背景纸"],
+};
+
+export function blankPose(name = "") {
+  return {
+    id: uid(), name: name || "",
+    images: [], image: "", imageSource: "", imageUrl: "",
+    steps: [],
+    cues: { weight: "", hands: "", gaze: "", pitfalls: "" },
+    guide: "", sizes: [], people: "1", wardrobe: "",
+    dims: { mood: [], stance: [], focus: [], prop: [], scene: [] },
+    tags: [],
+  };
+}
+
+export function normalizePose(x) {
+  if (!x || typeof x !== "object") return blankPose();
+  if (!x.id) x.id = uid();
+  if (x.name == null) x.name = "";
+  if (!Array.isArray(x.images)) x.images = [];
+  // 旧字段单图 → images
+  if (!x.images.length && x.image) {
+    x.images.push({ file: x.image, source: x.imageSource || "", url: x.imageUrl || "", cover: true, note: "" });
+  }
+  for (const im of x.images) {
+    if (!im.id) im.id = uid();
+    if (im.file == null) im.file = "";
+    if (im.source == null) im.source = "";
+    if (im.url == null) im.url = "";
+    if (im.note == null) im.note = "";
+    if (im.cover == null) im.cover = false;
+  }
+  if (x.images.length && !x.images.some(im => im.cover)) x.images[0].cover = true;
+  const cover = x.images.find(im => im.cover) || x.images[0];
+  x.image = cover?.file || "";
+  x.imageSource = cover?.source || "";
+  x.imageUrl = cover?.url || "";
+  if (!Array.isArray(x.steps)) x.steps = [];
+  x.steps = x.steps.map(s => (s == null ? "" : String(s)));
+  x.cues = x.cues && typeof x.cues === "object" ? x.cues : {};
+  for (const k of ["weight", "hands", "gaze", "pitfalls"]) if (x.cues[k] == null) x.cues[k] = "";
+  if (x.guide == null) x.guide = "";
+  if (!Array.isArray(x.sizes)) x.sizes = [];
+  if (!x.people) x.people = "1";
+  if (x.wardrobe == null) x.wardrobe = "";
+  if (!x.dims || typeof x.dims !== "object") x.dims = {};
+  for (const d of POSE_DIMS) {
+    if (!Array.isArray(x.dims[d])) x.dims[d] = [];
+    x.dims[d] = x.dims[d].map(v => String(v)).filter(Boolean);
+  }
+  if (!Array.isArray(x.tags)) x.tags = [];
+  // 旧自由 tags 迁入情绪维；情绪维回写 tags 供旧筛选
+  if (x.tags.length && !POSE_DIMS.some(d => x.dims[d].length)) {
+    x.dims.mood = [...x.tags];
+  }
+  x.tags = [...(x.dims.mood || [])];
+  return x;
+}
+
+export function poseCoverFile(x) {
+  const imgs = x?.images || [];
+  const hit = imgs.find(im => im.cover && im.file) || imgs.find(im => im.file);
+  return hit?.file || x?.image || "";
+}
+
+/** 卡片上最多两个情绪标签 */
+export function poseMoodChips(x, n = 2) {
+  const mood = (x?.dims?.mood?.length ? x.dims.mood : (x?.tags || []));
+  return mood.slice(0, n);
+}
+
+export function poseMatchesDims(x, filters) {
+  if (!filters) return true;
+  for (const d of POSE_DIMS) {
+    const want = filters[d];
+    if (!want) continue;
+    const have = x.dims?.[d] || [];
+    if (!have.includes(want)) return false;
+  }
+  return true;
+}
+
+/** ⌘K：按镜头场景名 / 模特角色情绪与动作标签的重合度排序 */
+export function rankPosesForShot(p, shot, poses) {
+  const sc = p.scenes.find(s => s.id === shot.sceneId);
+  const sceneName = (sc?.name || "").toLowerCase();
+  const r = resolveShot(p, shot);
+  const moodWant = new Set();
+  for (const id of r.personIds || []) {
+    const m = personById(p, id);
+    for (const t of m?.roleTraits || []) moodWant.add(String(t));
+  }
+  const scored = poses.map(x => {
+    let score = 0;
+    for (const s of x.dims?.scene || []) if (sceneName && (sceneName.includes(s.toLowerCase()) || s.toLowerCase().includes(sceneName))) score += 3;
+    for (const m of x.dims?.mood || x.tags || []) if (moodWant.has(m)) score += 2;
+    if (shot.size && (x.sizes || []).includes(shot.size)) score += 1;
+    return { x, score };
+  });
+  scored.sort((a, b) => b.score - a.score || a.x.name.localeCompare(b.x.name, "zh"));
+  return scored.map(s => s.x);
+}
+
 // ---------- 器材 ----------
 // 场地器材与自带器材合并，用 "v:id" / "o:id" 区分来源
 export function gearList(p) {

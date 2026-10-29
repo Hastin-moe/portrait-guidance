@@ -583,6 +583,36 @@ test("T23 display coords, 15° snap, shelf side and key names", () => {
   assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
 });
 
+test("T21 pose normalize, cover, dims filter", () => {
+  const old = M.normalizePose({ id: "p1", name: "回眸", image: "a.jpg", imageSource: "ai", tags: ["情绪"], cues: { weight: "x" } });
+  assert.equal(old.images.length, 1);
+  assert.equal(old.images[0].file, "a.jpg");
+  assert.equal(old.images[0].cover, true);
+  assert.ok(old.dims.mood.includes("情绪"));
+  assert.equal(M.poseCoverFile(old), "a.jpg");
+  for (const im of old.images) im.cover = false;
+  old.images.push({ file: "b.jpg", cover: true });
+  M.normalizePose(old);
+  assert.equal(M.poseCoverFile(old), "b.jpg");
+  assert.equal(M.poseMatchesDims(old, { mood: "情绪" }), true);
+  assert.equal(M.poseMatchesDims(old, { mood: "活泼" }), false);
+  assert.deepEqual(M.poseMoodChips(old, 1), ["情绪"]);
+});
+
+test("T21 starter poses and rankPosesForShot", async () => {
+  const { STARTER_POSES } = await import("../web/js/pose_starter.js");
+  assert.ok(STARTER_POSES.length >= 28);
+  const poses = STARTER_POSES.map(x => M.normalizePose(JSON.parse(JSON.stringify(x))));
+  assert.ok(poses.every(x => x.dims && x.steps));
+  const p = M.blankProject("t");
+  p.people.push(M.normalizeModel({ id: "mia", kind: "model", name: "林夏", roleTraits: ["温柔"], looks: [{ id: "l1", name: "a" }] }));
+  p.scenes.push({ id: "sc1", name: "窗边", personIds: ["mia"], lookIds: [], setupId: "", cameraId: "" });
+  p.shots.push({ id: "s1", sceneId: "sc1", size: "half", poseId: "", personIds: ["mia"] });
+  const ranked = M.rankPosesForShot(p, p.shots[0], poses);
+  assert.equal(ranked.length, poses.length);
+  assert.ok(ranked.slice(0, 8).some(x => (x.dims.scene || []).includes("窗边") || (x.dims.mood || []).includes("温柔")));
+});
+
 test("T18 model profile: normalize looks/photos/role, cover, incomplete", () => {
   const bare = { id: "m", kind: "model", name: "", height: "" };
   M.normalizeModel(bare);
