@@ -50,7 +50,8 @@ def main():
             for el_id, tag in SELS:
                 shot_sel(pg, base, pid, lang, el_id, f"{lang}-t24-{tag}.png")
         pg.set_viewport_size({"width": 1280, "height": 800})
-        shot_sel(pg, base, pid, "zh", "a-l1", "zh-t24-light-1280.png")
+        for el_id, tag in SELS:
+            shot_sel(pg, base, pid, "zh", el_id, f"zh-t24-{tag}-1280.png")
         b.close()
     print("wrote", OUT)
 

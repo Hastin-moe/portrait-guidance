@@ -40,20 +40,42 @@ def main():
             pg.goto(base + f"/#/p/{pid}/layout")
             pg.wait_for_selector("g.el[data-id='a-l1']")
             pg.click("g.el[data-id='a-l1']", force=True)
-            pg.wait_for_selector(".quickbar")
-            pg.wait_for_timeout(300)
+            pg.wait_for_selector(".quickbar:not(.is-hidden)")
+            pg.wait_for_timeout(400)
             pg.screenshot(path=str(OUT / f"{lang}-t23-quickbar.png"), full_page=False)
             pg.goto(base + f"/#/p/{pid}/layout/a-l1")
             pg.wait_for_selector(".edit-layer")
-            pg.wait_for_timeout(300)
+            # T26 F6：等标题出现「灯」再截，避免截到窗
+            pg.wait_for_function(
+                """() => {
+                  const t = document.querySelector('.edit-layer')?.innerText || '';
+                  return /灯|Light|ライト|조명/.test(t);
+                }"""
+            )
+            pg.wait_for_timeout(250)
             pg.screenshot(path=str(OUT / f"{lang}-t23-light-edit.png"), full_page=False)
+            # 五个标签页
+            tabs = ["pos", "head", "fx", "power", "rel"]
+            for i, tab in enumerate(tabs):
+                btns = pg.locator(".edit-tabs button.edit-tab")
+                if btns.count() > i:
+                    btns.nth(i).click()
+                    pg.wait_for_timeout(280)
+                    pg.screenshot(path=str(OUT / f"{lang}-t23-light-tab-{tab}.png"), full_page=False)
         pg.set_viewport_size({"width": 1280, "height": 800})
         pg.goto(base + "/#/")
         pg.select_option("select.langsel", "zh")
         pg.goto(base + f"/#/p/{pid}/layout/a-l1")
         pg.wait_for_selector(".edit-layer")
-        pg.wait_for_timeout(300)
+        pg.wait_for_function("() => (document.querySelector('.edit-layer')?.innerText || '').includes('灯')")
+        pg.wait_for_timeout(250)
         pg.screenshot(path=str(OUT / "zh-t23-light-edit-1280.png"), full_page=False)
+        for i, tab in enumerate(["pos", "head", "fx", "power", "rel"]):
+            btns = pg.locator(".edit-tabs button.edit-tab")
+            if btns.count() > i:
+                btns.nth(i).click()
+                pg.wait_for_timeout(280)
+                pg.screenshot(path=str(OUT / f"zh-t23-light-tab-{tab}-1280.png"), full_page=False)
         b.close()
     print("wrote", OUT)
 
