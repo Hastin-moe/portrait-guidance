@@ -236,6 +236,7 @@ export default {
   "model.setCover": ["设为封面", "Set as cover", "表紙にする", "표지로 설정"],
   "model.looksHelp": ["服装套组会出现在分镜的造型选项里；单品可写颜色与材质。", "Wardrobe sets appear as shot looks; items can note colour and fabric.", "衣装セットはショットのルック選択肢。単品に色・素材を書けます。", "의상 세트는 샷 룩 선택지. 단품에 색·소재를 적을 수 있습니다."],
   "model.addLook": ["添加套组", "Add set", "セットを追加", "세트 추가"],
+  "model.addItem": ["添加单品", "Add item", "アイテムを追加", "단품 추가"],
   "model.noLooks": ["还没有服装套组。", "No wardrobe sets yet.", "衣装セットがありません。", "의상 세트가 없습니다."],
   "model.lookSet": ["套组", "Set", "セット", "세트"],
   "model.lookName": ["套组名", "Set name", "セット名", "세트 이름"],
@@ -346,6 +347,8 @@ export default {
   "set.geminiKeyPh": ["粘贴你自己的 Key（可选）", "Paste your own key (optional)", "自分の Key を貼り付け（任意）", "본인 Key 붙여넣기(선택)"],
   "set.geminiKeyHelp": ["只存在本机 settings.json；默认关闭 AI。Key 填 stub 可离线冒烟（写入占位图）。", "Stored only in local settings.json; AI stays off by default. Use key “stub” for offline smoke tests.", "本機の settings.json のみ。AI は既定オフ。Key に stub でオフライン煙テスト。", "로컬 settings.json에만 저장. AI는 기본 꺼짐. Key에 stub면 오프라인 스모크."],
   "set.geminiModel": ["Gemini 图像模型", "Gemini image model", "Gemini 画像モデル", "Gemini 이미지 모델"],
+  "set.geminiModelHelp": ["模型名可在设置里改；默认 gemini-2.5-flash-image。", "You can change the model name here; default is gemini-2.5-flash-image.", "モデル名はここで変更できます（既定 gemini-2.5-flash-image）。", "모델 이름은 여기서 바꿀 수 있습니다(기본 gemini-2.5-flash-image)."],
+  "set.geminiModelStale": ["模型名可能已过期，建议改为 gemini-2.5-flash-image。", "This model name may be outdated; try gemini-2.5-flash-image.", "モデル名が古い可能性があります。gemini-2.5-flash-image への変更を推奨。", "모델 이름이 만료됐을 수 있습니다. gemini-2.5-flash-image로 바꿔 보세요."],
   "set.saved": ["设置已保存", "Settings saved", "設定を保存しました", "설정을 저장했습니다"],
 
   // ---- S2 时间与人员 ----
@@ -855,6 +858,7 @@ export default {
   "pose.imagesHelp": ["多张参考图；可设封面。来源走共用参考图模块（含情绪板 / 搜索 / AI）。", "Multiple refs; set a cover. Uses the shared reference picker (mood / search / AI).", "参考画像を複数。表紙可。共通モジュール（ムード／検索／AI）。", "참고 이미지 여러 장. 표지 설정. 공통 모듈(무드/검색/AI)."],
   "pose.noImages": ["还没有参考图。", "No reference images yet.", "参考画像がありません。", "참고 이미지가 없습니다."],
   "pose.steps": ["动作分解", "Breakdown", "動作分解", "동작 분해"],
+  "pose.addStep": ["添加步骤", "Add step", "ステップを追加", "단계 추가"],
   "pose.stepsHelp": ["有序步骤，例如：侧身站 → 重心移到后脚 → 回头看镜头。", "Ordered steps, e.g. stand sideways → weight back → look to camera.", "手順。例：横向き → 後ろ重心 → カメラを見る。", "순서 단계. 예: 옆보기 → 무게 뒤로 → 카메라 보기."],
   "pose.noSteps": ["还没有分解步骤。", "No breakdown steps yet.", "分解ステップがありません。", "분해 단계가 없습니다."],
   "pose.stepPh": ["一步动作说明", "One step", "1 ステップ", "한 단계"],

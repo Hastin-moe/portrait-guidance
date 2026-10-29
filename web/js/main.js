@@ -246,10 +246,16 @@ function settingsDlg() {
       value: S.settings.geminiApiKey || "",
       placeholder: t("set.geminiKeyPh"),
     });
+    const modelDefault = "gemini-2.5-flash-image";
+    const modelVal = S.settings.geminiModel || modelDefault;
+    const staleModels = new Set([
+      "gemini-2.0-flash-preview-image-generation",
+      "gemini-2.0-flash-exp-image-generation",
+    ]);
     const modelInp = h("input", {
       type: "text",
-      value: S.settings.geminiModel || "gemini-2.0-flash-preview-image-generation",
-      placeholder: "gemini-2.0-flash-preview-image-generation",
+      value: modelVal,
+      placeholder: modelDefault,
     });
     return [
       h("h3", t("top.settings")),
@@ -258,6 +264,8 @@ function settingsDlg() {
       h("div.field", h("label", t("set.geminiKey")), keyInp),
       h("p.small.mut", t("set.geminiKeyHelp")),
       h("div.field", h("label", t("set.geminiModel")), modelInp),
+      h("p.small.mut", t("set.geminiModelHelp")),
+      staleModels.has(modelVal) ? h("p.small", { style: { color: "var(--y)" } }, t("set.geminiModelStale")) : null,
       h("div.field", h("label", t("set.data")), h("code.small", S.dataDir || "")),
       h("p.small", t("set.dataHelp")),
       h("div.acts",

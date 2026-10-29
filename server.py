@@ -46,7 +46,11 @@ SETTINGS_DEFAULT = {
     "lang": "zh", "bufferMin": 10, "gridM": 0.5,
     # T22：用户自备 Gemini API Key；模型名可改（默认按确认稿「Nano Banana」对应的图像生成模型）
     "geminiApiKey": "",
-    "geminiModel": "gemini-2.0-flash-preview-image-generation",
+    "geminiModel": "gemini-2.5-flash-image",
+}
+OLD_GEMINI_MODELS = {
+    "gemini-2.0-flash-preview-image-generation",
+    "gemini-2.0-flash-exp-image-generation",
 }
 LOCK = threading.Lock()
 
@@ -215,10 +219,17 @@ class Store:
         (folder / name).write_bytes(data)
         return name
 
+    @staticmethod
+    def _redact_key(msg: str, key: str) -> str:
+        if not key or not msg:
+            return msg or ""
+        return str(msg).replace(key, "***")
+
     def generate_ai_images(self, pid: str, prompt: str, count: int = 1, to_library: bool = False) -> dict:
         """T22：用用户设置里的 Gemini Key 生成参考图。未填 Key 时拒绝。
 
         Key 为字面量「stub」时写入 1×1 PNG（单测 / 离线冒烟，不联网）。
+        API Key 放在请求头 x-goog-api-key，不进 URL（T26 F4）。
         """
         import base64
         import urllib.error
@@ -245,22 +256,25 @@ class Store:
             return {"files": files, "stub": True}
 
         model = (settings.get("geminiModel") or SETTINGS_DEFAULT["geminiModel"]).strip()
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         for _ in range(count):
             body = json.dumps({
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"responseModalities": ["TEXT", "IMAGE"]},
             }).encode("utf-8")
             req = urllib.request.Request(url, data=body, method="POST",
-                                         headers={"Content-Type": "application/json"})
+                                         headers={
+                                             "Content-Type": "application/json",
+                                             "x-goog-api-key": key,
+                                         })
             try:
                 with urllib.request.urlopen(req, timeout=90) as resp:
                     data = json.loads(resp.read().decode("utf-8"))
             except urllib.error.HTTPError as e:
                 err = e.read().decode("utf-8", "replace")
-                raise ValueError(f"gemini HTTP {e.code}: {err[:400]}") from e
+                raise ValueError(f"gemini HTTP {e.code}: {self._redact_key(err, key)[:400]}") from e
             except urllib.error.URLError as e:
-                raise ValueError(f"gemini network: {e}") from e
+                raise ValueError(f"gemini network: {self._redact_key(str(e), key)}") from e
             inline = None
             for cand in data.get("candidates") or []:
                 for part in ((cand.get("content") or {}).get("parts") or []):

@@ -143,6 +143,7 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(got["overview"]["theme"], "窗光")
 
     def test_ai_images_requires_key_and_stub(self):
+        self.req("PUT", "/api/settings", {"geminiApiKey": ""})
         _, p = self.req("POST", "/api/projects", {"name": "ai"})
         st, err = self.req("POST", f"/api/projects/{p['id']}/ai-images", {"prompt": "窗光", "count": 1})
         self.assertEqual(st, 400)
@@ -154,6 +155,53 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(r.get("stub"))
         st, b = self.req("GET", f"/files/{p['id']}/{r['files'][0]}", token=False, raw=True)
         self.assertEqual(b[:8], PNG[:8])
+
+    def test_ai_images_puts_key_in_header_not_url(self):
+        """T26 F4：API Key 走 x-goog-api-key，不进 URL。"""
+        import base64
+        import json
+        from unittest import mock
+
+        _, p = self.req("POST", "/api/projects", {"name": "ai-hdr"})
+        self.req("PUT", "/api/settings", {
+            "geminiApiKey": "secret-test-key-xyz",
+            "geminiModel": "gemini-2.5-flash-image",
+        })
+        fake_body = json.dumps({
+            "candidates": [{"content": {"parts": [{
+                "inlineData": {
+                    "mimeType": "image/png",
+                    "data": base64.b64encode(PNG).decode("ascii"),
+                },
+            }]}}],
+        }).encode("utf-8")
+
+        class FakeResp:
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+            def read(self): return fake_body
+
+        captured = {}
+        real_urlopen = urllib.request.urlopen
+
+        def fake_urlopen(req, timeout=90):
+            url = getattr(req, "full_url", str(req))
+            if "generativelanguage.googleapis.com" in url:
+                captured["full_url"] = url
+                captured["headers"] = dict(req.headers)
+                return FakeResp()
+            return real_urlopen(req, timeout=timeout)
+
+        with mock.patch("urllib.request.urlopen", fake_urlopen):
+            st, r = self.req("POST", f"/api/projects/{p['id']}/ai-images", {"prompt": "窗光", "count": 1})
+        self.assertEqual(st, 200, r)
+        self.assertEqual(len(r["files"]), 1)
+        self.assertNotIn("key=", captured["full_url"])
+        self.assertNotIn("secret-test-key-xyz", captured["full_url"])
+        hdrs = {k.lower(): v for k, v in captured["headers"].items()}
+        self.assertEqual(hdrs.get("x-goog-api-key"), "secret-test-key-xyz")
+        # 清掉，避免干扰其他用例
+        self.req("PUT", "/api/settings", {"geminiApiKey": ""})
 
 
 if __name__ == "__main__":
