@@ -184,6 +184,38 @@ export function normalize(p) {
     gear: true, layout: true, shots: true,
   });
   p.exportOpts.privacy = d(p.exportOpts.privacy, { contact: false, fee: false, mcn: false });
+  // EX 暂放工具数据（T22 参考图库、L-858D 测光）；与 setup.ex 光比设定分开
+  p.exTools = d(p.exTools, { refs: [], sekonic: { meter: "Sekonic L-858D", readings: [], imports: [] } });
+  p.exTools.refs = Array.isArray(p.exTools.refs) ? p.exTools.refs : [];
+  for (const r of p.exTools.refs) {
+    if (!r.id) r.id = uid();
+    if (r.file == null) r.file = "";
+    if (r.source == null) r.source = "";
+    if (r.url == null) r.url = "";
+    if (r.note == null) r.note = "";
+    if (r.shotId == null) r.shotId = "";
+    if (r.createdAt == null) r.createdAt = "";
+  }
+  p.exTools.sekonic = d(p.exTools.sekonic, { meter: "Sekonic L-858D", readings: [], imports: [] });
+  if (!p.exTools.sekonic.meter) p.exTools.sekonic.meter = "Sekonic L-858D";
+  p.exTools.sekonic.readings = Array.isArray(p.exTools.sekonic.readings) ? p.exTools.sekonic.readings : [];
+  p.exTools.sekonic.imports = Array.isArray(p.exTools.sekonic.imports) ? p.exTools.sekonic.imports : [];
+  for (const r of p.exTools.sekonic.readings) {
+    if (!r.id) r.id = uid();
+    if (r.setupId == null) r.setupId = "";
+    if (r.elementId == null) r.elementId = "";
+    if (r.shotId == null) r.shotId = "";
+    if (!r.mode) r.mode = "flash";
+    if (r.faceFstop == null) r.faceFstop = "";
+    if (r.faceLux == null) r.faceLux = "";
+    if (!(Number(r.iso) > 0)) r.iso = 100;
+    if (r.shutter == null) r.shutter = "";
+    if (r.note == null) r.note = "";
+    if (r.meter == null) r.meter = p.exTools.sekonic.meter;
+    if (r.importedAt == null) r.importedAt = "";
+    if (r.createdAt == null) r.createdAt = "";
+    if (r.raw === undefined) r.raw = null;
+  }
   return p;
 }
 

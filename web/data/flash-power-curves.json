@@ -1,0 +1,2354 @@
+{
+  "schema": "portrait-guidance.flash-power-curves/v1",
+  "updated": "2026-10-30",
+  "description": "Relative flash power curves for EX estimates. Prefer official range + ideal stop math; lab curves TBD.",
+  "uncertainty": "Unless status=measured, relativeOutput is estimated from stop math or display mapping — not a calibrated lux/f-stop table.",
+  "curves": [
+    {
+      "id": "ideal-proportional",
+      "brand": "_generic",
+      "model": "Ideal proportional output",
+      "catalogIds": [],
+      "scale": "fraction",
+      "assumption": "relative_energy ∝ 2^(-stops_from_full); valid only for proportional-output strobes in M mode",
+      "confidence": "model",
+      "status": "estimated",
+      "source": "Photographic stop math (1 stop = ×2 energy). See learnstudiolighting.com flash power & exposure stops.",
+      "source_url": "https://learnstudiolighting.com/learn/flash-power-exposure-stops/",
+      "notes": "Not a lab-measured curve. Real heads deviate at low power / HSS / color modes.",
+      "step": 1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-studio-display-10",
+      "brand": "Godox",
+      "brandDefault": true,
+      "model": "Studio display 10.0=full (SK/MS/DP style)",
+      "catalogIds": [],
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "ideal-proportional",
+      "assumption": "Display N → stopsFromFull = 10−N (1.0 display step ≈ 1 stop)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN — SK/MS/DP power control notes (5.0–10.0 / 4.0–10.0)",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Maps display numbers onto ideal proportional curve; not a measured lux table.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-display-10",
+      "brand": "Broncolor",
+      "brandDefault": true,
+      "model": "Broncolor energy display (10=full)",
+      "catalogIds": [],
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "ideal-proportional",
+      "assumption": "Whole numbers = full f-stops; decimals = 1/10 stop (Scoro / Siros family docs)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "broncolor Helpjuice — Scoro energy control; Siros family energy display conventions",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Absolute joules depend on pack; this curve is relative to selected channel full. Pending per-model verification.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "profoto-display-placeholder",
+      "brand": "Profoto",
+      "brandDefault": true,
+      "model": "Profoto display (placeholder)",
+      "catalogIds": [],
+      "scale": "display_10",
+      "fullDisplay": 10,
+      "inherits": "ideal-proportional",
+      "assumption": "Integer steps ≈ 1 stop (brand UX); exact Ws mapping TBD",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Community / brand UX convention — no project Profoto catalog yet",
+      "source_url": "",
+      "notes": "器材库尚未收录 Profoto 完整条目；此条仅占位，勿当实验室数据。",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad100pro-ii",
+      "brand": "Godox",
+      "model": "AD100Pro II",
+      "catalogIds": [
+        "godox-ad100pro-ii"
+      ],
+      "power_ws": 100,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/256–1/1, 0.1 stop",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD100ProII Tech Specs",
+      "source_url": "https://www.godox.com/product-e/AD100ProII.html",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad200pro-ii",
+      "brand": "Godox",
+      "model": "AD200Pro II",
+      "catalogIds": [
+        "godox-ad200pro-ii"
+      ],
+      "power_ws": 200,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1, 0.1 stop",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad300pro-ii",
+      "brand": "Godox",
+      "model": "AD300Pro II",
+      "catalogIds": [
+        "godox-ad300pro-ii"
+      ],
+      "power_ws": 300,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1, 0.1 stop",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD300ProII PDF",
+      "source_url": "https://www.godox.com/Downloads/Godox_AD300ProII.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad400pro-ii",
+      "brand": "Godox",
+      "model": "AD400Pro II",
+      "catalogIds": [
+        "godox-ad400pro-ii"
+      ],
+      "power_ws": 400,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1 (0.1 stop typ.)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD400ProII PDF",
+      "source_url": "https://godox.com/Downloads/Godox_AD400ProII.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad600pro-ii",
+      "brand": "Godox",
+      "model": "AD600Pro II",
+      "catalogIds": [
+        "godox-ad600pro-ii"
+      ],
+      "power_ws": 600,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1 (0.1 stop typ.)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD600ProII product page",
+      "source_url": "https://www.godox.com/product-b/Flash/AD600ProII.html",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad600bm-ii",
+      "brand": "Godox",
+      "model": "AD600BM II",
+      "catalogIds": [
+        "godox-ad600bm-ii"
+      ],
+      "power_ws": 600,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1, 0.1 stop",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD600BMII Tech Specs",
+      "source_url": "https://www.godox.com/product-b/Flash/AD600BMII.html",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad800pro",
+      "brand": "Godox",
+      "model": "AD800Pro",
+      "catalogIds": [
+        "godox-ad800pro"
+      ],
+      "power_ws": 800,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/512–1/1, 0.1 stop",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD800Pro Tech Specs",
+      "source_url": "https://www.godox.com/product-e/AD800Pro.html",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1/512",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ad1200pro",
+      "brand": "Godox",
+      "model": "AD1200Pro",
+      "catalogIds": [
+        "godox-ad1200pro"
+      ],
+      "power_ws": 1200,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/256–1/1",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox AD1200Pro EN manual",
+      "source_url": "https://godox.pl/wp-content/uploads/2021/02/Godox_AD1200Pro_EN_20200820-1.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-qt400iiim",
+      "brand": "Godox",
+      "model": "QT400IIIM",
+      "catalogIds": [
+        "godox-qt400iiim"
+      ],
+      "power_ws": 400,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/256–1/1",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-qt600iiim",
+      "brand": "Godox",
+      "model": "QT600IIIM",
+      "catalogIds": [
+        "godox-qt600iiim"
+      ],
+      "power_ws": 600,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/256–1/1",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-qt1200iiim",
+      "brand": "Godox",
+      "model": "QT1200IIIM",
+      "catalogIds": [
+        "godox-qt1200iiim"
+      ],
+      "power_ws": 1200,
+      "scale": "fraction",
+      "inherits": "ideal-proportional",
+      "power_steps_note": "1/256–1/1",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Official docs publish power range / step size; relative output uses ideal proportional model until lab curve exists.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "1/1",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": false
+        },
+        {
+          "level": "1/2",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "1/4",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "1/8",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "1/16",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "1/32",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "1/64",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "1/128",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "1/256",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ms200v",
+      "brand": "Godox",
+      "model": "MS200V",
+      "catalogIds": [
+        "godox-ms200v"
+      ],
+      "power_ws": 200,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "5.0–10.0 (1/32–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-ms300v",
+      "brand": "Godox",
+      "model": "MS300V",
+      "catalogIds": [
+        "godox-ms300v"
+      ],
+      "power_ws": 300,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "5.0–10.0 (1/32–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-sk300iiv",
+      "brand": "Godox",
+      "model": "SK300IIV",
+      "catalogIds": [
+        "godox-sk300iiv"
+      ],
+      "power_ws": 300,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "6.0–10.0 (1/16–1/1 typ.)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-sk400iiv",
+      "brand": "Godox",
+      "model": "SK400IIV",
+      "catalogIds": [
+        "godox-sk400iiv"
+      ],
+      "power_ws": 400,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "6.0–10.0 (1/16–1/1 typ.)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-dp400iiiv",
+      "brand": "Godox",
+      "model": "DP400IIIV",
+      "catalogIds": [
+        "godox-dp400iiiv"
+      ],
+      "power_ws": 400,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "4.0–10.0 (1/64–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-dp600iiiv",
+      "brand": "Godox",
+      "model": "DP600IIIV",
+      "catalogIds": [
+        "godox-dp600iiiv"
+      ],
+      "power_ws": 600,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "4.0–10.0 (1/64–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-dp800iiiv",
+      "brand": "Godox",
+      "model": "DP800IIIV",
+      "catalogIds": [
+        "godox-dp800iiiv"
+      ],
+      "power_ws": 800,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "4.0–10.0 (1/64–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "godox-dp1000iiiv",
+      "brand": "Godox",
+      "model": "DP1000IIIV",
+      "catalogIds": [
+        "godox-dp1000iiiv"
+      ],
+      "power_ws": 1000,
+      "scale": "godox_studio_10",
+      "fullDisplay": 10,
+      "inherits": "godox-studio-display-10",
+      "power_steps_note": "4.0–10.0 (1/64–1/1)",
+      "confidence": "medium",
+      "status": "range_known_curve_ideal",
+      "source": "Godox Photography Lighting Catalogue EN",
+      "source_url": "https://godox.com/Downloads/Godox_Photography_Lighting_Catalogue_EN.pdf",
+      "notes": "Display→stop map assumed linear; verify on head before critical ratio work.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-siros-400-s",
+      "brand": "Broncolor",
+      "model": "Siros 400 S",
+      "catalogIds": [
+        "broncolor-siros-400-s"
+      ],
+      "power_ws": 400,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-siros-800-s",
+      "brand": "Broncolor",
+      "model": "Siros 800 S",
+      "catalogIds": [
+        "broncolor-siros-800-s"
+      ],
+      "power_ws": 800,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-siros-400-l",
+      "brand": "Broncolor",
+      "model": "Siros 400 L",
+      "catalogIds": [
+        "broncolor-siros-400-l"
+      ],
+      "power_ws": 400,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-siros-800-l",
+      "brand": "Broncolor",
+      "model": "Siros 800 L",
+      "catalogIds": [
+        "broncolor-siros-800-l"
+      ],
+      "power_ws": 800,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-satos-1600",
+      "brand": "Broncolor",
+      "model": "Satos 1600",
+      "catalogIds": [
+        "broncolor-satos-1600"
+      ],
+      "power_ws": 1600,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-satos-3200",
+      "brand": "Broncolor",
+      "model": "Satos 3200",
+      "catalogIds": [
+        "broncolor-satos-3200"
+      ],
+      "power_ws": 3200,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-move-1200-l",
+      "brand": "Broncolor",
+      "model": "Move 1200 L",
+      "catalogIds": [
+        "broncolor-move-1200-l"
+      ],
+      "power_ws": 1200,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-pulso-l",
+      "brand": "Broncolor",
+      "model": "Pulso L",
+      "catalogIds": [
+        "broncolor-pulso-l"
+      ],
+      "power_ws": 3200,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "broncolor-mobiled",
+      "brand": "Broncolor",
+      "model": "MobiLED",
+      "catalogIds": [
+        "broncolor-mobiled"
+      ],
+      "power_ws": 1200,
+      "scale": "broncolor_10",
+      "fullDisplay": 10,
+      "inherits": "broncolor-display-10",
+      "confidence": "low",
+      "status": "pending_measure",
+      "source": "Broncolor product family energy-control convention (Scoro/Siros docs)",
+      "source_url": "https://broncolor.helpjuice.com/en_US/scoro-energy-control-en",
+      "notes": "Per-outlet joules / asymmetry not encoded. Marked pending_measure.",
+      "step": 0.1,
+      "points": [
+        {
+          "level": "10",
+          "stopsFromFull": 0,
+          "relativeOutput": 1,
+          "estimated": true
+        },
+        {
+          "level": "9",
+          "stopsFromFull": 1,
+          "relativeOutput": 0.5,
+          "estimated": true
+        },
+        {
+          "level": "8",
+          "stopsFromFull": 2,
+          "relativeOutput": 0.25,
+          "estimated": true
+        },
+        {
+          "level": "7",
+          "stopsFromFull": 3,
+          "relativeOutput": 0.125,
+          "estimated": true
+        },
+        {
+          "level": "6",
+          "stopsFromFull": 4,
+          "relativeOutput": 0.0625,
+          "estimated": true
+        },
+        {
+          "level": "5",
+          "stopsFromFull": 5,
+          "relativeOutput": 0.03125,
+          "estimated": true
+        },
+        {
+          "level": "4",
+          "stopsFromFull": 6,
+          "relativeOutput": 0.015625,
+          "estimated": true
+        },
+        {
+          "level": "3",
+          "stopsFromFull": 7,
+          "relativeOutput": 0.0078125,
+          "estimated": true
+        },
+        {
+          "level": "2",
+          "stopsFromFull": 8,
+          "relativeOutput": 0.00390625,
+          "estimated": true
+        },
+        {
+          "level": "1",
+          "stopsFromFull": 9,
+          "relativeOutput": 0.001953125,
+          "estimated": true
+        }
+      ]
+    },
+    {
+      "id": "aputure-continuous-n-a",
+      "brand": "Aputure",
+      "model": "Continuous LED (not flash)",
+      "catalogIds": [],
+      "scale": "percent",
+      "confidence": "n/a",
+      "status": "n_a",
+      "source": "Aputure catalogue in this project is continuous LED (lux), not strobe Ws curves",
+      "source_url": "",
+      "notes": "闪光功率曲线不适用；持续光请用 lux / 面光表，勿套用本文件 fraction 模型。",
+      "points": []
+    }
+  ]
+}

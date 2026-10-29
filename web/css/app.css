@@ -49,6 +49,15 @@ nav.steps a.extra .num{width:auto;min-width:22px;padding:0 4px;border-radius:11p
 /* EX 光比面板 */
 .lr-head{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin:6px 0 10px;background:var(--panel)}
 .lr-big{font-size:28px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.ex-sec-nav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.ex-sec{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:6px 12px;font:inherit;cursor:pointer;color:var(--fg)}
+.ex-sec.on{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+.ex-ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:8px}
+.ex-ref-card{position:relative;border:1px solid var(--line);border-radius:var(--radius-l);overflow:hidden;background:var(--panel)}
+.ex-ref-card .img{aspect-ratio:1;background:var(--stage) center/cover no-repeat}
+.ex-ref-card .bd{padding:8px}
+.ex-sk-card{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin:10px 0;background:var(--panel)}
+.ex-curve-out{margin-top:8px;padding:10px 12px;border:1px dashed var(--line);border-radius:var(--radius)}
 .lr-card{border:1px solid var(--line);border-radius:var(--radius);padding:9px 10px;margin:8px 0;background:var(--panel);cursor:pointer}
 .lr-card:hover{border-color:var(--mut)}.lr-card:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .lr-card.key{border-color:var(--fg)}
