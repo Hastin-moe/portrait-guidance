@@ -16,6 +16,9 @@ export function openCamView3d(p, setupId, camEl) {
       style: { width: "100%", maxHeight: "60vh", background: "#111", borderRadius: "8px", cursor: "grab", touchAction: "none" },
     });
     const meta = h("p.small.mut");
+    const focalInput = h("input", { type: "number", min: 14, max: 200, step: 1, value: focal, style: { width: "72px", marginLeft: "6px" },
+      oninput: e => { focal = Number(e.target.value) || DEFAULT_FOCAL; paint(); } });
+    const setFocal = v => { focal = v; focalInput.value = v; paint(); };
     const paint = () => {
       cam.focal = focal;
       cam.hfovDeg = M.fovDeg(focal);
@@ -54,11 +57,9 @@ export function openCamView3d(p, setupId, camEl) {
       canvas,
       meta,
       h("div.row.wrap", { style: { gap: "10px", marginTop: "10px" } },
-        h("label.small", t("cam3d.focal"),
-          h("input", { type: "number", min: 14, max: 200, step: 1, value: focal, style: { width: "72px", marginLeft: "6px" },
-            oninput: e => { focal = Number(e.target.value) || DEFAULT_FOCAL; paint(); } })),
-        h("button.sm", { onclick: () => { focal = 20; paint(); const inp = document.querySelector(".dlg input[type=number]"); if (inp) inp.value = 20; } }, "20mm"),
-        h("button.sm", { onclick: () => { focal = Number(camEl.focal) || 50; paint(); const inp = document.querySelector(".dlg input[type=number]"); if (inp) inp.value = focal; } }, t("cam3d.useShotFocal")),
+        h("label.small", t("cam3d.focal"), focalInput),
+        h("button.sm", { onclick: () => setFocal(DEFAULT_FOCAL) }, "20mm"),
+        h("button.sm", { onclick: () => setFocal(Number(camEl.focal) || 50) }, t("cam3d.useShotFocal")),
         h("button.sm", { onclick: () => { cam = cameraFromElement(camEl, focal, eye); paint(); } }, t("cam3d.reset"))),
       h("div.acts", h("button.primary", { onclick: () => close() }, t("common.close"))),
     ];
