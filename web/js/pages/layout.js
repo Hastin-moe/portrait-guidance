@@ -32,14 +32,48 @@ function svgPoint(svg, x, y) {
   return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
 
-/** 画布弧标签：棚坐标左右 / 光位名 / 景别（已本地化） */
+/** 关系文案标签包（四语 + 括号模板） */
+export function relLabels() {
+  return {
+    az: t("layout.az"),
+    camAxis: t("layout.camAxis"),
+    elev: t("layout.elev"),
+    slant: t("layout.dslant"),
+    backdrop: t("layout.backdropDist"),
+    frameH: t("layout.frameH"),
+    incidence: t("layout.incidence"),
+    window: t("el.window"),
+    paren: t("fmt.paren"),
+  };
+}
+
+/** 画布弧标签：统一 format*Hud（短版），夹角跟在光位名后 */
 function decorateArcs(arcs) {
-  return (arcs || []).map(a => ({
-    ...a,
-    sideLabel: a.side ? t("layout.side." + a.side) : "",
-    keyLabel: a.keyName ? t("layout.key." + a.keyName) : "",
-    viewLabelText: a.viewLabel ? t("layout.view." + a.viewLabel) : "",
-  }));
+  const base = relLabels();
+  return (arcs || []).map(a => {
+    const side = a.side ? t("layout.side." + a.side) : "";
+    const key = a.keyName ? t("layout.key." + a.keyName) : "";
+    const view = a.viewLabel ? t("layout.view." + a.viewLabel) : "";
+    const labels = { ...base, side, key, view, frameLabel: a.frameLabel ? t("size." + a.frameLabel) : "" };
+    let hudText = "";
+    if (a.kind === "lightPerson" || a.keyName) {
+      hudText = M.formatLightHud(a, labels, { short: true });
+    } else if (a.kind === "cameraPerson" || a.viewLabel) {
+      hudText = M.formatCameraHud(a, labels);
+    } else if (a.kind === "personWindow") {
+      hudText = M.formatWindowHud(a, labels);
+    } else {
+      hudText = [a.label, a.alphaDeg != null ? `${a.alphaDeg}°` : "", side].filter(Boolean).join(" · ");
+    }
+    return {
+      ...a,
+      sideLabel: side,
+      keyLabel: key,
+      viewLabelText: view,
+      elevLabel: a.elevDeg != null ? `${base.elev} ${a.elevDeg}°` : "",
+      hudText,
+    };
+  });
 }
 
 function relationPack(p, setupId, focusId, overrides = null) {
@@ -108,9 +142,11 @@ export function renderLayoutPage(ctx, mode = "plan") {
     const sr = stage.getBoundingClientRect();
     quickbar.classList.remove("is-hidden");
     const br = quickbar.getBoundingClientRect();
+    // 元素大约半宽（屏幕 px），浮条放上方；上方不够则放到元素下方之外，避免挡住双击
+    const elPad = Math.max(22, Math.abs(ctm.a) * 0.35);
     let left = scr.x - sr.left - br.width / 2;
-    let top = scr.y - sr.top - br.height - 12;
-    if (top < 4) top = scr.y - sr.top + 16;
+    let top = scr.y - sr.top - br.height - elPad;
+    if (top < 4) top = scr.y - sr.top + elPad + 8;
     left = Math.max(4, Math.min(Math.max(4, sr.width - br.width - 4), left));
     top = Math.max(4, Math.min(Math.max(4, sr.height - br.height - 4), top));
     quickbar.style.left = left + "px";
@@ -134,36 +170,45 @@ export function renderLayoutPage(ctx, mode = "plan") {
   let drag = null, pan = null;
 
   svg.addEventListener("pointerdown", ev => {
-    const pt = svgPoint(svg, ev.clientX, ev.clientY);
+    const g0 = ev.target.closest?.("g.el") || null;
+    // T26 F12：先判双击，避免 CTM/拖动逻辑干扰第二下
+    if (g0 && !spaceDown && ev.button !== 1) {
+      const id0 = g0.dataset.id, f0 = findEl(p, id0);
+      if (f0) {
+        const now = performance.now();
+        const tap = st.lastTap;
+        if (tap && tap.id === id0 && now - tap.t < 500 && !tap.dragged) {
+          st.lastTap = null;
+          drag = null;
+          clearTimeout(st._tapRedraw);
+          ev.preventDefault();
+          ctx.openEdit("element", id0);
+          return;
+        }
+        st.lastTap = { id: id0, t: now, dragged: false };
+      }
+    }
+    let pt;
+    try { pt = svgPoint(svg, ev.clientX, ev.clientY); } catch { pt = { x: 0, y: 0 }; }
     if (st.calib) {                                       // 比例尺标定：在底图上点两下
       st.calib.pts.push(pt);
       if (st.calib.pts.length === 2) finishCalib(); else { toast(t("layout.calib2")); }
       return;
     }
-    const g = ev.target.closest("g.el");
+    const g = g0;
     if (!g || spaceDown || ev.button === 1) {               // 空白处拖动 = 平移；单击空白 = 取消选择
       hideQuickbar();
       pan = { x: ev.clientX, y: ev.clientY, vb: svg.getAttribute("viewBox").split(" ").map(Number), moved: false, clear: !g };
-      svg.setPointerCapture(ev.pointerId);
+      try { svg.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
       return;
     }
     const id = g.dataset.id, f = findEl(p, id);
     if (!f) return;
-    // T26 F12：自判双击（重绘后 ev.detail 不可靠）
-    const now = performance.now();
-    const tap = st.lastTap;
-    if (tap && tap.id === id && now - tap.t < 350 && !tap.dragged) {
-      st.lastTap = null;
-      drag = null;
-      ctx.openEdit("element", id);
-      return;
-    }
-    st.lastTap = { id, t: now, dragged: false };
     if (st.selected !== id) { st.selected = id; }
     if (ro) { ctx.rerender(); return; }
     hideQuickbar();
     drag = { id, g, sx: pt.x, sy: pt.y, ox: f.e.x, oy: f.e.y, nx: f.e.x, ny: f.e.y, moved: false };
-    svg.setPointerCapture(ev.pointerId);
+    try { svg.setPointerCapture(ev.pointerId); } catch { /* 合成事件可能不支持 */ }
   });
   svg.addEventListener("pointermove", ev => {
     if (drag) {
@@ -172,7 +217,8 @@ export function renderLayoutPage(ctx, mode = "plan") {
       drag.nx = Math.round((drag.ox + pt.x - drag.sx) / snap) * snap;
       drag.ny = Math.round((drag.oy + pt.y - drag.sy) / snap) * snap;
       drag.nx = Math.max(-0.5, Math.min(w + 0.5, drag.nx)); drag.ny = Math.max(-0.5, Math.min(d + 0.5, drag.ny));
-      if (Math.abs(drag.nx - drag.ox) + Math.abs(drag.ny - drag.oy) > 0) {
+      // 超过半格才算拖动，避免单击时的亚像素抖动打断双击判定
+      if (Math.abs(drag.nx - drag.ox) + Math.abs(drag.ny - drag.oy) > grid / 4) {
         drag.moved = true;
         if (st.lastTap) st.lastTap.dragged = true;
       }
@@ -192,12 +238,21 @@ export function renderLayoutPage(ctx, mode = "plan") {
   svg.addEventListener("pointerup", () => {
     if (drag) {
       const dd = drag; drag = null;
-      if (dd.moved) commit(q => { const e = findEl(q, dd.id).e; e.x = +dd.nx.toFixed(3); e.y = +dd.ny.toFixed(3); });
-      else ctx.rerender();
+      if (dd.moved) {
+        clearTimeout(st._tapRedraw);
+        commit(q => { const e = findEl(q, dd.id).e; e.x = +dd.nx.toFixed(3); e.y = +dd.ny.toFixed(3); });
+      } else {
+        // T26 F12：单击不立刻拆节点，也不马上显示快捷条（避免挡住第二下）
+        clearTimeout(st._tapRedraw);
+        st._tapRedraw = setTimeout(() => ctx.rerender(), 300);
+      }
     } else if (pan && pan.moved) {
       requestAnimationFrame(placeQuickbar);
     }
-    if (pan && !pan.moved && pan.clear && st.selected) { st.selected = null; ctx.rerender(); }
+    if (pan && !pan.moved && pan.clear && st.selected) {
+      clearTimeout(st._tapRedraw);
+      st.selected = null; ctx.rerender();
+    }
     pan = null;
   });
   svg.addEventListener("wheel", ev => {
@@ -349,21 +404,22 @@ export function renderLayoutPage(ctx, mode = "plan") {
     const relLines = (() => {
       const rel = pack.rel;
       if (!rel?.subject) return null;
+      const LBL = relLabels();
       const lines = [];
       if (e.kind === "light") {
         const L = rel.lights.find(x => x.lightId === e.id);
-        if (L) lines.push(M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName)));
+        if (L) lines.push(M.formatLightHud(L, { ...LBL, side: t("layout.side." + L.side), key: t("layout.key." + L.keyName) }));
       } else if (e.kind === "camera" && rel.camera) {
         const C = rel.camera;
-        lines.push(`${C.label} · ${C.dXY.toFixed(2)} m · ${C.azDeg}°（${t("layout.side." + C.side)}）· ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°`);
+        lines.push(M.formatCameraHud(C, { ...LBL, side: t("layout.side." + C.side), view: t("layout.view." + C.viewLabel), frameLabel: t("size." + C.frameLabel) }));
       } else if (e.kind === "person" || e.kind === "mark") {
-        for (const L of rel.lights) lines.push(M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName)));
+        for (const L of rel.lights) lines.push(M.formatLightHud(L, { ...LBL, side: t("layout.side." + L.side), key: t("layout.key." + L.keyName) }));
         if (rel.camera) {
           const C = rel.camera;
-          lines.push(`${C.label} · ${C.dXY.toFixed(2)} m · ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°（${t("layout.side." + C.side)}）`);
+          lines.push(M.formatCameraHud(C, { ...LBL, side: t("layout.side." + C.side), view: t("layout.view." + C.viewLabel), frameLabel: t("size." + C.frameLabel) }));
         }
         if (rel.backdrop) lines.push(`${t("dist.personBackdrop")} · ${rel.backdrop.dMin.toFixed(2)} m · ${t("layout.side." + rel.backdrop.side)}`);
-        if (rel.window) lines.push(`${t("dist.personWindow")} · ${rel.window.dMin.toFixed(2)} m · ${rel.window.azDeg}°（${t("layout.side." + rel.window.side)}）`);
+        if (rel.window) lines.push(M.formatWindowHud(rel.window, { ...LBL, side: t("layout.side." + rel.window.side) }));
       } else if (pack.distances.length) {
         for (const x of pack.distances) lines.push(`${t("dist." + x.kind)}：${x.d.toFixed(2)} m`);
       }
@@ -575,12 +631,15 @@ function renderElementEdit(ctx, mode, setup) {
         h("td", t("layout.side." + L.side)),
         h("td", `${L.alphaDeg}° · ${t("layout.key." + L.keyName)}`),
         h("td", L.elevDeg != null ? L.elevDeg + "°" : "—"),
+        h("td", L.camAxisDeg != null ? L.camAxisDeg + "°" : "—"),
+        h("td", L.dBackdrop != null ? L.dBackdrop.toFixed(2) + " m" : "—"),
       )] : [];
+      const LBL = relLabels();
       body = editForm([
         h("p.small.mut", t("layout.relHelp")),
-        L ? h("p.small", M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName))) : null,
+        L ? h("p.small", M.formatLightHud(L, { ...LBL, side: t("layout.side." + L.side), key: t("layout.key." + L.keyName) })) : null,
         subject ? h("table.grid",
-          h("tr", h("th", "ID"), h("th", t("layout.dxy")), h("th", t("layout.dslant")), h("th", t("layout.az")), h("th", t("layout.lr")), h("th", t("layout.keyName")), h("th", t("layout.elev"))),
+          h("tr", h("th", "ID"), h("th", t("layout.dxy")), h("th", t("layout.dslant")), h("th", t("layout.az")), h("th", t("layout.lr")), h("th", t("layout.keyName")), h("th", t("layout.elev")), h("th", t("layout.camAxis")), h("th", t("layout.backdropDist"))),
           ...rows)
           : h("p.mut", t("layout.noSubject")),
       ]);
@@ -610,16 +669,17 @@ function renderElementEdit(ctx, mode, setup) {
     if (e.kind !== "camera" && e.kind !== "person" && e.kind !== "mark") return null;
     const rel = M.relativeAngles(p, (f.setup || setup).id, (e.kind === "person" || e.kind === "mark") ? e.id : null);
     if (!rel.subject) return h("p.mut", t("layout.noSubject"));
+    const LBL = relLabels();
     const bits = [];
     if (e.kind === "camera" && rel.camera) {
       const C = rel.camera;
-      bits.push(h("div.small", `${C.label} · ${C.dXY.toFixed(2)} m · ${C.azDeg}°（${t("layout.side." + C.side)}）· ${t("layout.view." + C.viewLabel)} ${C.alphaDeg}°`));
+      bits.push(h("div.small", M.formatCameraHud(C, { ...LBL, side: t("layout.side." + C.side), view: t("layout.view." + C.viewLabel), frameLabel: t("size." + C.frameLabel) })));
     }
     if (e.kind === "person" || e.kind === "mark") {
-      for (const L of rel.lights) bits.push(h("div.small", M.formatLightHud(L, t("layout.side." + L.side), t("layout.key." + L.keyName))));
-      if (rel.camera) bits.push(h("div.small", `${rel.camera.label} · ${rel.camera.dXY.toFixed(2)} m · ${t("layout.view." + rel.camera.viewLabel)} ${rel.camera.alphaDeg}°`));
+      for (const L of rel.lights) bits.push(h("div.small", M.formatLightHud(L, { ...LBL, side: t("layout.side." + L.side), key: t("layout.key." + L.keyName) })));
+      if (rel.camera) bits.push(h("div.small", M.formatCameraHud(rel.camera, { ...LBL, side: t("layout.side." + rel.camera.side), view: t("layout.view." + rel.camera.viewLabel), frameLabel: t("size." + rel.camera.frameLabel) })));
       if (rel.backdrop) bits.push(h("div.small", `${t("dist.personBackdrop")} · ${rel.backdrop.dMin.toFixed(2)} m`));
-      if (rel.window) bits.push(h("div.small", `${t("dist.personWindow")} · ${rel.window.dMin.toFixed(2)} m · ${t("layout.incidence")} ${rel.window.incidenceDeg}°`));
+      if (rel.window) bits.push(h("div.small", M.formatWindowHud(rel.window, { ...LBL, side: t("layout.side." + rel.window.side) })));
     }
     return [h("h4", t("layout.relations")), h("p.small.mut", t("layout.relHelp")), ...bits];
   })();

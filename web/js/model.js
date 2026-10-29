@@ -367,10 +367,19 @@ export function wrapReminders(p, { withinMin = 30 } = {}) {
   return out;
 }
 
-/** S5 灯位关系短句：L1 伦勃朗光 45° 左 */
-export function formatShotLightRel(row, sideLabel, keyLabel) {
+/** S5 灯位关系短句：与 HUD 同源格式（短版） */
+export function formatShotLightRel(row, sideLabel, keyLabel, extra = {}) {
   if (!row) return "";
-  return `${row.label} ${keyLabel} ${row.alphaDeg}° ${sideLabel}`;
+  return formatLightHud(row, {
+    side: sideLabel,
+    key: keyLabel,
+    az: extra.az || "",
+    paren: extra.paren || "({v})",
+    camAxis: extra.camAxis || "",
+    elev: extra.elev || "",
+    slant: extra.slant || "",
+    backdrop: extra.backdrop || "",
+  }, { short: true });
 }
 
 export function setLookCount(person, n, namer = i => String(i + 1)) {
@@ -973,7 +982,10 @@ export function newElement(kind, x, y) {
   return e;
 }
 
-/** 规范化场地图元素（站位点字段） */
+/** 灯 / 机位 / 人物 / 站位点朝向进 15° 档；墙窗门背景纸不取档（贴合场地） */
+const SNAP_ROT_KINDS = new Set(["light", "camera", "person", "mark"]);
+
+/** 规范化场地图元素（站位点字段；T26 F8(d) 朝向取档） */
 export function normalizeElement(e) {
   if (!e || typeof e !== "object") return e;
   if (e.kind === "mark") {
@@ -984,6 +996,9 @@ export function normalizeElement(e) {
     if (e.poseId == null) e.poseId = "";
     if (!Array.isArray(e.shotIds)) e.shotIds = [];
     if (e.label == null) e.label = "";
+  }
+  if (SNAP_ROT_KINDS.has(e.kind) && e.rot != null && e.rot !== "") {
+    e.rot = snapDeg15(e.rot);
   }
   return e;
 }
@@ -1418,6 +1433,44 @@ export function cameraViewLabel(absAlpha15) {
   return "back";
 }
 
+/**
+ * 有符号夹角（显示系）：从向量 A 转到向量 B，逆时针为正，再 roundRelDeg15。
+ * 用于灯相对机位轴线 camAxisDeg。
+ */
+export function signedAngleDisp15(ox, oy, ax, ay, bx, by) {
+  const ax0 = (Number(ax) || 0) - (Number(ox) || 0);
+  const ay0 = (Number(ay) || 0) - (Number(oy) || 0);
+  const bx0 = (Number(bx) || 0) - (Number(ox) || 0);
+  const by0 = (Number(by) || 0) - (Number(oy) || 0);
+  if (Math.hypot(ax0, ay0) < 1e-9 || Math.hypot(bx0, by0) < 1e-9) return 0;
+  const raw = Math.atan2(ax0 * by0 - ay0 * bx0, ax0 * bx0 + ay0 * by0) * 180 / Math.PI;
+  return roundRelDeg15(raw);
+}
+
+/** 机位平面画面高度（m）：全画幅 H = d × 24/f；orient==="portrait" 用 36 */
+export function frameHeightM(dM, focalMm, orient) {
+  const sensor = orient === "portrait" ? 36 : 24;
+  const f = Number(focalMm) || 50;
+  const d = Number(dM) || 0;
+  if (!(f > 0)) return 0;
+  return d * sensor / f;
+}
+
+/** 画面高度 → 景别 key（close/bust/half/knee/full） */
+export function frameSizeKey(hM) {
+  const H = Number(hM) || 0;
+  if (H < 0.35) return "close";
+  if (H < 0.6) return "bust";
+  if (H < 1.0) return "half";
+  if (H < 1.4) return "knee";
+  return "full";
+}
+
+/** 括号模板：中日全角（{v}），英韩半角 ({v}) */
+export function wrapParen(inner, parenTpl) {
+  return String(parenTpl || "({v})").replace(/\{v\}/g, inner == null ? "" : String(inner));
+}
+
 /** 可选位置覆盖（拖动预览用）：{ [id]: { x, y, rot? } } */
 function elWithOverride(e, overrides) {
   if (!e || !overrides || !overrides[e.id]) return e;
@@ -1452,16 +1505,67 @@ export function relativeAngles(p, setupId, subjectRef, overrides = null) {
     return m;
   })();
 
+  const backs = els.filter(e => e.kind === "backdrop");
+  const lightBackdropDist = (lightEl) => {
+    if (!backs.length) return null;
+    let best = Infinity;
+    for (const e of backs) {
+      const [a, b] = segmentEnds(e);
+      const n = nearestOnSegment(lightEl, a, b);
+      if (n.d < best) best = n.d;
+    }
+    return Math.round(best * 100) / 100;
+  };
+
+  let camera = null;
+  const cams = setupEls.filter(x => x.kind === "camera");
+  let camEl = null;
+  if (cams.length) {
+    camEl = cams.reduce((best, e) => {
+      const d0 = dist(subject, e);
+      return !best || d0 < best.d ? { e, d: d0 } : best;
+    }, null)?.e;
+  }
+  let camDisp = null;
+  if (camEl) {
+    camDisp = toDisplayXY(venue, camEl.x, camEl.y);
+    const dXY = Math.hypot(camDisp.x - S.x, camDisp.y - S.y);
+    const alpha = relAngleToHeading15(S.x, S.y, head, camDisp.x, camDisp.y);
+    const fH = frameHeightM(dXY, camEl.focal || 50, camEl.orient);
+    camera = {
+      cameraId: camEl.id,
+      label: lab.get(camEl.id) || camEl.id,
+      dXY,
+      alphaDeg: Math.abs(alpha),
+      side: shelfSideLabel(S.x, S.y, camDisp.x, camDisp.y),
+      azDeg: shelfAzimuth15(S.x, S.y, camDisp.x, camDisp.y),
+      viewLabel: cameraViewLabel(Math.abs(alpha)),
+      focal: camEl.focal || 50,
+      orient: camEl.orient || "landscape",
+      frameHeightM: Math.round(fH * 100) / 100,
+      frameLabel: frameSizeKey(fH),
+      headingStorage: subject.rot || 0,
+      from: { x: subject.x, y: subject.y },
+      to: { x: camEl.x, y: camEl.y },
+    };
+  }
+
   const lights = [];
   for (const e of setupEls.filter(x => x.kind === "light")) {
     const L = toDisplayXY(venue, e.x, e.y);
     const dXY = Math.hypot(L.x - S.x, L.y - S.y);
     const alpha = relAngleToHeading15(S.x, S.y, head, L.x, L.y);
+    // camAxisDeg：以被摄者为顶点，被摄者→机位 转到 被摄者→灯；棚坐标逆时针为正
+    const camAxisDeg = camDisp
+      ? signedAngleDisp15(S.x, S.y, camDisp.x, camDisp.y, L.x, L.y)
+      : null;
     const row = {
       lightId: e.id,
       label: lab.get(e.id) || e.id,
       dXY,
       dSlant: null,
+      dBackdrop: lightBackdropDist(e),
+      camAxisDeg,
       alphaDeg: Math.abs(alpha),
       alphaSigned: alpha,
       side: shelfSideLabel(S.x, S.y, L.x, L.y),
@@ -1481,36 +1585,7 @@ export function relativeAngles(p, setupId, subjectRef, overrides = null) {
   }
   lights.sort((a, b) => a.dXY - b.dXY);
 
-  let camera = null;
-  const cams = setupEls.filter(x => x.kind === "camera");
-  let camEl = null;
-  if (cams.length) {
-    camEl = cams.reduce((best, e) => {
-      const d0 = dist(subject, e);
-      return !best || d0 < best.d ? { e, d: d0 } : best;
-    }, null)?.e;
-  }
-  if (camEl) {
-    const Cxy = toDisplayXY(venue, camEl.x, camEl.y);
-    const dXY = Math.hypot(Cxy.x - S.x, Cxy.y - S.y);
-    const alpha = relAngleToHeading15(S.x, S.y, head, Cxy.x, Cxy.y);
-    camera = {
-      cameraId: camEl.id,
-      label: lab.get(camEl.id) || camEl.id,
-      dXY,
-      alphaDeg: Math.abs(alpha),
-      side: shelfSideLabel(S.x, S.y, Cxy.x, Cxy.y),
-      azDeg: shelfAzimuth15(S.x, S.y, Cxy.x, Cxy.y),
-      viewLabel: cameraViewLabel(Math.abs(alpha)),
-      focal: camEl.focal || 50,
-      headingStorage: subject.rot || 0,
-      from: { x: subject.x, y: subject.y },
-      to: { x: camEl.x, y: camEl.y },
-    };
-  }
-
   let backdrop = null;
-  const backs = els.filter(e => e.kind === "backdrop");
   if (backs.length) {
     let best = null;
     for (const e of backs) {
@@ -1597,9 +1672,17 @@ export function relationArcs(p, setupId, focusId, overrides = null) {
       headingStorage: row.headingStorage ?? (rel.subject.rot || 0),
       alphaDeg: row.alphaDeg,
       side: row.side,
+      azDeg: row.azDeg ?? null,
+      dXY: row.dXY ?? row.dMin ?? 0,
       keyName: row.keyName || null,
       viewLabel: row.viewLabel || null,
       elevDeg: row.elevDeg ?? null,
+      dSlant: row.dSlant ?? null,
+      camAxisDeg: row.camAxisDeg ?? null,
+      dBackdrop: row.dBackdrop ?? null,
+      frameHeightM: row.frameHeightM ?? null,
+      frameLabel: row.frameLabel || null,
+      incidenceDeg: row.incidenceDeg ?? null,
       label,
     });
     distances.push({ from: row.from, to: row.to, d: row.dXY ?? row.dMin ?? 0, kind });
@@ -1628,16 +1711,79 @@ export function relationArcs(p, setupId, focusId, overrides = null) {
   return { distances, arcs, hud, rel };
 }
 
-/** HUD：L1 · 2.30 m · 135°（左后）· 伦勃朗光 45°（side/key 由调用方本地化） */
-export function formatLightHud(row, sideLabel, keyLabel) {
+/**
+ * 灯 HUD（T26 F8）：L1 · 2.30 m · 方位 135°（左后）· 伦勃朗光 45° · …
+ * labels：{ side, key, az, paren, camAxis, elev, slant, backdrop }
+ * opts.short：画布短版（省略距离与附加项，夹角仍跟在光位名后）
+ * 兼容旧调用 formatLightHud(row, sideLabel, keyLabel)
+ */
+export function formatLightHud(row, labelsOrSide, keyMaybe, opts = {}) {
+  if (!row) return "";
+  let labels = labelsOrSide;
+  if (typeof labelsOrSide === "string") {
+    labels = { side: labelsOrSide, key: keyMaybe || "", az: "", paren: "({v})", camAxis: "", elev: "", slant: "", backdrop: "" };
+  } else {
+    labels = labelsOrSide || {};
+    if (keyMaybe && typeof keyMaybe === "object") opts = keyMaybe;
+  }
+  const paren = labels.paren || "({v})";
+  const parts = [row.label];
+  if (!opts.short && row.dXY != null && isFinite(Number(row.dXY))) parts.push(`${Number(row.dXY).toFixed(2)} m`);
+  if (row.azDeg != null && isFinite(Number(row.azDeg))) {
+    const azBit = labels.az
+      ? `${labels.az} ${row.azDeg}°${wrapParen(labels.side || "", paren)}`
+      : `${row.azDeg}°${wrapParen(labels.side || "", paren)}`;
+    parts.push(azBit);
+  } else if (labels.side && opts.short && !labels.az) {
+    // 旧短句兼容：无方位角时把左右挂在末尾
+  }
+  // 夹角必须跟在光位名后面
+  parts.push(`${labels.key || ""} ${row.alphaDeg}°`.trim());
+  if (opts.short && labels.side && (row.azDeg == null || !isFinite(Number(row.azDeg))) && !labels.az) {
+    parts.push(labels.side);
+  }
+  if (!opts.short) {
+    if (row.camAxisDeg != null) parts.push(`${labels.camAxis || ""} ${row.camAxisDeg}°`.trim());
+    else if (labels.camAxis) parts.push(`${labels.camAxis} —`);
+    if (row.elevDeg != null) parts.push(`${labels.elev || ""} ${row.elevDeg}°`.trim());
+    if (row.dSlant != null) parts.push(`${labels.slant || ""} ${Number(row.dSlant).toFixed(2)} m`.trim());
+    if (row.dBackdrop != null) parts.push(`${labels.backdrop || ""} ${Number(row.dBackdrop).toFixed(2)} m`.trim());
+  }
+  return parts.join(" · ");
+}
+
+/** 机位 HUD：C1 · 3.72 m · 方位 330°（右前）· ¾ 45° · 画面高约 0.68 m（半身） */
+export function formatCameraHud(row, labels = {}) {
+  if (!row) return "";
+  const paren = labels.paren || "({v})";
   const parts = [
     row.label,
-    `${row.dXY.toFixed(2)} m`,
-    `${row.azDeg}° (${sideLabel})`,
-    `${keyLabel} ${row.alphaDeg}°`,
+    `${Number(row.dXY).toFixed(2)} m`,
+    labels.az
+      ? `${labels.az} ${row.azDeg}°${wrapParen(labels.side || "", paren)}`
+      : `${row.azDeg}°${wrapParen(labels.side || "", paren)}`,
+    `${labels.view || ""} ${row.alphaDeg}°`.trim(),
   ];
-  if (row.elevDeg != null) parts.push(`β ${row.elevDeg}°`);
-  if (row.dSlant != null) parts.push(`${row.dSlant.toFixed(2)} m∴`);
+  if (row.frameHeightM != null) {
+    const fl = labels.frameLabel || "";
+    parts.push(`${labels.frameH || ""} ${Number(row.frameHeightM).toFixed(2)} m${fl ? wrapParen(fl, paren) : ""}`.trim());
+  }
+  return parts.join(" · ");
+}
+
+/** 窗 HUD：窗 · 1.32 m · 方位 105°（左后）· 入射 30° */
+export function formatWindowHud(row, labels = {}) {
+  if (!row) return "";
+  const paren = labels.paren || "({v})";
+  const name = labels.window || row.label || "W";
+  const parts = [
+    name,
+    `${Number(row.dMin ?? row.dXY).toFixed(2)} m`,
+    labels.az
+      ? `${labels.az} ${row.azDeg}°${wrapParen(labels.side || "", paren)}`
+      : `${row.azDeg}°${wrapParen(labels.side || "", paren)}`,
+  ];
+  if (row.incidenceDeg != null) parts.push(`${labels.incidence || ""} ${row.incidenceDeg}°`.trim());
   return parts.join(" · ");
 }
 

@@ -75,6 +75,74 @@ function protractorPath(from, to, headingStorage, r) {
   };
 }
 
+function boxesOverlap(a, b, pad = 0.02) {
+  return !(a.x + a.w + pad <= b.x || b.x + b.w + pad <= a.x || a.y + a.h + pad <= b.y || b.y + b.h + pad <= a.y);
+}
+
+/** T26 F8(a)：关系层文字避让——沿被摄者→目标外推，再上下错开；过远画引线 */
+function resolveLabelCollisions(g, origin) {
+  const texts = [...g.querySelectorAll("text")];
+  if (!texts.length) return;
+  const ox = origin?.x ?? 0, oy = origin?.y ?? 0;
+  texts.sort((a, b) => {
+    const da = Math.hypot(+a.getAttribute("x") - ox, +a.getAttribute("y") - oy);
+    const db = Math.hypot(+b.getAttribute("x") - ox, +b.getAttribute("y") - oy);
+    return da - db;
+  });
+  const placed = [];
+  for (const el of texts) {
+    const ax0 = +el.getAttribute("x");
+    const ay0 = +el.getAttribute("y");
+    const dx = ax0 - ox, dy = ay0 - oy;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    let x = ax0, y = ay0;
+    let moved = 0;
+    const tryPlace = () => {
+      el.setAttribute("x", x);
+      el.setAttribute("y", y);
+      let box;
+      try { box = el.getBBox(); } catch { return { x, y, w: 0.8, h: 0.22 }; }
+      return { x: box.x, y: box.y, w: box.width, h: box.height };
+    };
+    let box = tryPlace();
+    for (let step = 0; step < 6; step++) {
+      if (!placed.some(p => boxesOverlap(box, p))) break;
+      x += ux * 0.14;
+      y += uy * 0.14;
+      moved = Math.hypot(x - ax0, y - ay0);
+      box = tryPlace();
+    }
+    if (placed.some(p => boxesOverlap(box, p))) {
+      for (const sign of [1, -1, 2, -2, 3, -3]) {
+        x = ax0 + (Math.abs(ux) < 0.2 ? sign * 0.12 : 0);
+        y = ay0 + sign * 0.18;
+        moved = Math.hypot(x - ax0, y - ay0);
+        box = tryPlace();
+        if (!placed.some(p => boxesOverlap(box, p))) break;
+      }
+    }
+    // 仍重叠则沿 Y 强制错开，直到不相交或达到上限
+    let guard = 0;
+    while (placed.some(p => boxesOverlap(box, p)) && guard++ < 24) {
+      y += 0.22;
+      moved = Math.hypot(x - ax0, y - ay0);
+      box = tryPlace();
+    }
+    placed.push(box);
+    if (moved > 0.20) {
+      const midX = ax0, midY = ay0;
+      g.insertBefore(s("line", {
+        x1: midX, y1: midY, x2: x, y2: y,
+        stroke: "currentColor", "stroke-width": 0.015, opacity: 0.45, "data-leader": "1",
+      }), el);
+      // 引线用 acc 色：继承父层不易，补 stroke 属性由调用方色系——此处用与文字同色的 fill 行不通，改读文字 fill
+      const prev = el.previousSibling;
+      if (prev && prev.getAttribute("data-leader")) prev.setAttribute("stroke", el.getAttribute("fill") || VAR.acc);
+    }
+  }
+}
+
 /** 清空并重画关系叠加层（距离线 + 量角器弧）；拖动时也可调用 */
 export function paintRelationLayer(svg, arcs = [], distances = [], opts = {}) {
   const C = opts.literal ? LIT : VAR;
@@ -84,12 +152,18 @@ export function paintRelationLayer(svg, arcs = [], distances = [], opts = {}) {
     svg.append(g);
   }
   while (g.firstChild) g.removeChild(g.firstChild);
+  let origin = null;
   for (const dd of distances || []) {
+    if (!origin) origin = dd.from;
     const mx = (dd.from.x + dd.to.x) / 2, my = (dd.from.y + dd.to.y) / 2;
     g.append(s("line", { x1: dd.from.x, y1: dd.from.y, x2: dd.to.x, y2: dd.to.y, stroke: C.acc, "stroke-width": 0.025, "stroke-dasharray": "0.1 0.06" }));
-    g.append(s("text", { x: mx, y: my - 0.08, "font-size": 0.22, fill: C.acc, "text-anchor": "middle", "font-weight": 600 }, (dd.d ?? 0).toFixed(1) + " m"));
+    g.append(s("text", {
+      x: mx, y: my - 0.08, "font-size": 0.22, fill: C.acc, "text-anchor": "middle", "font-weight": 600,
+      "data-kind": "dist",
+    }, (dd.d ?? 0).toFixed(1) + " m"));
   }
   for (const arc of arcs || []) {
+    if (!origin) origin = arc.from;
     const geo = protractorPath(arc.from, arc.to, arc.headingStorage);
     if (!geo || Math.abs(geo.sweep) < 1e-3) continue;
     g.append(s("path", { d: geo.d, fill: C.acc, opacity: 0.14 }));
@@ -98,18 +172,17 @@ export function paintRelationLayer(svg, arcs = [], distances = [], opts = {}) {
       x2: geo.tip.x, y2: geo.tip.y,
       stroke: C.acc, "stroke-width": 0.02, "stroke-dasharray": "0.06 0.04",
     }));
-    const bits = [];
-    if (arc.label) bits.push(arc.label);
-    bits.push(`${arc.alphaDeg}°`);
-    if (arc.sideLabel) bits.push(arc.sideLabel);
-    if (arc.keyLabel) bits.push(arc.keyLabel);
-    if (arc.viewLabelText) bits.push(arc.viewLabelText);
-    if (arc.elevDeg != null) bits.push(`β ${arc.elevDeg}°`);
+    const txt = arc.hudText || [arc.label, arc.alphaDeg != null ? `${arc.alphaDeg}°` : "", arc.sideLabel, arc.keyLabel, arc.viewLabelText, arc.elevLabel]
+      .filter(Boolean).join(" · ");
     g.append(s("text", {
       x: geo.mid.x, y: geo.mid.y, "font-size": 0.2, fill: C.acc,
-      "text-anchor": "middle", "font-weight": 600,
-    }, bits.join(" · ")));
+      "text-anchor": "middle", "font-weight": 600, "data-kind": "arc",
+    }, txt));
   }
+  // getBBox 需挂到文档；推迟到下一帧（renderLayout 返回后 stage.append 已完成）
+  const run = () => { try { resolveLabelCollisions(g, origin); } catch { /* jsdom / detached */ } };
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);
+  else run();
   return g;
 }
 
@@ -121,14 +194,18 @@ export function renderLayout(p, setupId, opts = {}) {
   const { w, d } = venueSize(p);
   const pad = opts.pad ?? 0.6;
   const legendH = opts.legend ? 0.9 : 0;
-  const svg = s("svg", { viewBox: `${-pad} ${-pad} ${w + pad * 2} ${d + pad * 2 + legendH}`, xmlns: "http://www.w3.org/2000/svg",
+  const vb = opts.viewBox || `${-pad} ${-pad} ${w + pad * 2} ${d + pad * 2 + legendH}`;
+  const svg = s("svg", { viewBox: vb, xmlns: "http://www.w3.org/2000/svg",
     preserveAspectRatio: "xMidYMid meet", "font-family": "-apple-system, 'PingFang SC', 'Hiragino Sans', 'Apple SD Gothic Neo', sans-serif" });
   const setup = M.setupById(p, setupId);
   const lab = labels(setup);
   const hl = opts.highlight || null;
+  const crop = opts.cropKinds || null;
+  const keep = e => !crop || crop.has(e.kind);
   const dim = id => hl && !(hl.cameraId === id || (hl.lightIds && hl.lightIds.has(id)) || (hl.markIds && hl.markIds.has(id)) || (hl.personIds && hl.personIds.has(id)));
 
-  svg.append(s("rect", { x: 0, y: 0, width: w, height: d, fill: C.panel, stroke: C.line, "stroke-width": 0.03 }));
+  if (!opts.viewBox) svg.append(s("rect", { x: 0, y: 0, width: w, height: d, fill: C.panel, stroke: C.line, "stroke-width": 0.03 }));
+  else svg.append(s("rect", { x: -20, y: -20, width: w + 40, height: d + 40, fill: C.panel }));
   const u = p.layout.underlay;
   if (u && u.file && opts.underlayUrl) {
     svg.append(s("image", { href: opts.underlayUrl(u.file), x: u.x || 0, y: u.y || 0, width: u.wm || w, opacity: u.opacity ?? 0.5, preserveAspectRatio: "xMinYMin meet", "data-underlay": "1" }));
@@ -149,7 +226,7 @@ export function renderLayout(p, setupId, opts = {}) {
     }
   }
   const layer = s("g", {});
-  const els = [...p.layout.base.map(e => ({ e, base: true })), ...(setup ? setup.elements : []).map(e => ({ e, base: false }))];
+  const els = [...p.layout.base.map(e => ({ e, base: true })), ...(setup ? setup.elements : []).map(e => ({ e, base: false }))].filter(({ e }) => keep(e));
   // 先画光束和视角，再画实体，避免遮挡
   for (const { e } of els) {
     if (e.kind === "light") {
@@ -202,9 +279,15 @@ export function renderLayout(p, setupId, opts = {}) {
         g.append(s("circle", { r: 0.22, fill: C.fg, ...(selStroke || {}) }));
         g.append(s("path", { d: "M0.2 -0.07 L0.32 0 L0.2 0.07 Z", fill: C.fg })); break;
       case "mark":
-        g.append(s("circle", { r: 0.18, fill: "none", stroke: C.acc, "stroke-width": sel ? 0.06 : 0.04 }));
-        g.append(s("circle", { r: 0.06, fill: C.acc }));
-        g.append(s("path", { d: "M0.16 -0.06 L0.28 0 L0.16 0.06 Z", fill: C.acc })); break;
+        if (opts.solidMark || (hl && hl.markIds && hl.markIds.has(e.id))) {
+          g.append(s("circle", { r: 0.2, fill: C.acc, stroke: C.acc, "stroke-width": 0.04 }));
+          g.append(s("path", { d: "M0.16 -0.06 L0.28 0 L0.16 0.06 Z", fill: C.panel }));
+        } else {
+          g.append(s("circle", { r: 0.18, fill: "none", stroke: C.acc, "stroke-width": sel ? 0.06 : 0.04 }));
+          g.append(s("circle", { r: 0.06, fill: C.acc }));
+          g.append(s("path", { d: "M0.16 -0.06 L0.28 0 L0.16 0.06 Z", fill: C.acc }));
+        }
+        break;
       case "text":
         g.append(s("text", { "font-size": 0.26, fill: C.fg, "text-anchor": "middle", y: 0.09 }, e.label || t("el.text", null, opts.lang)));
         if (sel) g.append(s("rect", { x: -0.6, y: -0.2, width: 1.2, height: 0.4, fill: "none", stroke: C.acc, "stroke-width": 0.03 })); break;

@@ -116,6 +116,78 @@ def main(shots_dir=None):
         # 面板朝向是显示系（0°=+X 逆时针）；R 与快捷条 ↻ 同为存储 +15° → 显示 345°
         assert rin() == "345", "R 旋转 15°（显示系）"
         snap("layout")
+        # T26 F5：快捷条完整落在 stage 内（1440）
+        def assert_quickbar_in_stage():
+            qb = pg.locator(".quickbar")
+            stg = pg.locator(".stage")
+            qb.wait_for(state="visible")
+            qb_box, st_box = qb.bounding_box(), stg.bounding_box()
+            assert qb_box and st_box, (qb_box, st_box)
+            assert qb_box["x"] >= st_box["x"] - 1
+            assert qb_box["y"] >= st_box["y"] - 1
+            assert qb_box["x"] + qb_box["width"] <= st_box["x"] + st_box["width"] + 1
+            assert qb_box["y"] + qb_box["height"] <= st_box["y"] + st_box["height"] + 1
+            # 与视口有交集
+            vp = pg.viewport_size
+            assert qb_box["x"] < vp["width"] and qb_box["y"] < vp["height"]
+            assert qb_box["x"] + qb_box["width"] > 0 and qb_box["y"] + qb_box["height"] > 0
+        # 点选灯（第一个 bindable 放下的灯）
+        light = pg.locator("g.el").first
+        lbb = light.bounding_box()
+        pg.mouse.click(lbb["x"] + lbb["width"] / 2, lbb["y"] + lbb["height"] / 2)
+        pg.wait_for_timeout(250)
+        assert_quickbar_in_stage()
+        pg.set_viewport_size({"width": 1280, "height": 800})
+        pg.wait_for_timeout(200)
+        assert_quickbar_in_stage()
+        pg.set_viewport_size({"width": 1440, "height": 900})
+        pg.wait_for_timeout(200)
+        # T26 F12：同一同步回合内两次 pointerdown → lastTap 双击；hash 异步渲染编辑层
+        lit = pg.evaluate(
+            """() => {
+              const g = [...document.querySelectorAll('g.el')].find(el => el.querySelector('circle[r=\"0.2\"]'));
+              if (!g) return '';
+              const fire = () => g.dispatchEvent(new PointerEvent('pointerdown', {
+                bubbles: true, cancelable: true, composed: true,
+                pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: 1,
+                clientX: 200, clientY: 200,
+              }));
+              fire();
+              fire();
+              return g.dataset.id || '';
+            }"""
+        )
+        assert lit, "no light el"
+        pg.wait_for_function("id => location.hash.includes(id)", arg=lit, timeout=8000)
+        pg.wait_for_selector(".edit-layer", timeout=8000)
+        assert "灯" in pg.locator(".edit-layer").inner_text()
+        pg.click("button.edit-back")
+        pg.wait_for_timeout(200)
+        # T26 F8(a)：先把机位挪开（避免与灯同点），再选人物查关系层文字不相交
+        cam = pg.locator("g.el").nth(1)
+        cbb = cam.bounding_box()
+        pg.mouse.click(cbb["x"] + cbb["width"] / 2, cbb["y"] + cbb["height"] / 2)
+        pg.wait_for_timeout(350)
+        pg.locator("aside.panel input[type=number]").nth(0).fill("6.5")
+        pg.keyboard.press("Tab")
+        pg.wait_for_timeout(300)
+        person = pg.locator("g.el").last
+        pbb = person.bounding_box()
+        pg.mouse.click(pbb["x"] + pbb["width"] / 2, pbb["y"] + pbb["height"] / 2)
+        pg.wait_for_timeout(700)
+        overlap = pg.evaluate("""() => {
+          const texts = [...document.querySelectorAll('g[data-rel-layer] text')];
+          if (texts.length < 2) return null;
+          const boxes = texts.map(t => { const b = t.getBBox(); const m = t.getScreenCTM();
+            const p1 = new DOMPoint(b.x, b.y).matrixTransform(m);
+            const p2 = new DOMPoint(b.x + b.width, b.y + b.height).matrixTransform(m);
+            return { x: Math.min(p1.x,p2.x), y: Math.min(p1.y,p2.y), w: Math.abs(p2.x-p1.x), h: Math.abs(p2.y-p1.y) };
+          });
+          const hit = (a,b) => !(a.x+a.w<=b.x+0.5 || b.x+b.w<=a.x+0.5 || a.y+a.h<=b.y+0.5 || b.y+b.h<=a.y+0.5);
+          for (let i=0;i<boxes.length;i++) for (let j=i+1;j<boxes.length;j++) if (hit(boxes[i], boxes[j])) return [i,j, boxes[i], boxes[j]];
+          return null;
+        }""")
+        assert overlap is None, ("relation labels overlap", overlap)
         # EX 光比：同一份布置；在 EX 里移动灯，回到场地图位置也变了（T14）
         pg.click("nav.steps a.extra")
         pg.wait_for_selector("main.page h2.pt:has-text('EX 光比')")

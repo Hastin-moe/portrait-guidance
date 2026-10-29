@@ -768,7 +768,7 @@ test("T25 companion: packing privacy, marksForShot, work bars, wrap, catalog lin
   const wraps = M.wrapReminders(p, { withinMin: 30 });
   assert.ok(wraps.some(w => w.personId === "mia" && w.over));
   assert.ok(M.checks(p).some(c => c.code === "paidOverWork"));
-  assert.equal(M.formatShotLightRel({ label: "L1", alphaDeg: 45 }, "左", "伦勃朗光"), "L1 伦勃朗光 45° 左");
+  assert.equal(M.formatShotLightRel({ label: "L1", alphaDeg: 45 }, "左", "伦勃朗光"), "L1 · 伦勃朗光 45° · 左");
 
   const lines = M.gearCatalogLines({
     power_ws: 600,
@@ -779,4 +779,63 @@ test("T25 companion: packing privacy, marksForShot, work bars, wrap, catalog lin
   });
   assert.ok(lines.some(l => l.key === "power" && l.value.includes("600")));
   assert.ok(lines.some(l => l.key === "url" && l.link));
+});
+
+test("T26 F7/F8: camAxisDeg, dBackdrop, frameHeight, snap rot, formatters", () => {
+  const p = M.blankProject("t26");
+  M.normalize(p);
+  p.venue.w = 8; p.venue.d = 6;
+  const A = p.layout.setups[0];
+  // 被摄者 (4,3)；机位正前 storage (4,5) → 显示前；灯正左 (2,3)
+  const person = { ...M.newElement("person", 4, 3), rot: 270, ref: "mia" };
+  const cam = { ...M.newElement("camera", 4, 5), focal: 85 };
+  const light = { ...M.newElement("light", 2, 3), heightM: "" };
+  // 背景纸水平 y=0、x 0–3 → 中心 (1.5, 0)，长 3
+  const backdrop = { ...M.newElement("backdrop", 1.5, 0), w: 3, h: 0.1, rot: 0 };
+  A.elements = [person, cam, light];
+  p.layout.base.push(backdrop);
+
+  const rel = M.relativeAngles(p, A.id, person.id);
+  const L = rel.lights.find(x => x.lightId === light.id);
+  assert.ok(L);
+  // 机位在前、灯在左 → ±90°（逆时针为正：从机位向量转到灯向量为 −90）
+  assert.equal(Math.abs(L.camAxisDeg), 90);
+  assert.equal(L.camAxisDeg, -90);
+  // 灯 (2,3) 到水平背景 y=0、x∈[0,3] → 最近点 (2,0)，距 3.00；指导用例灯 (1,2) → 2.00
+  const light2 = { ...M.newElement("light", 1, 2), heightM: "" };
+  A.elements = [person, cam, light2];
+  const rel2 = M.relativeAngles(p, A.id, person.id);
+  assert.equal(rel2.lights[0].dBackdrop, 2);
+
+  assert.ok(Math.abs(M.frameHeightM(2.4, 85) - 0.677647) < 1e-3);
+  assert.equal(M.frameSizeKey(M.frameHeightM(2.4, 85)), "half");
+  assert.equal(M.frameSizeKey(M.frameHeightM(2.0, 24)), "full");
+  assert.ok(rel.camera);
+  assert.equal(rel.camera.frameLabel, M.frameSizeKey(rel.camera.frameHeightM));
+
+  // F8(d)：normalize 把灯/机/人/站位 rot 取 15° 档；墙不取
+  const wall = { ...M.newElement("wall", 1, 1), rot: 340, w: 2, h: 0.1 };
+  const lightOld = { ...M.newElement("light", 1, 1), rot: 340 };
+  const camOld = { ...M.newElement("camera", 2, 2), rot: 155 };
+  const markOld = { ...M.newElement("mark", 3, 3), rot: 200 };
+  A.elements = [lightOld, camOld, markOld];
+  p.layout.base = [wall];
+  M.normalize(p);
+  assert.equal(lightOld.rot, 345);
+  assert.equal(camOld.rot, 150);
+  assert.equal(markOld.rot, 195);
+  assert.equal(wall.rot, 340);
+
+  const hud = M.formatLightHud(
+    { label: "L1", dXY: 2.3, azDeg: 135, side: "leftBack", alphaDeg: 45, keyName: "rembrandt", camAxisDeg: 45, elevDeg: 30, dSlant: 2.62, dBackdrop: 1.2 },
+    { side: "左后", key: "伦勃朗光", az: "方位", paren: "（{v}）", camAxis: "相对机位", elev: "高度角", slant: "斜距", backdrop: "距背景" },
+  );
+  assert.ok(hud.includes("方位 135°（左后）"));
+  assert.ok(hud.includes("伦勃朗光 45°"));
+  assert.ok(hud.includes("相对机位 45°"));
+  assert.ok(hud.includes("高度角 30°"));
+  assert.ok(hud.includes("斜距 2.62 m"));
+  assert.ok(!hud.includes("β") && !hud.includes("m∴"));
+  assert.equal(M.wrapParen("半身", "（{v}）"), "（半身）");
+  assert.equal(M.wrapParen("half", "({v})"), "(half)");
 });

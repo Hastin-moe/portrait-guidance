@@ -430,7 +430,11 @@ function drawer(ctx, s, k) {
       return [
         h("h4", t("shots.lightRel")),
         h("ul.small.light-rel", rel.lights.map(L => h("li",
-          M.formatShotLightRel(L, t("layout.side." + L.side), t("layout.key." + L.keyName))))),
+          M.formatShotLightRel(L, t("layout.side." + L.side), t("layout.key." + L.keyName), {
+            az: t("layout.az"), paren: t("fmt.paren"),
+            camAxis: t("layout.camAxis"), elev: t("layout.elev"),
+            slant: t("layout.dslant"), backdrop: t("layout.backdropDist"),
+          })))),
       ];
     })(),
     h("h4", t("shots.when")),
