@@ -142,6 +142,19 @@ class ServerTest(unittest.TestCase):
         st, got = self.req("GET", f"/api/projects/{p['id']}")
         self.assertEqual(got["overview"]["theme"], "窗光")
 
+    def test_ai_images_requires_key_and_stub(self):
+        _, p = self.req("POST", "/api/projects", {"name": "ai"})
+        st, err = self.req("POST", f"/api/projects/{p['id']}/ai-images", {"prompt": "窗光", "count": 1})
+        self.assertEqual(st, 400)
+        self.assertIn("geminiApiKey", err.get("error", ""))
+        self.req("PUT", "/api/settings", {"geminiApiKey": "stub"})
+        st, r = self.req("POST", f"/api/projects/{p['id']}/ai-images", {"prompt": "窗光", "count": 2})
+        self.assertEqual(st, 200)
+        self.assertEqual(len(r["files"]), 2)
+        self.assertTrue(r.get("stub"))
+        st, b = self.req("GET", f"/files/{p['id']}/{r['files'][0]}", token=False, raw=True)
+        self.assertEqual(b[:8], PNG[:8])
+
 
 if __name__ == "__main__":
     unittest.main()

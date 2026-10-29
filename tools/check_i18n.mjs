@@ -23,12 +23,21 @@ const DYN = {
   "gear.type.": ["light", "modifier", "absorb", "stand", "backdrop", "reflector", "camera", "lens", "trigger", "other"],
   "gear.src.": ["own", "rent", "venue"], "prop.": ["todo", "ready"],
   "chk.": ["name", "date", "venue", "venueSize", "shotSetup", "shotModel", "lookMismatch", "noRef", "gearOver", "unbound", "overTime", "lockConflict", "propsNotReady", "setupEmpty"],
-  "mood.src.": ["none", "x", "xhs", "web", "ai", "own"],
+  "mood.src.": ["none", "x", "xhs", "web", "ai", "own", "upload", "paste", "pinterest", "google", "huaban"],
+  "ref.plat.": ["xhs", "pinterest", "google", "huaban"],
+  "layout.side.": ["left", "right", "front", "back", "same", "leftFront", "leftBack", "rightFront", "rightBack"],
+  "layout.key.": ["front", "shortFront", "rembrandt", "side", "sideBack", "back"],
+  "layout.view.": ["front", "threeQuarter", "side", "sideBack", "back"],
+  "layout.tab.": ["pos", "head", "fx", "power", "rel"],
+  "model.part.": ["top", "bottom", "outer", "shoes", "acc"],
+  "model.lookSrc.": ["own", "rent", "studio", "brand"],
+  "model.lookSt.": ["todo", "ready", "onsite"],
+  "pose.dim.": ["mood", "stance", "focus", "prop", "scene"],
   "prog.col": ["Planned", "Shooting", "Done", "Skipped"],
   "col.": ["no", "ref", "size", "model", "pose", "min", "pri", "check", "props", "camera", "setup", "notes"],
   "ppl.": ["1", "2", "group"], "ex.sec.": ["cover", "overview", "schedule", "people", "gear", "layout", "shots"],
   "sch.buf.": ["light", "look"],
-  "lr.kind.": ["flash", "continuous", "unknown"], "lr.w.": ["noSubject", "outOfBeam", "gap", "badPower", "mixed"], "lr.dot.": ["0", "1", "2"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop"],
+  "lr.kind.": ["flash", "continuous", "unknown"], "lr.w.": ["noSubject", "outOfBeam", "gap", "badPower", "mixed"], "lr.dot.": ["0", "1", "2"], "dur.": ["h", "m", "hm"], "dist.": ["lightPerson", "cameraPerson", "personBackdrop", "personWindow"],
 };
 for (const [pre, ks] of Object.entries(DYN)) for (const k of ks) used.add(pre + k);
 let bad = 0;

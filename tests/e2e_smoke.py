@@ -41,10 +41,48 @@ def main(shots_dir=None):
         pg.keyboard.press("Tab")
         pg.fill(".chips input", "窗光"); pg.keyboard.press("Enter")
         pg.fill("input[type=date]", "2026-11-08")
-        # S3 模特与样图
+        # S3 模特与样图 + T17 二级编辑层（含 1280 窄窗可编辑）
         go_step(3, "模特与样图")
         pg.get_by_role("button", name="＋ 添加模特").click()
+        pg.wait_for_selector(".edit-layer")
+        pg.set_viewport_size({"width": 1280, "height": 800})
+        assert pg.locator(".edit-layer").is_visible(), "窄窗口仍显示二级编辑层"
+        pg.locator(".edit-form input").first.fill("林夏")
+        pg.keyboard.press("Tab")
+        pg.wait_for_timeout(200)
+        # T18 档案标签：工作照 / 服装 / 角色可点开（付费仍占位）
+        tabs = pg.locator(".edit-tabs button.edit-tab")
+        assert tabs.count() == 5
+        labels = [tabs.nth(i).inner_text() for i in range(5)]
+        assert labels == ["基本信息", "工作照", "服装", "角色", "付费选项"], labels
+        tabs.nth(1).click()
+        pg.wait_for_timeout(120)
+        assert "工作照" in pg.locator(".edit-body").inner_text()
+        tabs.nth(2).click()
+        pg.wait_for_timeout(120)
+        assert pg.get_by_role("button", name="＋ 添加套组").count() >= 1
+        tabs.nth(3).click()
+        pg.wait_for_timeout(120)
+        assert pg.locator(".edit-form").count() >= 1
+        tabs.nth(4).click()
+        pg.wait_for_timeout(120)
+        assert "T19" in pg.locator(".edit-body").inner_text()
+        tabs.nth(2).click()
+        pg.wait_for_timeout(120)
+        pg.click("button.edit-back")
+        pg.wait_for_selector("main.page h2.pt:has-text('模特与样图')")
+        assert "林夏" in pg.locator(".pcard").first.inner_text()
+        assert pg.locator(".pcard-warn").count() >= 1, "未填身高时列表角标提醒"
+        pg.set_viewport_size({"width": 1440, "height": 900})
         pg.get_by_role("button", name="＋ 添加模特").click()
+        pg.wait_for_selector(".edit-layer")
+        pg.click("button.edit-back")
+        # T22 参考图获取弹窗（情绪板入口）
+        pg.get_by_role("button", name="＋ 添加参考图").click()
+        pg.wait_for_selector(".refpick")
+        assert pg.get_by_role("button", name="上传").count() >= 1
+        assert pg.get_by_role("button", name="AI 生成").count() >= 1
+        pg.locator(".refpick .acts button").filter(has_text="取消").click()
         # S2 场地与器材（场地标签填尺寸；器材标签加灯）
         go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")
@@ -62,7 +100,7 @@ def main(shots_dir=None):
         snap("layout0")
         pg.click(".palette button.bindable >> nth=0")
         pg.click(".palette button:has-text('机位')")
-        pg.click(".palette button.bindable:has-text('模特 1')")
+        pg.click(".palette button.bindable:has-text('林夏')")
         # 拖动刚放下的人物（已选中），再按 R 旋转；右侧面板里的坐标和朝向应随之变化
         xin = lambda: pg.locator("aside.panel input[type=number]").nth(0).input_value()
         rin = lambda: pg.locator("aside.panel input[type=number]").nth(2).input_value()
@@ -75,7 +113,8 @@ def main(shots_dir=None):
         assert float(xin()) > x0, "拖动后 X 变大"
         pg.keyboard.press("r")
         pg.wait_for_timeout(200)
-        assert rin() == "15", "R 旋转 15°"
+        # 面板朝向是显示系（0°=+X 逆时针）；R 与快捷条 ↻ 同为存储 +15° → 显示 345°
+        assert rin() == "345", "R 旋转 15°（显示系）"
         snap("layout")
         # EX 光比：同一份布置；在 EX 里移动灯，回到场地图位置也变了（T14）
         pg.click("nav.steps a.extra")

@@ -3,6 +3,7 @@ import { S, subscribe, openProject, closeProject, commit, undo, redo, flush, sav
 import * as M from "./model.js";
 import { t, setLang, getLang, LANGS } from "./i18n.js";
 import { h, menu, modal, confirmDlg, promptDlg, toast, isTyping } from "./ui.js";
+import { editHash, parseEdit } from "./editlayer.js";
 import * as P0 from "./pages/projects.js";
 import * as PBasics from "./pages/basics.js";
 import * as PSite from "./pages/site.js";
@@ -38,13 +39,16 @@ function resolveStep(raw) {
 function parseHash() {
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   if (parts[0] === "p" && parts[1]) {
-    const step = resolveStep(parts[2]);
-    // 旧 key 写进地址栏时改成新 key，用户收藏也能落到正确页
-    if (parts[2] && parts[2] !== step) {
-      location.replace(`#/p/${parts[1]}/${step}`);
-      return { name: "project", id: parts[1], step };
+    const rawStep = parts[2];
+    const step = resolveStep(rawStep);
+    const rest = parts.slice(3);
+    // 旧 key 写进地址栏时改成新 key，用户收藏也能落到正确页（保留编辑段）
+    if (rawStep && rawStep !== step) {
+      const edit = parseEdit(step, rest);
+      location.replace(editHash(parts[1], step, edit));
+      return { name: "project", id: parts[1], step, edit };
     }
-    return { name: "project", id: parts[1], step };
+    return { name: "project", id: parts[1], step, edit: parseEdit(step, rest) };
   }
   return { name: "list" };
 }
@@ -52,9 +56,23 @@ function parseHash() {
 export function go(step, extra = {}) {
   if (!S.project) { location.hash = "#/"; return; }
   const key = resolveStep(step);
-  Object.assign(ui.page[key] || (ui.page[key] = {}), extra);
-  const h2 = `#/p/${S.project.id}/${key}`;
+  const pageExtra = { ...extra };
+  const edit = Object.prototype.hasOwnProperty.call(pageExtra, "edit") ? pageExtra.edit : undefined;
+  delete pageExtra.edit;
+  Object.assign(ui.page[key] || (ui.page[key] = {}), pageExtra);
+  const h2 = editHash(S.project.id, key, edit === undefined ? null : edit);
   if (location.hash === h2) render(); else location.hash = h2;
+}
+
+/** 打开二级编辑层并写入地址栏。 */
+export function openEdit(step, kind, id) {
+  go(step, { edit: { kind, id } });
+}
+
+/** 关闭二级编辑层，回到步骤列表。 */
+export function closeEdit() {
+  if (!S.project || !route.edit) return;
+  go(route.step, { edit: null });
 }
 
 let routeGen = 0;
@@ -145,6 +163,9 @@ function render() {
   const step = route.step;
   ui.page[step] = ui.page[step] || {};
   ctx.state = ui.page[step];
+  ctx.edit = route.edit || null;
+  ctx.openEdit = (kind, id) => openEdit(step, kind, id);
+  ctx.closeEdit = closeEdit;
   current = PAGES[step].render(ctx);
   const mainKids = [];
   if (readonly()) mainKids.push(h("div.readonly-banner", h("span", "✓ " + t("final.banner")), h("span.spacer"),
@@ -219,14 +240,35 @@ async function versionsDlg() {
 }
 
 function settingsDlg() {
-  modal(close => [
-    h("h3", t("top.settings")),
-    h("div.field", h("label", t("set.lang")), h("select", { onchange: async e => { setLang(e.target.value); await saveSettings({ lang: e.target.value }); close(); render(); } },
-      LANGS.map(([v, l]) => h("option", { value: v, selected: v === getLang() || null }, l)))),
-    h("div.field", h("label", t("set.data")), h("code.small", S.dataDir || "")),
-    h("p.small", t("set.dataHelp")),
-    h("div.acts", h("button", { onclick: () => close() }, t("common.close"))),
-  ]);
+  modal(close => {
+    const keyInp = h("input", {
+      type: "password", autocomplete: "off",
+      value: S.settings.geminiApiKey || "",
+      placeholder: t("set.geminiKeyPh"),
+    });
+    const modelInp = h("input", {
+      type: "text",
+      value: S.settings.geminiModel || "gemini-2.0-flash-preview-image-generation",
+      placeholder: "gemini-2.0-flash-preview-image-generation",
+    });
+    return [
+      h("h3", t("top.settings")),
+      h("div.field", h("label", t("set.lang")), h("select", { onchange: async e => { setLang(e.target.value); await saveSettings({ lang: e.target.value }); close(); render(); } },
+        LANGS.map(([v, l]) => h("option", { value: v, selected: v === getLang() || null }, l)))),
+      h("div.field", h("label", t("set.geminiKey")), keyInp),
+      h("p.small.mut", t("set.geminiKeyHelp")),
+      h("div.field", h("label", t("set.geminiModel")), modelInp),
+      h("div.field", h("label", t("set.data")), h("code.small", S.dataDir || "")),
+      h("p.small", t("set.dataHelp")),
+      h("div.acts",
+        h("button", { onclick: () => close() }, t("common.cancel")),
+        h("button.primary", { onclick: async () => {
+          await saveSettings({ geminiApiKey: keyInp.value.trim(), geminiModel: modelInp.value.trim() });
+          toast(t("set.saved"));
+          close();
+        } }, t("common.ok"))),
+    ];
+  });
 }
 
 // ---------- 快捷键 ----------
@@ -235,6 +277,14 @@ document.addEventListener("keydown", async e => {
   if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); if (S.project) { const n = await promptDlg(t("ver.saveTitle"), { placeholder: t("ver.note") }); if (n != null) { await saveVersion(n); toast(t("ver.saved")); } } return; }
   if (mod && e.key.toLowerCase() === "z" && !isTyping(e) && S.project) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (mod && e.key.toLowerCase() === "y" && !isTyping(e) && S.project) { e.preventDefault(); redo(); return; }
+  // Esc 关闭二级编辑层（未在输入框内时）；编辑层内输入框 Esc 仍关闭层
+  if (e.key === "Escape" && route.edit && S.project) {
+    if (!document.querySelector(".modal,.menu")) {
+      e.preventDefault();
+      closeEdit();
+      return;
+    }
+  }
   if (current && current.onKey) current.onKey(e);
 });
 

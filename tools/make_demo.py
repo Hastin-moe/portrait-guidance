@@ -57,8 +57,11 @@ def main():
         "time": {"date": "2026-11-08", "start": "10:00", "end": "13:00", "timezone": "Asia/Shanghai",
                  "venueFrom": "09:00", "venueTo": "13:30", "makeupMin": 60, "setupMin": 30, "bufferMin": 10},
         "people": [
-            {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00", "looks": looks},
-            {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
+            {"id": "mia", "kind": "model", "name": "林夏", "height": 168, "size": "S", "availFrom": "09:00", "availTo": "13:00",
+             "roleName": "窗边独白", "rolePitch": "安静、被光吸引的人", "roleTraits": ["安静", "清冷"],
+             "looks": looks},
+            {"id": "emma", "kind": "model", "name": "周可", "height": 172, "size": "M", "availFrom": "10:30", "availTo": "",
+             "roleName": "来访者", "looks": [{"id": "lk-emma-1", "name": "牛仔外套"}]},
             {"id": "mk", "kind": "staff", "name": "小唐", "role": "化妆", "contact": ""},
         ],
         "venue": {"name": "白日摄影棚 2 号厅", "address": "", "contact": "", "indoor": True, "w": 8, "d": 6, "h": 3.2, "photos": [files[0]],
@@ -113,14 +116,17 @@ def main():
     })
     st.write_json(st.projects / pid / "project.json", p)
     poses = st.lib_get("poses") or []
-    if not any(x.get("id") == "pose-lean" for x in poses):
-        poses += [
-            {"id": "pose-lean", "name": "窗边倚靠", "image": "", "cues": {"weight": "重心在后脚", "hands": "一手轻搭窗框", "gaze": "看向窗外"}, "sizes": ["half", "knee"], "people": "1", "tags": ["安静", "窗光"]},
-            {"id": "pose-back", "name": "回眸", "image": "", "cues": {"weight": "身体背向镜头", "hands": "自然下垂", "gaze": "肩向窗，视线回到镜头"}, "sizes": ["close", "bust"], "people": "1", "tags": ["情绪"]},
-            {"id": "pose-chin", "name": "托腮", "image": "", "cues": {"weight": "前倾", "hands": "手背轻托下巴", "gaze": "略低于镜头"}, "sizes": ["close", "half"], "people": "1", "tags": ["松弛"]},
-            {"id": "pose-sit", "name": "并肩坐", "image": "", "cues": {"weight": "两人身体朝向一致", "hands": "一人手搭对方肩", "gaze": "一人看镜头一人看对方"}, "sizes": ["full", "knee"], "people": "2", "tags": ["亲密"]},
-        ]
-        st.lib_put("poses", poses)
+    if len(poses) < 10:
+        # T21 起步库：用 node 读 pose_starter.js，保证 demo 镜头 id 对齐
+        import subprocess, json as _json
+        starter = _json.loads(subprocess.check_output([
+            "node", "-e",
+            "import('./web/js/pose_starter.js').then(m=>process.stdout.write(JSON.stringify(m.STARTER_POSES)))"
+        ], cwd=str(Path(__file__).resolve().parents[1]), text=True))
+        by_id = {x["id"]: x for x in poses}
+        for x in starter:
+            by_id.setdefault(x["id"], x)
+        st.lib_put("poses", list(by_id.values()))
     print("示例项目已生成：", p["name"], pid)
 
 

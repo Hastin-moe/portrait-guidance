@@ -116,7 +116,7 @@ export function normalize(p) {
   p.people = Array.isArray(p.people) ? p.people : [];
   for (const x of p.people) {
     x.kind = x.kind || "model";
-    if (x.kind === "model") x.looks = Array.isArray(x.looks) ? x.looks : [];
+    if (x.kind === "model") normalizeModel(x);
   }
   p.venue = d(p.venue, { libId: "", name: "", address: "", contact: "", indoor: true, w: "", d: "", h: "",
     photos: [], windowDir: "", daylight: "", surfaces: "", power: "", zones: "", gear: [] });
@@ -152,6 +152,13 @@ export function normalize(p) {
     if (e.luxNote == null) e.luxNote = "";
     if (e.luxMeter == null) e.luxMeter = "";
     if (e.faceFstop == null) e.faceFstop = "";
+    // T23 / Q7：灯位中心高人工后填；俯仰向下为负；光效附件
+    if (e.heightM == null) e.heightM = "";
+    if (e.pitchDeg == null) e.pitchDeg = 0;
+    if (e.honeycombDeg == null) e.honeycombDeg = "";
+    if (e.diffusionLayers == null) e.diffusionLayers = 0;
+    if (e.gel == null) e.gel = "";
+    if (e.barnDoors == null) e.barnDoors = false;
   };
   for (const e of p.layout.base) normLightLux(e);
   for (const s of p.layout.setups) for (const e of s.elements) normLightLux(e);
@@ -170,17 +177,104 @@ export function normalize(p) {
   return p;
 }
 
-// ---------- 人员与造型 ----------
+// ---------- 人员与造型（T18 档案字段） ----------
+export const LOOK_PARTS = ["top", "bottom", "outer", "shoes", "acc"];
+export const LOOK_SOURCES = ["", "own", "rent", "studio", "brand"];
+export const LOOK_STATUSES = ["todo", "ready", "onsite"];
+
 export const models = p => p.people.filter(x => x.kind === "model");
 export const staff = p => p.people.filter(x => x.kind === "staff");
 export const personById = (p, id) => p.people.find(x => x.id === id);
 
+export function blankLookItem(part = "top") {
+  return { id: uid(), part, color: "", material: "", note: "" };
+}
+
+export function blankLook(name = "") {
+  return {
+    id: uid(), name: name || "",
+    items: [], source: "", owner: "", status: "todo", photos: [],
+  };
+}
+
+export function normalizeLook(l) {
+  if (!l || typeof l !== "object") return blankLook();
+  if (!l.id) l.id = uid();
+  if (l.name == null) l.name = "";
+  if (!Array.isArray(l.items)) l.items = [];
+  for (const it of l.items) {
+    if (!it.id) it.id = uid();
+    if (!LOOK_PARTS.includes(it.part)) it.part = "top";
+    if (it.color == null) it.color = "";
+    if (it.material == null) it.material = "";
+    if (it.note == null) it.note = "";
+  }
+  if (!LOOK_SOURCES.includes(l.source)) l.source = "";
+  if (l.owner == null) l.owner = "";
+  if (!LOOK_STATUSES.includes(l.status)) l.status = "todo";
+  if (!Array.isArray(l.photos)) l.photos = [];
+  for (const ph of l.photos) {
+    if (ph.note == null) ph.note = "";
+  }
+  return l;
+}
+
+export function normalizeModel(x) {
+  x.looks = Array.isArray(x.looks) ? x.looks.map(normalizeLook) : [];
+  if (x.alias == null) x.alias = "";
+  if (x.gender == null) x.gender = "";
+  if (x.ageBand == null) x.ageBand = "";
+  if (x.weight == null) x.weight = "";
+  if (x.bust == null) x.bust = "";
+  if (x.waist == null) x.waist = "";
+  if (x.hips == null) x.hips = "";
+  if (x.topSize == null) x.topSize = "";
+  if (x.pantSize == null) x.pantSize = "";
+  if (x.shoeSize == null) x.shoeSize = "";
+  if (x.hair == null) x.hair = "";
+  if (x.skin == null) x.skin = "";
+  if (x.features == null) x.features = "";
+  if (x.contact == null) x.contact = "";
+  if (x.note == null) x.note = "";
+  if (!Array.isArray(x.photos)) x.photos = [];
+  for (const ph of x.photos) {
+    if (ph.note == null) ph.note = "";
+    if (ph.cover == null) ph.cover = false;
+  }
+  if (x.roleName == null) x.roleName = "";
+  if (x.rolePitch == null) x.rolePitch = "";
+  if (!Array.isArray(x.roleTraits)) x.roleTraits = [];
+  if (x.roleRelations == null) x.roleRelations = "";
+  if (x.roleScenes == null) x.roleScenes = "";
+  if (x.roleNotes == null) x.roleNotes = "";
+  if (x.paid == null) x.paid = false;
+  return x;
+}
+
 export function setLookCount(person, n, namer = i => String(i + 1)) {
   n = Math.max(0, Math.min(20, Math.floor(Number(n) || 0)));
   const looks = person.looks || (person.looks = []);
-  while (looks.length < n) looks.push({ id: uid(), name: namer(looks.length) });
+  while (looks.length < n) looks.push(blankLook(namer(looks.length)));
   looks.length = n;
+  looks.forEach(normalizeLook);
   return person;
+}
+
+/** 工作照封面文件名；无则空 */
+export function modelCoverFile(m) {
+  const photos = m?.photos || [];
+  const hit = photos.find(ph => ph.cover && ph.file) || photos.find(ph => ph.file);
+  return hit?.file || "";
+}
+
+/** 列表角标：姓名 / 身高 / 服装套组名未齐 */
+export function modelProfileIncomplete(m) {
+  if (!m) return true;
+  if (!(m.name || "").trim()) return true;
+  if (!(Number(m.height) > 0)) return true;
+  if (!(m.looks || []).length) return true;
+  if ((m.looks || []).some(l => !(l.name || "").trim())) return true;
+  return false;
 }
 
 export function allLooks(p) {
@@ -189,6 +283,117 @@ export function allLooks(p) {
   return out;
 }
 export const lookById = (p, id) => allLooks(p).find(l => l.id === id);
+
+// ---------- 动作库（T21） ----------
+export const POSE_DIMS = ["mood", "stance", "focus", "prop", "scene"];
+/** 各组预设；存库用中文词（与现有 tags 一致），组内可加自定义 */
+export const POSE_DIM_PRESETS = {
+  mood: ["温柔", "清冷", "活泼", "慵懒", "忧郁", "自信"],
+  stance: ["站", "坐", "倚", "躺", "走", "蹲"],
+  focus: ["脸", "手", "背", "腿", "全身"],
+  prop: ["无", "椅子", "窗帘", "花"],
+  scene: ["窗边", "沙发", "户外", "背景纸"],
+};
+
+export function blankPose(name = "") {
+  return {
+    id: uid(), name: name || "",
+    images: [], image: "", imageSource: "", imageUrl: "",
+    steps: [],
+    cues: { weight: "", hands: "", gaze: "", pitfalls: "" },
+    guide: "", sizes: [], people: "1", wardrobe: "",
+    dims: { mood: [], stance: [], focus: [], prop: [], scene: [] },
+    tags: [],
+  };
+}
+
+export function normalizePose(x) {
+  if (!x || typeof x !== "object") return blankPose();
+  if (!x.id) x.id = uid();
+  if (x.name == null) x.name = "";
+  if (!Array.isArray(x.images)) x.images = [];
+  // 旧字段单图 → images
+  if (!x.images.length && x.image) {
+    x.images.push({ file: x.image, source: x.imageSource || "", url: x.imageUrl || "", cover: true, note: "" });
+  }
+  for (const im of x.images) {
+    if (!im.id) im.id = uid();
+    if (im.file == null) im.file = "";
+    if (im.source == null) im.source = "";
+    if (im.url == null) im.url = "";
+    if (im.note == null) im.note = "";
+    if (im.cover == null) im.cover = false;
+  }
+  if (x.images.length && !x.images.some(im => im.cover)) x.images[0].cover = true;
+  const cover = x.images.find(im => im.cover) || x.images[0];
+  x.image = cover?.file || "";
+  x.imageSource = cover?.source || "";
+  x.imageUrl = cover?.url || "";
+  if (!Array.isArray(x.steps)) x.steps = [];
+  x.steps = x.steps.map(s => (s == null ? "" : String(s)));
+  x.cues = x.cues && typeof x.cues === "object" ? x.cues : {};
+  for (const k of ["weight", "hands", "gaze", "pitfalls"]) if (x.cues[k] == null) x.cues[k] = "";
+  if (x.guide == null) x.guide = "";
+  if (!Array.isArray(x.sizes)) x.sizes = [];
+  if (!x.people) x.people = "1";
+  if (x.wardrobe == null) x.wardrobe = "";
+  if (!x.dims || typeof x.dims !== "object") x.dims = {};
+  for (const d of POSE_DIMS) {
+    if (!Array.isArray(x.dims[d])) x.dims[d] = [];
+    x.dims[d] = x.dims[d].map(v => String(v)).filter(Boolean);
+  }
+  if (!Array.isArray(x.tags)) x.tags = [];
+  // 旧自由 tags 迁入情绪维；情绪维回写 tags 供旧筛选
+  if (x.tags.length && !POSE_DIMS.some(d => x.dims[d].length)) {
+    x.dims.mood = [...x.tags];
+  }
+  x.tags = [...(x.dims.mood || [])];
+  return x;
+}
+
+export function poseCoverFile(x) {
+  const imgs = x?.images || [];
+  const hit = imgs.find(im => im.cover && im.file) || imgs.find(im => im.file);
+  return hit?.file || x?.image || "";
+}
+
+/** 卡片上最多两个情绪标签 */
+export function poseMoodChips(x, n = 2) {
+  const mood = (x?.dims?.mood?.length ? x.dims.mood : (x?.tags || []));
+  return mood.slice(0, n);
+}
+
+export function poseMatchesDims(x, filters) {
+  if (!filters) return true;
+  for (const d of POSE_DIMS) {
+    const want = filters[d];
+    if (!want) continue;
+    const have = x.dims?.[d] || [];
+    if (!have.includes(want)) return false;
+  }
+  return true;
+}
+
+/** ⌘K：按镜头场景名 / 模特角色情绪与动作标签的重合度排序 */
+export function rankPosesForShot(p, shot, poses) {
+  const sc = p.scenes.find(s => s.id === shot.sceneId);
+  const sceneName = (sc?.name || "").toLowerCase();
+  const r = resolveShot(p, shot);
+  const moodWant = new Set();
+  for (const id of r.personIds || []) {
+    const m = personById(p, id);
+    for (const t of m?.roleTraits || []) moodWant.add(String(t));
+  }
+  const scored = poses.map(x => {
+    let score = 0;
+    for (const s of x.dims?.scene || []) if (sceneName && (sceneName.includes(s.toLowerCase()) || s.toLowerCase().includes(sceneName))) score += 3;
+    for (const m of x.dims?.mood || x.tags || []) if (moodWant.has(m)) score += 2;
+    if (shot.size && (x.sizes || []).includes(shot.size)) score += 1;
+    return { x, score };
+  });
+  scored.sort((a, b) => b.score - a.score || a.x.name.localeCompare(b.x.name, "zh"));
+  return scored.map(s => s.x);
+}
 
 // ---------- 器材 ----------
 // 场地器材与自带器材合并，用 "v:id" / "o:id" 区分来源
@@ -571,6 +776,8 @@ export function newElement(kind, x, y) {
   if (size) [e.w, e.h] = size;
   if (kind === "light") Object.assign(e, {
     beam: 60, modifier: "", modifierRef: "", power: "", ref: "",
+    heightM: "", pitchDeg: 0,
+    honeycombDeg: "", diffusionLayers: 0, gel: "", barnDoors: false,
     // 实测照度（lux）：厂商标称另见 catalogs；此处留给现场测光录入
     exitLux: "", faceLux: "", faceFstop: "", luxNote: "", luxMeter: "",
   });
@@ -609,22 +816,30 @@ export function dist(a, b) {
   return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
 }
 
-// 选中灯或机位时，显示到最近人物、人物到最近背景的距离（F19）
+// 选中灯/机位/人物时的距离线（T24：背景/窗用线段最近点）
 export function distances(p, setupId, el) {
   const s = setupById(p, setupId);
   if (!s || !el) return [];
   const els = [...p.layout.base, ...s.elements];
-  const persons = els.filter(e => e.kind === "person");
+  const persons = els.filter(e => e.kind === "person" || e.kind === "mark");
   const backs = els.filter(e => e.kind === "backdrop");
-  const nearest = (from, arr) => arr.reduce((best, e) => { const d = dist(from, e); return !best || d < best.d ? { e, d } : best; }, null);
+  const wins = els.filter(e => e.kind === "window");
+  const nearest = (from, arr) => arr.reduce((best, e) => { const d0 = dist(from, e); return !best || d0 < best.d ? { e, d: d0 } : best; }, null);
+  const nearestSeg = (from, arr) => arr.reduce((best, e) => {
+    const [a, b] = segmentEnds(e);
+    const n = nearestOnSegment(from, a, b);
+    return !best || n.d < best.d ? { e, d: n.d, pt: n } : best;
+  }, null);
   const out = [];
   if (el.kind === "light" || el.kind === "camera") {
     const n = nearest(el, persons);
     if (n) out.push({ from: el, to: n.e, d: n.d, kind: el.kind === "light" ? "lightPerson" : "cameraPerson" });
   }
-  if (el.kind === "person") {
-    const n = nearest(el, backs);
-    if (n) out.push({ from: el, to: n.e, d: n.d, kind: "personBackdrop" });
+  if (el.kind === "person" || el.kind === "mark") {
+    const nb = nearestSeg(el, backs);
+    if (nb) out.push({ from: el, to: { x: nb.pt.x, y: nb.pt.y }, d: nb.d, kind: "personBackdrop" });
+    const nw = nearestSeg(el, wins);
+    if (nw) out.push({ from: el, to: { x: nw.pt.x, y: nw.pt.y }, d: nw.d, kind: "personWindow" });
   }
   return out;
 }
@@ -799,4 +1014,430 @@ export function ratioText(ev) {
   const r = evToRatio(Math.abs(ev));
   const v = r >= 10 ? Math.round(r) : Math.round(r * 10) / 10;
   return ev <= 0 ? `${v}:1` : `1:${v}`;
+}
+
+// ---------- T22 参考图获取 ----------
+/** 搜索平台：打开浏览器到结果页（Q1-A），不在程序内列结果 */
+export const REF_SEARCH_PLATFORMS = ["xhs", "pinterest", "google", "huaban"];
+
+/** Gemini Nano Banana 示意单价（美元/张），仅用于费用预估展示 */
+export const AI_IMAGE_USD = 0.03;
+
+export function defaultRefSearchQuery(project) {
+  const kw = ((project?.overview?.keywords) || []).filter(Boolean);
+  const theme = (project?.overview?.theme || "").trim();
+  if (kw.length) return kw.slice(0, 4).join(" ");
+  return theme.slice(0, 40);
+}
+
+export function refSearchUrl(platform, query) {
+  const q = encodeURIComponent(String(query || "").trim());
+  if (!q) return "";
+  if (platform === "xhs") return `https://www.xiaohongshu.com/search_result?keyword=${q}`;
+  if (platform === "pinterest") return `https://www.pinterest.com/search/pins/?q=${q}`;
+  if (platform === "google") return `https://www.google.com/search?tbm=isch&q=${q}`;
+  if (platform === "huaban") return `https://huaban.com/search?q=${q}`;
+  return "";
+}
+
+export function aiImageCostUsd(count) {
+  const n = Math.max(0, Math.min(8, Math.floor(Number(count) || 0)));
+  return Math.round(n * AI_IMAGE_USD * 100) / 100;
+}
+
+/** 默认 AI 提示：项目风格 + 可选景别 / 动作要点 */
+export function defaultAiPrompt(project, { size = "", poseName = "", poseCues = "" } = {}) {
+  const parts = [];
+  const theme = (project?.overview?.theme || "").trim();
+  const kw = ((project?.overview?.keywords) || []).filter(Boolean);
+  if (theme) parts.push(theme);
+  if (kw.length) parts.push(kw.join("、"));
+  if (size) parts.push(size);
+  if (poseName) parts.push(poseName);
+  if (poseCues) parts.push(poseCues);
+  return parts.filter(Boolean).join("。");
+}
+
+// ---------- T23 / Q3：棚左下角显示系 + 15° 档 ----------
+/** 取最近的 15° 档（输入用） */
+export function snapDeg15(deg) {
+  const n = Number(deg);
+  if (!isFinite(n)) return 0;
+  const s = Math.round(n / 15) * 15;
+  return ((s % 360) + 360) % 360;
+}
+
+/** 相对夹角显示：四舍五入到最近 15°，落到 (−180, 180] */
+export function roundRelDeg15(deg) {
+  const n = Number(deg);
+  if (!isFinite(n)) return 0;
+  let s = Math.round(n / 15) * 15;
+  while (s > 180) s -= 360;
+  while (s <= -180) s += 360;
+  return s;
+}
+
+/**
+ * 存储系 → 显示系（棚左下角原点，Y 向上；rot 0°=+X、逆时针）
+ * 存储系：y 向下，rot 顺时针（屏幕）
+ */
+export function toDisplayXY(venue, x, y) {
+  const d = Number(venue?.d) || 0;
+  return { x: Number(x) || 0, y: d - (Number(y) || 0) };
+}
+export function fromDisplayXY(venue, x, y) {
+  const d = Number(venue?.d) || 0;
+  return { x: Number(x) || 0, y: d - (Number(y) || 0) };
+}
+export function toDisplayRot(rot) {
+  return ((360 - (Number(rot) || 0)) % 360 + 360) % 360;
+}
+export function fromDisplayRot(rot) {
+  return ((360 - (Number(rot) || 0)) % 360 + 360) % 360;
+}
+
+/** 棚坐标左右：目标相对被摄者 X（显示系）更小为左 */
+export function shelfSide(sx, sy, tx, ty) {
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.abs(dx) < 1e-6) return dy > 0 ? "back" : dy < 0 ? "front" : "same";
+  return dx < 0 ? "left" : "right";
+}
+
+/** 方位口语：左/右 + 前/后 组合（例：左后），用于 HUD「方位 135°（左后）」 */
+export function shelfSideLabel(sx, sy, tx, ty) {
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  const lr = Math.abs(dx) < 1e-6 ? "" : (dx < 0 ? "left" : "right");
+  const fb = Math.abs(dy) < 1e-6 ? "" : (dy > 0 ? "back" : "front");
+  if (lr && fb) return lr + fb[0].toUpperCase() + fb.slice(1); // leftBack
+  if (lr) return lr;
+  if (fb) return fb;
+  return "same";
+}
+
+/** 棚坐标方位角（显示系）：从被摄者指向目标，0°=+X 逆时针，再取 15° 档 */
+export function shelfAzimuth15(sx, sy, tx, ty) {
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.hypot(dx, dy) < 1e-9) return 0;
+  let deg = Math.atan2(dy, dx) * 180 / Math.PI; // (−180, 180]
+  if (deg < 0) deg += 360;
+  return snapDeg15(deg);
+}
+
+/** 光位名：按相对被摄者朝向的 |α|（已 15° 档） */
+export function lightKeyName(absAlpha15) {
+  const a = Math.abs(Number(absAlpha15) || 0);
+  if (a <= 0) return "front";
+  if (a <= 30) return "shortFront";
+  if (a === 45) return "rembrandt";
+  if (a <= 90) return "side";
+  if (a <= 135) return "sideBack";
+  return "back";
+}
+
+/** 向量相对朝向的有符号夹角（显示系），再 round 到 15° */
+export function relAngleToHeading15(sx, sy, headingDeg, tx, ty) {
+  const th = (Number(headingDeg) || 0) * Math.PI / 180;
+  const fx = Math.cos(th), fy = Math.sin(th);
+  const dx = (Number(tx) || 0) - (Number(sx) || 0);
+  const dy = (Number(ty) || 0) - (Number(sy) || 0);
+  if (Math.hypot(dx, dy) < 1e-9) return 0;
+  const raw = Math.atan2(fx * dy - fy * dx, fx * dx + fy * dy) * 180 / Math.PI;
+  return roundRelDeg15(raw);
+}
+
+/** 灯水平朝向对准被摄者：显示系 aim，再换回存储 rot，并取 15° 档 */
+export function aimRotStorageToward(venue, light, subject) {
+  const L = toDisplayXY(venue, light.x, light.y);
+  const S = toDisplayXY(venue, subject.x, subject.y);
+  const az = shelfAzimuth15(L.x, L.y, S.x, S.y); // 从灯指向被摄者
+  return fromDisplayRot(az);
+}
+
+/** 解析当前被摄者（站位 mark 留给 T19；现回退 person / ex.subjectId） */
+export function resolveSubject(p, setup, preferredId) {
+  const els = [...(setup?.elements || [])];
+  if (preferredId) {
+    const hit = els.find(e => e.id === preferredId) || p.layout.base.find(e => e.id === preferredId);
+    if (hit) return hit;
+  }
+  const sid = setup?.ex?.subjectId;
+  if (sid) {
+    const byRef = els.find(e => e.kind === "person" && e.ref === sid);
+    if (byRef) return byRef;
+    const byId = els.find(e => e.id === sid);
+    if (byId) return byId;
+  }
+  return els.find(e => e.kind === "mark") || els.find(e => e.kind === "person") || null;
+}
+
+/** 脸高（m）：模特身高 − 0.12；未填身高用 1.55（与三维预览眼高一致） */
+export function faceHeightM(p, subjectEl) {
+  if (subjectEl?.faceHeightM !== "" && subjectEl?.faceHeightM != null && Number(subjectEl.faceHeightM) > 0) {
+    return Number(subjectEl.faceHeightM);
+  }
+  const person = subjectEl?.ref ? personById(p, subjectEl.ref) : null;
+  const hCm = person && Number(person.height) > 0 ? Number(person.height) : null;
+  if (hCm) return hCm / 100 - 0.12;
+  return 1.55;
+}
+
+/** 图元长边两端（存储系）：墙/窗/背景纸等 */
+export function segmentEnds(el) {
+  const len = Number(el.w) > 0 ? Number(el.w) : 1;
+  const rad = (Number(el.rot) || 0) * Math.PI / 180;
+  const hx = Math.cos(rad) * len / 2, hy = Math.sin(rad) * len / 2;
+  return [
+    { x: (Number(el.x) || 0) - hx, y: (Number(el.y) || 0) - hy },
+    { x: (Number(el.x) || 0) + hx, y: (Number(el.y) || 0) + hy },
+  ];
+}
+
+/** 点到线段最近点（存储系），含距离 */
+export function nearestOnSegment(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx * dx + dy * dy;
+  if (len2 < 1e-12) {
+    const d0 = dist(p, a);
+    return { x: a.x, y: a.y, d: d0 };
+  }
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const q = { x: a.x + t * dx, y: a.y + t * dy };
+  return { x: q.x, y: q.y, d: dist(p, q) };
+}
+
+/** 机位相对被摄者朝向的景别档（按 |α| 15°） */
+export function cameraViewLabel(absAlpha15) {
+  const a = Math.abs(Number(absAlpha15) || 0);
+  if (a <= 15) return "front";
+  if (a <= 45) return "threeQuarter";
+  if (a <= 90) return "side";
+  if (a <= 135) return "sideBack";
+  return "back";
+}
+
+/** 可选位置覆盖（拖动预览用）：{ [id]: { x, y, rot? } } */
+function elWithOverride(e, overrides) {
+  if (!e || !overrides || !overrides[e.id]) return e;
+  return { ...e, ...overrides[e.id] };
+}
+
+/**
+ * T24：四种静态相对关系（纯函数，不入库）。
+ * 夹角一律在显示系计算；左右按棚坐标（§9.4）。
+ * overrides：拖动时临时改坐标，不写工程。
+ */
+export function relativeAngles(p, setupId, subjectRef, overrides = null) {
+  const setup = setupById(p, setupId);
+  const subject0 = resolveSubject(p, setup, subjectRef);
+  const subject = elWithOverride(subject0, overrides);
+  if (!setup || !subject) {
+    return { subject: null, lights: [], camera: null, backdrop: null, window: null };
+  }
+  const venue = p.venue;
+  const S = toDisplayXY(venue, subject.x, subject.y);
+  const head = toDisplayRot(subject.rot || 0);
+  const faceH = faceHeightM(p, subject);
+  const els = [...p.layout.base, ...setup.elements].map(e => elWithOverride(e, overrides));
+  const setupEls = setup.elements.map(e => elWithOverride(e, overrides));
+  const lab = (() => {
+    const m = new Map();
+    let l = 0, c = 0;
+    for (const e of setup.elements) {
+      if (e.kind === "light") m.set(e.id, "L" + (++l));
+      if (e.kind === "camera") m.set(e.id, "C" + (++c));
+    }
+    return m;
+  })();
+
+  const lights = [];
+  for (const e of setupEls.filter(x => x.kind === "light")) {
+    const L = toDisplayXY(venue, e.x, e.y);
+    const dXY = Math.hypot(L.x - S.x, L.y - S.y);
+    const alpha = relAngleToHeading15(S.x, S.y, head, L.x, L.y);
+    const row = {
+      lightId: e.id,
+      label: lab.get(e.id) || e.id,
+      dXY,
+      dSlant: null,
+      alphaDeg: Math.abs(alpha),
+      alphaSigned: alpha,
+      side: shelfSideLabel(S.x, S.y, L.x, L.y),
+      azDeg: shelfAzimuth15(S.x, S.y, L.x, L.y),
+      keyName: lightKeyName(Math.abs(alpha)),
+      elevDeg: null,
+      headingStorage: subject.rot || 0,
+      from: { x: subject.x, y: subject.y },
+      to: { x: e.x, y: e.y },
+    };
+    if (e.heightM !== "" && e.heightM != null && isFinite(Number(e.heightM))) {
+      const dh = Number(e.heightM) - faceH;
+      row.dSlant = Math.hypot(dXY, dh);
+      row.elevDeg = roundRelDeg15(Math.atan2(dh, Math.max(dXY, 1e-6)) * 180 / Math.PI);
+    }
+    lights.push(row);
+  }
+  lights.sort((a, b) => a.dXY - b.dXY);
+
+  let camera = null;
+  const cams = setupEls.filter(x => x.kind === "camera");
+  let camEl = null;
+  if (cams.length) {
+    camEl = cams.reduce((best, e) => {
+      const d0 = dist(subject, e);
+      return !best || d0 < best.d ? { e, d: d0 } : best;
+    }, null)?.e;
+  }
+  if (camEl) {
+    const Cxy = toDisplayXY(venue, camEl.x, camEl.y);
+    const dXY = Math.hypot(Cxy.x - S.x, Cxy.y - S.y);
+    const alpha = relAngleToHeading15(S.x, S.y, head, Cxy.x, Cxy.y);
+    camera = {
+      cameraId: camEl.id,
+      label: lab.get(camEl.id) || camEl.id,
+      dXY,
+      alphaDeg: Math.abs(alpha),
+      side: shelfSideLabel(S.x, S.y, Cxy.x, Cxy.y),
+      azDeg: shelfAzimuth15(S.x, S.y, Cxy.x, Cxy.y),
+      viewLabel: cameraViewLabel(Math.abs(alpha)),
+      focal: camEl.focal || 50,
+      headingStorage: subject.rot || 0,
+      from: { x: subject.x, y: subject.y },
+      to: { x: camEl.x, y: camEl.y },
+    };
+  }
+
+  let backdrop = null;
+  const backs = els.filter(e => e.kind === "backdrop");
+  if (backs.length) {
+    let best = null;
+    for (const e of backs) {
+      const [a, b] = segmentEnds(e);
+      const n = nearestOnSegment(subject, a, b);
+      if (!best || n.d < best.n.d) best = { e, n };
+    }
+    if (best) {
+      const T = toDisplayXY(venue, best.n.x, best.n.y);
+      const alpha = relAngleToHeading15(S.x, S.y, head, T.x, T.y);
+      backdrop = {
+        backdropId: best.e.id,
+        dMin: best.n.d,
+        alphaDeg: Math.abs(alpha),
+        side: shelfSideLabel(S.x, S.y, T.x, T.y),
+        headingStorage: subject.rot || 0,
+        from: { x: subject.x, y: subject.y },
+        to: { x: best.n.x, y: best.n.y },
+      };
+    }
+  }
+
+  let windowRel = null;
+  const wins = els.filter(e => e.kind === "window");
+  if (wins.length) {
+    let best = null;
+    for (const e of wins) {
+      const [a, b] = segmentEnds(e);
+      const n = nearestOnSegment(subject, a, b);
+      if (!best || n.d < best.n.d) best = { e, n, a, b };
+    }
+    if (best) {
+      const T = toDisplayXY(venue, best.n.x, best.n.y);
+      const alpha = relAngleToHeading15(S.x, S.y, head, T.x, T.y);
+      // 窗内法向：长轴 rot ± 90°，取指向被摄者一侧
+      const rad = (Number(best.e.rot) || 0) * Math.PI / 180;
+      let nx = -Math.sin(rad), ny = Math.cos(rad);
+      const toSubX = subject.x - best.e.x, toSubY = subject.y - best.e.y;
+      if (nx * toSubX + ny * toSubY < 0) { nx = -nx; ny = -ny; }
+      const N = { x: nx, y: -ny };
+      const Nlen = Math.hypot(N.x, N.y) || 1;
+      const Vx = S.x - T.x, Vy = S.y - T.y;
+      const Vlen = Math.hypot(Vx, Vy) || 1;
+      const cosI = Math.max(-1, Math.min(1, (N.x * Vx + N.y * Vy) / (Nlen * Vlen)));
+      const incidenceDeg = roundRelDeg15(Math.acos(cosI) * 180 / Math.PI);
+      windowRel = {
+        windowId: best.e.id,
+        dMin: best.n.d,
+        alphaDeg: Math.abs(alpha),
+        side: shelfSideLabel(S.x, S.y, T.x, T.y),
+        azDeg: shelfAzimuth15(S.x, S.y, T.x, T.y),
+        incidenceDeg,
+        headingStorage: subject.rot || 0,
+        from: { x: subject.x, y: subject.y },
+        to: { x: best.n.x, y: best.n.y },
+      };
+    }
+  }
+
+  return { subject, lights, camera, backdrop, window: windowRel };
+}
+
+/**
+ * 按选中对象挑出画布要画的量角器弧（§3.1）。
+ * focusId：当前选中；overrides：拖动预览。
+ */
+export function relationArcs(p, setupId, focusId, overrides = null) {
+  const focus = focusId ? (elWithOverride(
+    [...p.layout.base, ...(setupById(p, setupId)?.elements || [])].find(e => e.id === focusId),
+    overrides,
+  ) || null) : null;
+  const preferred = focus && (focus.kind === "person" || focus.kind === "mark") ? focus.id : null;
+  const rel = relativeAngles(p, setupId, preferred, overrides);
+  if (!rel.subject) return { distances: [], arcs: [], hud: [] };
+  const arcs = [];
+  const distances = [];
+  const hud = [];
+  const pushArc = (row, kind, label) => {
+    if (!row) return;
+    arcs.push({
+      kind,
+      from: row.from,
+      to: row.to,
+      headingStorage: row.headingStorage ?? (rel.subject.rot || 0),
+      alphaDeg: row.alphaDeg,
+      side: row.side,
+      keyName: row.keyName || null,
+      viewLabel: row.viewLabel || null,
+      elevDeg: row.elevDeg ?? null,
+      label,
+    });
+    distances.push({ from: row.from, to: row.to, d: row.dXY ?? row.dMin ?? 0, kind });
+  };
+  if (!focus || focus.kind === "person" || focus.kind === "mark") {
+    for (const L of rel.lights) pushArc(L, "lightPerson", L.label);
+    if (rel.camera) pushArc(rel.camera, "cameraPerson", rel.camera.label);
+    if (rel.backdrop) {
+      distances.push({ from: rel.backdrop.from, to: rel.backdrop.to, d: rel.backdrop.dMin, kind: "personBackdrop" });
+    }
+    if (rel.window) {
+      pushArc(rel.window, "personWindow", "W");
+    }
+  } else if (focus.kind === "light") {
+    const L = rel.lights.find(x => x.lightId === focus.id);
+    pushArc(L, "lightPerson", L?.label || "L");
+    if (L) hud.push(L);
+  } else if (focus.kind === "camera") {
+    if (rel.camera && rel.camera.cameraId === focus.id) pushArc(rel.camera, "cameraPerson", rel.camera.label);
+    else if (rel.camera) pushArc(rel.camera, "cameraPerson", rel.camera.label);
+  } else if (focus.kind === "backdrop" && rel.backdrop) {
+    distances.push({ from: rel.backdrop.from, to: rel.backdrop.to, d: rel.backdrop.dMin, kind: "personBackdrop" });
+  } else if (focus.kind === "window" && rel.window) {
+    pushArc(rel.window, "personWindow", "W");
+  }
+  return { distances, arcs, hud, rel };
+}
+
+/** HUD：L1 · 2.30 m · 135°（左后）· 伦勃朗光 45°（side/key 由调用方本地化） */
+export function formatLightHud(row, sideLabel, keyLabel) {
+  const parts = [
+    row.label,
+    `${row.dXY.toFixed(2)} m`,
+    `${row.azDeg}° (${sideLabel})`,
+    `${keyLabel} ${row.alphaDeg}°`,
+  ];
+  if (row.elevDeg != null) parts.push(`β ${row.elevDeg}°`);
+  if (row.dSlant != null) parts.push(`${row.dSlant.toFixed(2)} m∴`);
+  return parts.join(" · ");
 }

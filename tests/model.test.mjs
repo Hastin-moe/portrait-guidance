@@ -552,3 +552,147 @@ test("T11-C2 Grok's untouched original sample imports cleanly", () => {
   assert.ok(!report.check.some(s => /附近没有灯/.test(s)));
   assert.ok(M.checks(p).every(c => c.level !== "error" || c.code !== "venueSize"));
 });
+
+test("T22 ref search URLs and AI cost helpers", () => {
+  const p = { overview: { theme: "窗光人像", keywords: ["窗光", "柔和"] } };
+  assert.equal(M.defaultRefSearchQuery(p), "窗光 柔和");
+  assert.match(M.refSearchUrl("xhs", "窗光"), /xiaohongshu\.com.*%E7%AA%97%E5%85%89/);
+  assert.match(M.refSearchUrl("google", "a b"), /tbm=isch/);
+  assert.equal(M.refSearchUrl("nope", "x"), "");
+  assert.equal(M.aiImageCostUsd(2), Math.round(2 * M.AI_IMAGE_USD * 100) / 100);
+  assert.equal(M.aiImageCostUsd(99), Math.round(8 * M.AI_IMAGE_USD * 100) / 100);
+  assert.match(M.defaultAiPrompt(p, { size: "半身", poseName: "回眸" }), /窗光人像/);
+});
+
+test("T23 display coords, 15° snap, shelf side and key names", () => {
+  const venue = { w: 8, d: 6 };
+  assert.deepEqual(M.toDisplayXY(venue, 2, 1), { x: 2, y: 5 });
+  assert.deepEqual(M.fromDisplayXY(venue, 2, 5), { x: 2, y: 1 });
+  assert.equal(M.toDisplayRot(90), 270);
+  assert.equal(M.fromDisplayRot(270), 90);
+  assert.equal(M.snapDeg15(50), 45);
+  assert.equal(M.snapDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(38), 45);
+  assert.equal(M.shelfSide(4, 3, 2, 3), "left");
+  assert.equal(M.shelfSide(4, 3, 6, 3), "right");
+  assert.equal(M.lightKeyName(45), "rembrandt");
+  assert.equal(M.lightKeyName(0), "front");
+  const light = { x: 1, y: 3 }, sub = { x: 4, y: 3 };
+  // display: light (1,3), subject (4,3) → aim +X → display rot 0 → storage 0
+  assert.equal(M.aimRotStorageToward(venue, light, sub), 0);
+});
+
+test("T21 pose normalize, cover, dims filter", () => {
+  const old = M.normalizePose({ id: "p1", name: "回眸", image: "a.jpg", imageSource: "ai", tags: ["情绪"], cues: { weight: "x" } });
+  assert.equal(old.images.length, 1);
+  assert.equal(old.images[0].file, "a.jpg");
+  assert.equal(old.images[0].cover, true);
+  assert.ok(old.dims.mood.includes("情绪"));
+  assert.equal(M.poseCoverFile(old), "a.jpg");
+  for (const im of old.images) im.cover = false;
+  old.images.push({ file: "b.jpg", cover: true });
+  M.normalizePose(old);
+  assert.equal(M.poseCoverFile(old), "b.jpg");
+  assert.equal(M.poseMatchesDims(old, { mood: "情绪" }), true);
+  assert.equal(M.poseMatchesDims(old, { mood: "活泼" }), false);
+  assert.deepEqual(M.poseMoodChips(old, 1), ["情绪"]);
+});
+
+test("T21 starter poses and rankPosesForShot", async () => {
+  const { STARTER_POSES } = await import("../web/js/pose_starter.js");
+  assert.ok(STARTER_POSES.length >= 28);
+  const poses = STARTER_POSES.map(x => M.normalizePose(JSON.parse(JSON.stringify(x))));
+  assert.ok(poses.every(x => x.dims && x.steps));
+  const p = M.blankProject("t");
+  p.people.push(M.normalizeModel({ id: "mia", kind: "model", name: "林夏", roleTraits: ["温柔"], looks: [{ id: "l1", name: "a" }] }));
+  p.scenes.push({ id: "sc1", name: "窗边", personIds: ["mia"], lookIds: [], setupId: "", cameraId: "" });
+  p.shots.push({ id: "s1", sceneId: "sc1", size: "half", poseId: "", personIds: ["mia"] });
+  const ranked = M.rankPosesForShot(p, p.shots[0], poses);
+  assert.equal(ranked.length, poses.length);
+  assert.ok(ranked.slice(0, 8).some(x => (x.dims.scene || []).includes("窗边") || (x.dims.mood || []).includes("温柔")));
+});
+
+test("T18 model profile: normalize looks/photos/role, cover, incomplete", () => {
+  const bare = { id: "m", kind: "model", name: "", height: "" };
+  M.normalizeModel(bare);
+  assert.equal(bare.alias, "");
+  assert.deepEqual(bare.photos, []);
+  assert.equal(bare.roleName, "");
+  assert.equal(bare.paid, false);
+  assert.ok(M.modelProfileIncomplete(bare));
+  bare.name = "林夏";
+  bare.height = 168;
+  bare.looks = [{ name: "" }];
+  M.normalizeModel(bare);
+  assert.ok(M.modelProfileIncomplete(bare));
+  bare.looks[0].name = "白衬衫";
+  assert.equal(M.modelProfileIncomplete(bare), false);
+  bare.photos = [{ file: "a.jpg", note: null, cover: false }, { file: "b.jpg", cover: true }];
+  M.normalizeModel(bare);
+  assert.equal(bare.photos[0].note, "");
+  assert.equal(M.modelCoverFile(bare), "b.jpg");
+  const look = M.blankLook("套 A");
+  assert.equal(look.status, "todo");
+  assert.deepEqual(look.items, []);
+  look.items.push(M.blankLookItem("shoes"));
+  M.normalizeLook(look);
+  assert.equal(look.items[0].part, "shoes");
+  assert.ok(M.LOOK_PARTS.includes("top"));
+  assert.ok(M.LOOK_SOURCES.includes("rent"));
+  assert.ok(M.LOOK_STATUSES.includes("onsite"));
+  const p = M.blankProject();
+  p.people.push({ id: "old", kind: "model", name: "旧", height: 170, looks: [{ id: "l1", name: "旧造型" }] });
+  M.normalize(p);
+  const m = M.personById(p, "old");
+  assert.equal(m.looks[0].status, "todo");
+  assert.equal(m.alias, "");
+  assert.equal(M.modelCoverFile(m), "");
+});
+
+test("T24 relativeAngles: shelf L/R, 15° display, segment nearest, no elev when height empty", () => {
+  const { p, A } = sample();
+  // 存储：人物朝上屏 = rot 270 → 显示朝 +Y（后）；灯在人物左侧（X 更小）
+  const person = { ...M.newElement("person", 4, 3), rot: 270, ref: "mia" };
+  const lightL = { ...M.newElement("light", 2, 3), heightM: "" };
+  const lightR = { ...M.newElement("light", 6, 3), heightM: 2.0 };
+  const cam = M.newElement("camera", 4, 5);
+  const backdrop = { ...M.newElement("backdrop", 4, 0.5), w: 3, h: 0.1, rot: 0 };
+  A.elements = [person, lightL, lightR, cam];
+  p.layout.base.push(backdrop);
+  // 往返含边界角
+  for (const r of [0, 90, 359]) assert.equal(M.fromDisplayRot(M.toDisplayRot(r)), r % 360 === 359 ? 359 : r);
+
+  const rel = M.relativeAngles(p, A.id, person.id);
+  assert.equal(rel.subject.id, person.id);
+  const L = rel.lights.find(x => x.lightId === lightL.id);
+  const R = rel.lights.find(x => x.lightId === lightR.id);
+  assert.ok(L && R);
+  assert.equal(L.side, "left"); // 棚坐标：X 更小
+  assert.equal(R.side, "right");
+  assert.equal(L.alphaDeg, 90);
+  assert.equal(L.elevDeg, null); // 灯高空 → 无高度角
+  assert.equal(L.dSlant, null);
+  assert.ok(R.elevDeg != null);
+  assert.ok(R.dSlant != null);
+  assert.equal(M.roundRelDeg15(37), 30);
+  assert.equal(M.roundRelDeg15(38), 45);
+  assert.equal(M.snapDeg15(50), 45);
+  // 线段最近点：人物 (4,3) 到水平背景 y=0.5、x∈[2.5,5.5] → 点 (4,0.5)
+  assert.ok(rel.backdrop);
+  assert.ok(Math.abs(rel.backdrop.dMin - 2.5) < 1e-6);
+  assert.ok(Math.abs(rel.backdrop.to.x - 4) < 1e-6);
+  assert.ok(Math.abs(rel.backdrop.to.y - 0.5) < 1e-6);
+  // 光位名边界（15° 档）
+  assert.equal(M.lightKeyName(0), "front");
+  assert.equal(M.lightKeyName(15), "shortFront");
+  assert.equal(M.lightKeyName(30), "shortFront");
+  assert.equal(M.lightKeyName(45), "rembrandt");
+  assert.equal(M.lightKeyName(90), "side");
+  assert.equal(M.lightKeyName(135), "sideBack");
+  assert.equal(M.lightKeyName(150), "back");
+  // 选中灯时只画该灯弧
+  const arcsL = M.relationArcs(p, A.id, lightL.id);
+  assert.equal(arcsL.arcs.length, 1);
+  assert.equal(arcsL.arcs[0].kind, "lightPerson");
+});

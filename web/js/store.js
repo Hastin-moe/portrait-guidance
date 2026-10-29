@@ -159,7 +159,17 @@ export async function restoreVersion(vid) {
 // ---------- 资料库（动作库、场地库） ----------
 export async function loadLibraries() {
   const [poses, venues] = await Promise.all([api("GET", "library/poses"), api("GET", "library/venues")]);
-  S.poses = poses.data || []; S.venues = venues.data || [];
+  const { normalizePose } = await import("./model.js");
+  const { STARTER_POSES } = await import("./pose_starter.js");
+  let list = (poses.data || []).map(x => normalizePose(x));
+  if (!list.length) {
+    list = STARTER_POSES.map(x => normalizePose({ ...JSON.parse(JSON.stringify(x)) }));
+    S.poses = list;
+    saveLibrary("poses");
+  } else {
+    S.poses = list;
+  }
+  S.venues = venues.data || [];
 }
 const libTimers = {};
 export function saveLibrary(name) {
