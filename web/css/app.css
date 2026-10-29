@@ -282,6 +282,8 @@ table.shots tr.addrow button{font-size:12px}
 .look-thumbs img{width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
 .light-rel{margin:0;padding-left:18px}
 .pack-row .chip{font-size:11px;margin-left:4px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}
+.sec-head h4{margin:0}
 
 /* 预览与导出 */
 .export-wrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px}
@@ -313,7 +315,8 @@ table.shots tr.addrow button{font-size:12px}
 .mood .it .ai-badge{bottom:22px}
 /* T23 场地图快捷条 */
 .stage{position:relative}
-.quickbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;margin-top:8px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.quickbar{position:absolute;z-index:6;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;margin:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:0 6px 18px color-mix(in srgb,var(--fg) 18%,transparent);max-width:calc(100% - 16px);pointer-events:auto}
+.quickbar.is-hidden{visibility:hidden;pointer-events:none}
 .dlg h3{margin:0 0 8px;font-size:16px}.dlg p{margin:6px 0;color:var(--mut)}
 .dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .dlg ul{margin:6px 0;padding-left:18px;color:var(--mut)}

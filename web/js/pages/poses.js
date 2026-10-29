@@ -116,7 +116,7 @@ function renderPoseEdit(ctx, id) {
 
     fld(t("pose.name"), h("input", { type: "text", value: x.name || "", oninput: e => { x.name = e.target.value; saveLibrary("poses"); }, onchange: () => ctx.rerender() })),
 
-    h("h4", t("pose.steps"), h("span", h("button.sm", { onclick: () => { x.steps.push(""); save(); } }, "＋"))),
+    h("div.sec-head", h("h4", t("pose.steps")), h("button.sm", { onclick: () => { x.steps.push(""); save(); } }, "＋ " + t("pose.addStep"))),
     h("p.small.mut", t("pose.stepsHelp")),
     !(x.steps || []).length ? h("p.mut", t("pose.noSteps")) : x.steps.map((s, i) => h("div.row", { style: { marginBottom: "6px", gap: "6px" } },
       h("span.mut", String(i + 1)),
