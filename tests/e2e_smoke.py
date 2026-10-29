@@ -41,10 +41,22 @@ def main(shots_dir=None):
         pg.keyboard.press("Tab")
         pg.fill(".chips input", "窗光"); pg.keyboard.press("Enter")
         pg.fill("input[type=date]", "2026-11-08")
-        # S3 模特与样图
+        # S3 模特与样图 + T17 二级编辑层（含 1280 窄窗可编辑）
         go_step(3, "模特与样图")
         pg.get_by_role("button", name="＋ 添加模特").click()
+        pg.wait_for_selector(".edit-layer")
+        pg.set_viewport_size({"width": 1280, "height": 800})
+        assert pg.locator(".edit-layer").is_visible(), "窄窗口仍显示二级编辑层"
+        pg.locator(".edit-form input").first.fill("林夏")
+        pg.keyboard.press("Tab")
+        pg.wait_for_timeout(200)
+        pg.click("button.edit-back")
+        pg.wait_for_selector("main.page h2.pt:has-text('模特与样图')")
+        assert "林夏" in pg.locator(".pcard").first.inner_text()
+        pg.set_viewport_size({"width": 1440, "height": 900})
         pg.get_by_role("button", name="＋ 添加模特").click()
+        pg.wait_for_selector(".edit-layer")
+        pg.click("button.edit-back")
         # S2 场地与器材（场地标签填尺寸；器材标签加灯）
         go_step(2, "场地与器材")
         inputs = pg.locator("input[type=text]")
@@ -62,7 +74,7 @@ def main(shots_dir=None):
         snap("layout0")
         pg.click(".palette button.bindable >> nth=0")
         pg.click(".palette button:has-text('机位')")
-        pg.click(".palette button.bindable:has-text('模特 1')")
+        pg.click(".palette button.bindable:has-text('林夏')")
         # 拖动刚放下的人物（已选中），再按 R 旋转；右侧面板里的坐标和朝向应随之变化
         xin = lambda: pg.locator("aside.panel input[type=number]").nth(0).input_value()
         rin = lambda: pg.locator("aside.panel input[type=number]").nth(2).input_value()

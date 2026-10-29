@@ -67,6 +67,22 @@ aside.panel{border-left:1px solid var(--line);overflow:auto;padding:16px;backgro
   .body.panel-open aside.panel{transform:none}
   .panel-toggle{display:inline-block}
 }
+/* T17 二级编辑层：盖在主工作区；窄窗口仍可编辑（不受右侧抽屉影响） */
+.edit-layer{display:flex;flex-direction:column;gap:0;min-height:calc(100vh - 120px)}
+.edit-bar{display:flex;align-items:center;gap:10px;padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:12px;position:sticky;top:0;background:var(--bg);z-index:2}
+.edit-crumb{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.edit-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.edit-tab{padding:6px 12px;border-radius:var(--radius);border:1px solid transparent;background:transparent;color:var(--mut);font-size:13px}
+.edit-tab:hover{background:var(--soft);color:var(--fg)}
+.edit-tab.on{background:var(--sel-bg);color:var(--fg);border-color:var(--line);font-weight:600}
+.edit-form{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;align-content:start}
+.edit-form>.field,.edit-form>.grid2,.edit-form>.row,.edit-form>h4,.edit-form>p,.edit-form>.chips,.edit-form>img,.edit-form>.refstrip{grid-column:1/-1}
+.edit-form>.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.edit-ph{margin:24px 0;line-height:1.6}
+@media (max-width:900px){
+  .edit-form{grid-template-columns:1fr}
+  .edit-form>.grid2{grid-template-columns:1fr}
+}
 .readonly-banner{background:var(--g-bg);border:1px solid #2f8a4c55;color:var(--g);border-radius:var(--radius-l);padding:8px 12px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
 
 /* ---------- 通用块 ---------- */
