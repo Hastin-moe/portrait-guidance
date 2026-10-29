@@ -80,7 +80,7 @@ def main():
                             {"id": "wn2", "kind": "window", "x": 4.6, "y": 0.1, "rot": 0, "w": 1.6, "h": 0.15}],
                    "setups": [
                        {"id": "A", "name": "A", "elements": [
-                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "", "modifierRef": "o:og4", "power": "1/4", "ref": "v:vg1", "faceFstop": 11, "luxMeter": "Sekonic L-858D", "luxNote": "ISO 100，脸位朝灯"},
+                           {"id": "a-l1", "kind": "light", "x": 1.2, "y": 1.6, "rot": 20, "beam": 70, "modifier": "", "modifierRef": "o:og4", "power": "1/4", "ref": "v:vg1", "faceFstop": 13, "luxMeter": "Sekonic L-858D", "luxNote": "ISO 100，脸位朝灯"},
                            {"id": "a-bd1", "kind": "board", "x": 6.5, "y": 1.2, "rot": 90, "w": 2.4, "h": 0.05, "ref": "o:og5"},
                            {"id": "a-c1", "kind": "camera", "x": 6.2, "y": 3.6, "rot": 205, "focal": 85},
                            {"id": "a-p1", "kind": "person", "x": 3.2, "y": 1.4, "rot": 160, "ref": "mia"},

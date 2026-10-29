@@ -78,7 +78,8 @@ async function onRoute() {
 
 // ---------- 外壳 ----------
 function topBar() {
-  const p = S.project;
+  // 在项目列表页时，即使后台已经打开了某个项目（例如导入刚建好），也显示列表页的顶栏
+  const p = route.name === "project" ? S.project : null;
   const langSel = h("select.langsel", { "aria-label": t("top.lang"), onchange: async e => { setLang(e.target.value); await saveSettings({ lang: e.target.value }); render(); } },
     LANGS.map(([v, l]) => h("option", { value: v, selected: v === getLang() || null }, l)));
   if (!p) {

@@ -1,6 +1,7 @@
 /* 设计变量：直接沿用 Photo-cull 的 web/common/tokens.css，两个工具外观一致。
    增加了韩文字体与本工具用到的几个变量（--warn-bg 等）。改配色只改这里。 */
 :root{
+  color-scheme:light dark;   /* 原生控件（时间、下拉、滚动条）跟随深浅色 */
   --bg:#f4f3ef;--panel:#fff;--card:var(--panel);--fg:#1c1c1a;--mut:#74726c;--line:#e2e0da;--soft:#efede8;
   --acc:#1c1c1a;--acc-fg:#fff;--g:#2f8a4c;--y:#b8860b;--r:#c0392b;--focus:#3b6fd8;--sel:var(--focus);
   --stage:#e8e6e1;--shadow:0 1px 2px #0000000d,0 8px 24px #00000008;

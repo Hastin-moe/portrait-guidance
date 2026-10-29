@@ -1,7 +1,7 @@
 // S0 项目列表：新建、从模板新建、复制、归档、搜索、按状态筛选、导入（F01–F03）
 import { h, menu, promptDlg, toast, confirmDlg, modal } from "../ui.js";
 import { t, fmtDate } from "../i18n.js";
-import { api, openProject, S, uploadImages, loadLibraries } from "../store.js";
+import { api, openProject, S, uploadImages, loadLibraries, flush } from "../store.js";
 import * as M from "../model.js";
 import { emptyState } from "./common.js";
 import { convertGrok } from "../import_grok.js";
@@ -117,6 +117,7 @@ async function doImport(ctx) {
 
     // 先刷新背后的项目列表，再弹报告（T11-B8）
     st.list = null;
+    await flush().catch(() => {});
     await load(ctx).catch(() => {});
     ctx.rerender();
     showReport(report, () => { location.hash = `#/p/${created.id}/basics`; });
