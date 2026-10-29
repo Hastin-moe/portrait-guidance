@@ -134,7 +134,6 @@ export default {
   "proj.archiveBody": ["归档后从列表中隐藏，文件不会删除，随时可以取消归档。", "It's hidden from the list but not deleted; you can unarchive it any time.", "一覧から隠れるだけで削除はされません。いつでも戻せます。", "목록에서 숨겨질 뿐 삭제되지 않으며, 언제든 되돌릴 수 있습니다."],
 
   // ---- S1 概要与情绪板 ----
-  "ov.sub": ["拍什么、要什么感觉。这里的关键词和图片会在分镜、导出里反复用到。", "What you're shooting and the feel you want. Keywords and images here are reused in shots and the export.", "何をどんな雰囲気で撮るか。ここのキーワードと画像はショットや出力で使われます。", "무엇을 어떤 느낌으로 찍을지 정합니다. 여기 키워드와 이미지는 샷과 내보내기에 계속 쓰입니다."],
   "ov.basic": ["基本信息", "Basics", "基本情報", "기본 정보"],
   "ov.name": ["项目名", "Project name", "プロジェクト名", "프로젝트 이름"],
   "ov.theme": ["主题说明", "Concept", "テーマ", "주제 설명"],
@@ -159,7 +158,6 @@ export default {
   "ov.notUsed": ["还没有镜头用这张图。", "Not used by any shot yet.", "まだどのショットにも使われていません。", "아직 이 이미지를 쓰는 샷이 없습니다."],
   "ov.setRef": ["设为某镜的参考图", "Use as shot reference", "ショットの参考にする", "샷 참고 이미지로"],
   "ov.cover": ["设为封面", "Set as cover", "表紙にする", "표지로"],
-  "ov.tip": ["项目名和主题说明是必填项。第一张图会作为项目封面。", "Project name and concept are required. The first image is the project cover.", "プロジェクト名とテーマは必須です。最初の画像が表紙になります。", "프로젝트 이름과 주제 설명은 필수입니다. 첫 번째 이미지가 표지가 됩니다."],
   "basics.sub": ["项目概况、地点、拍摄时间与工作人员。", "Project overview, location, shoot time and crew.", "概要、場所、撮影時間とスタッフ。", "프로젝트 개요, 장소, 촬영 시간과 스태프."],
   "basics.location": ["地点", "Location", "場所", "장소"],
   "basics.editSite": ["在场地与器材里编辑详情", "Edit details in Venue & gear", "会場と機材で詳しく編集", "공간과 장비에서 자세히 편집"],
@@ -181,7 +179,6 @@ export default {
   "mood.src.own": ["自己拍的", "Own photo", "自分で撮影", "직접 촬영"],
 
   // ---- S2 时间与人员 ----
-  "time.sub": ["拍摄日的时间框架和参与的人。到场时间会自动算出来。", "The shoot-day time frame and who's involved. Call times are worked out for you.", "撮影日の時間枠と参加者。入り時間は自動で計算します。", "촬영일 시간과 참여 인원입니다. 도착 시각은 자동으로 계산합니다."],
   "time.title": ["拍摄时间", "Shoot time", "撮影時間", "촬영 시간"],
   "time.date": ["拍摄日期", "Date", "撮影日", "촬영 날짜"],
   "time.start": ["开拍", "Start", "撮影開始", "촬영 시작"],
@@ -220,10 +217,8 @@ export default {
   "time.looksHelp": ["每套造型都会出现在分镜的“造型”选项里。", "Each look becomes an option in the shot list.", "各ルックはショットの選択肢になります。", "룩마다 샷의 선택지로 나타납니다."],
   "time.role": ["角色", "Role", "役割", "역할"],
   "time.contact": ["联系方式", "Contact", "連絡先", "연락처"],
-  "time.tip": ["选中一个人可以在这里编辑详情。模特的可拍时段会限制时间表。", "Select a person to edit details here. A model's availability limits the schedule.", "人を選ぶとここで編集できます。モデルの撮影可能時間はスケジュールを制限します。", "사람을 고르면 여기서 편집할 수 있습니다. 모델의 촬영 가능 시간이 시간표를 제한합니다."],
 
   // ---- S3 场地 ----
-  "venue.sub": ["场地尺寸决定布置图的比例。场地可以存进场地库，下次直接调用。", "Venue size sets the layout's scale. Save venues to the library to reuse them.", "会場のサイズが配置図の縮尺になります。会場ライブラリに保存して再利用できます。", "공간 크기가 배치도의 축척이 됩니다. 공간 라이브러리에 저장해 다시 쓸 수 있습니다."],
   "venue.info": ["场地信息", "Venue", "会場情報", "공간 정보"],
   "venue.fromLib": ["从场地库选择", "From library", "ライブラリから", "라이브러리에서"],
   "venue.saveLib": ["存入场地库", "Save to library", "ライブラリに保存", "라이브러리에 저장"],
@@ -253,7 +248,6 @@ export default {
   "venue.zones": ["可用区与禁区", "Usable and off-limits areas", "使える場所と立入禁止", "사용 가능 구역과 금지 구역"],
   "venue.zonesPh": ["例如：楼梯不可拍摄", "e.g. no shooting on the stairs", "例：階段は撮影不可", "예: 계단은 촬영 불가"],
   "venue.photos": ["场地照片", "Venue photos", "会場写真", "공간 사진"],
-  "venue.gear": ["场地提供的器材", "Gear provided by the venue", "会場の備品機材", "공간 제공 장비"],
   "venue.gearHelp": ["随场地保存，下次直接复用；会和自带器材合并成器材清单。", "Saved with the venue for reuse, and merged with your own gear in the gear list.", "会場と一緒に保存され、持ち込み機材と合わせて機材リストになります。", "공간과 함께 저장되어 다시 쓰며, 가져오는 장비와 합쳐 장비 목록이 됩니다."],
   "venue.hints": ["场地条件提示", "Venue notes", "会場のメモ", "공간 조건 안내"],
   "venue.hintDaylight": ["自然光：{v}，安排窗边镜头时参考。", "Daylight: {v}. Plan window shots around it.", "自然光：{v}。窓際のショットの目安に。", "자연광: {v}. 창가 샷을 배치할 때 참고하세요."],
@@ -262,13 +256,11 @@ export default {
   "venue.hintNone": ["填写场地条件后会在这里提示。", "Fill in the conditions to see notes here.", "条件を入力するとここに表示されます。", "조건을 입력하면 여기에 표시됩니다."],
 
   // ---- S4 器材与道具 ----
-  "gear.sub": ["场地器材 + 自带器材 = 器材清单。“已用 / 总数”取各套布光方案里用得最多的一套。", "Venue gear plus your own make up the gear list. “Used / total” takes the lighting setup that uses the most.", "会場機材＋持ち込み機材＝機材リスト。「使用 / 総数」は最も多く使うライティング案の数です。", "공간 장비 + 가져오는 장비 = 장비 목록. ‘사용 / 전체’는 가장 많이 쓰는 조명 세팅 기준입니다."],
   "gear.tabGear": ["器材", "Gear", "機材", "장비"],
   "gear.tabProps": ["道具", "Props", "小道具", "소품"],
   "gear.tabPacking": ["打包清单", "Packing list", "持ち物リスト", "챙길 목록"],
   "gear.venueGear": ["场地器材", "Venue gear", "会場の機材", "공간 장비"],
   "gear.ownGear": ["自带 / 租借器材", "Own / rented gear", "持ち込み・レンタル機材", "가져오는 / 대여 장비"],
-  "gear.editInVenue": ["在“场地”里编辑", "Edit in Venue", "「会場」で編集", "‘촬영 공간’에서 편집"],
   "gear.noVenueGear": ["场地没有登记器材。", "No venue gear listed.", "会場の機材は未登録です。", "등록된 공간 장비가 없습니다."],
   "gear.noOwn": ["还没有自带器材", "No gear of your own yet", "持ち込み機材がありません", "가져오는 장비가 없습니다"],
   "gear.noOwnBody": ["机身、镜头、灯具、引闪器等。", "Bodies, lenses, lights, triggers…", "ボディ、レンズ、ライト、トリガーなど。", "바디, 렌즈, 조명, 트리거 등."],
@@ -320,10 +312,10 @@ export default {
   "gear.bySetup": ["各布光方案的用量", "Use per lighting setup", "ライティング案ごとの使用数", "조명 세팅별 사용량"],
   "gear.noneUsed": ["还没有绑定器材。", "No gear linked yet.", "まだ機材が紐付いていません。", "아직 연결된 장비가 없습니다."],
   "prop.name": ["名称", "Name", "名前", "이름"],
-  "prop.namePh": ["例如：白纱窗帘", "e.g. sheer curtain", "例：白いレースカーテン", "예: 흰 커튼"],
   "prop.size": ["尺寸", "Size", "サイズ", "크기"],
   "prop.owner": ["负责人", "Owner", "担当", "담당"],
   "prop.status": ["准备状态", "Status", "準備状況", "준비 상태"],
+  "prop.namePh": ["例如：白纱窗帘", "e.g. sheer curtain", "例：白いレースカーテン", "예: 흰 커튼"],
   "prop.todo": ["待准备", "To get", "準備中", "준비 전"],
   "prop.ready": ["已备齐", "Ready", "準備済み", "준비 완료"],
   "ref.affects": ["有 {n} 处引用了它，删除后这些地方会显示为“已删除”。", "{n} places reference it; they'll show as deleted.", "{n} か所で参照されています。削除すると「削除済み」と表示されます。", "{n}곳에서 참조하고 있습니다. 삭제하면 ‘삭제됨’으로 표시됩니다."],
@@ -530,8 +522,6 @@ export default {
   "chk.propsNotReady": ["已定稿，但还有道具待准备", "Plan is final but some props aren't ready", "確定済みですが、準備中の小道具があります", "확정됐지만 준비 전인 소품이 있음"],
   "chk.setupEmpty": ["布光 {setup} 已被分镜使用，但还没有画灯", "Lighting {setup} is used by shots but has no lights yet", "ライティング案 {setup} はショットで使われていますが、ライトがありません", "조명 세팅 {setup}이 샷에 쓰이지만 아직 조명이 없음"],
   "progress.sub": ["拍摄当天记录每个镜头的进度", "Track each shot on the shoot day", "撮影当日の各ショットの進行を記録", "촬영 당일 각 샷 진행을 기록"],
-  "progress.stubTitle": ["T5 实现", "Coming in T5", "T5 で実装", "T5에서 구현"],
-  "progress.stubBody": ["进度看板将在 T5 完成：开始 / 完成 / 跳过、与计划对比、导出分镜时间窗。", "The progress board lands in T5: start / done / skip, vs schedule, and export time windows.", "進行ボードは T5 で実装：開始 / 完了 / スキップ、計画との比較、時間窓の書き出し。", "진행 보드는 T5에서 구현: 시작 / 완료 / 건너뛰기, 계획 대비, 시간창 내보내기."],
   "prog.emptyTitle": ["还没有镜头", "No shots yet", "ショットがありません", "아직 샷이 없습니다"],
   "prog.emptyBody": ["先在分镜表里排好镜头，再回来记进度。", "Build the shot list first, then track progress here.", "先にショットリストを作ってから進行を記録します。", "먼저 샷 리스트를 만든 뒤 여기서 진행을 기록하세요."],
   "prog.goShots": ["去分镜表", "Go to shot list", "ショットリストへ", "샷 리스트로"],

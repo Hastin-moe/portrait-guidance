@@ -96,6 +96,8 @@ table.grid tr.warn td:first-child{box-shadow:inset 3px 0 var(--y)}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
 .pcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-l);padding:12px;cursor:pointer}
 .pcard.on{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+.pcard .trow{display:grid;grid-template-columns:minmax(3.5em,auto) 1fr;align-items:center;gap:6px;margin-top:4px}
+.pcard .trow>span{white-space:nowrap}.pcard .trow input{min-width:0;width:100%}
 .pcard .nm{font-weight:600}.pcard .meta{color:var(--mut);font-size:12px}
 .prog-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px;align-items:start}
 .prog-col{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-l);padding:10px;min-height:120px}

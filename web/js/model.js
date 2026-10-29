@@ -67,6 +67,28 @@ export function isoToWall(iso, tz = "Asia/Shanghai") {
 }
 
 /** 拍摄日 + 分钟数 → 墙钟（秒为 00） */
+/** 某时区的墙钟（日期 + HH:MM[:SS]）→ 带当天正确偏移的 ISO；按拍摄当天算，夏令时也对 */
+export function wallToIso(dateStr, hhmm, tz = "Asia/Shanghai") {
+  if (!dateStr || !hhmm) return "";
+  const [Y, Mo, D] = dateStr.split("-").map(Number);
+  const [h, m, sec] = String(hhmm).split(":").map(Number);
+  if (![Y, Mo, D, h, m].every(Number.isFinite)) return "";
+  const naive = Date.UTC(Y, Mo - 1, D, h, m, sec || 0);
+  let off = tzOffsetMinutes(new Date(naive), tz);
+  off = tzOffsetMinutes(new Date(naive - off * 60000), tz);   // 第二次按真实时刻校正（夏令时切换日）
+  const sign = off >= 0 ? "+" : "-", abs = Math.abs(off);
+  const pad = n => String(n).padStart(2, "0");
+  return `${dateStr}T${pad(h)}:${pad(m)}:${pad(sec || 0)}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+}
+
+/** 墙钟字符串 `YYYY-MM-DD HH:MM:SS` 加若干分钟 */
+export function wallAddMin(wall, min) {
+  const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(wall || "");
+  if (!m) return wall;
+  const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5] + Math.round(Number(min) || 0), +m[6]));
+  return t.toISOString().slice(0, 19).replace("T", " ");
+}
+
 export function wallFromMin(dateStr, min) {
   if (!dateStr || min == null) return "";
   return `${dateStr} ${fmtMin(min)}:00`;
@@ -387,7 +409,11 @@ export function timeWindows(p, labels = {}) {
     if (!shot || (shot.status || "planned") === "skipped") continue;
     const r = resolveShot(p, shot);
     const start = shot.startedAt ? isoToWall(shot.startedAt, tz) : wallFromMin(date, it.start);
-    const end = shot.completedAt ? isoToWall(shot.completedAt, tz) : wallFromMin(date, it.end);
+    // 只点了「开始」没点「完成」：按开始时间 + 计划时长推算，不再用计划结束时间（T11-A2）
+    let end = shot.completedAt ? isoToWall(shot.completedAt, tz)
+      : shot.startedAt ? wallAddMin(start, Math.max(1, Number(shot.minutes) || (it.end - it.start) || 1))
+      : wallFromMin(date, it.end);
+    if (start && end && end < start) end = start;
     const wardrobe = (r.lookIds || []).map(id => {
       const look = lookById(p, id);
       return look ? `${L.personName(look.personId)} · ${L.lookName(id)}` : L.lookName(id);

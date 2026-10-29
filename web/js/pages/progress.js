@@ -41,14 +41,9 @@ function wallToApproxIso(dateStr, min, tz) {
   return wall.replace(" ", "T") + `${sign}${oh}:${om}`;
 }
 
+// 用拍摄当天的时区偏移（T11-B4）
 function setTimeOnDate(dateStr, hhmm, tz) {
-  if (!dateStr || !hhmm) return "";
-  const off = M.tzOffsetMinutes(new Date(), tz);
-  const sign = off >= 0 ? "+" : "-";
-  const abs = Math.abs(off);
-  const oh = String(Math.floor(abs / 60)).padStart(2, "0");
-  const om = String(abs % 60).padStart(2, "0");
-  return `${dateStr}T${hhmm}:00${sign}${oh}:${om}`;
+  return M.wallToIso(dateStr, hhmm, tz);
 }
 
 function hhmmFromIso(iso, tz) {
@@ -151,7 +146,7 @@ export function render(ctx) {
       ],
     }[shotStat(s)];
 
-    const timeRow = (label, field) => h("div.row.small", { style: { gap: "6px", marginTop: "4px" } },
+    const timeRow = (label, field) => h("div.trow.small",
       h("span.mut", label),
       h("input", {
         type: "time", value: hhmmFromIso(s[field], tz),

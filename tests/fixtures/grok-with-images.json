@@ -1,0 +1,247 @@
+{
+ "schema": "portrait-guidance.plan/v1",
+ "id": "proj_demo_window",
+ "title": "带图样例 · 导入测试",
+ "shoot_date": "2026-10-28",
+ "timezone": "Asia/Shanghai",
+ "location": "小影棚 · 北窗",
+ "model_count": 1,
+ "crew": [
+  "摄影师 Hastin",
+  "助理"
+ ],
+ "notes": "可从 S0「导入」加载本文件；亦可在应用内点「加载样例」。",
+ "site_conditions": "北窗自然光，可选反光板；层高 3.2m，进深约 6m",
+ "lights": [
+  {
+   "id": "light_1",
+   "name": "窗光主光",
+   "notes": "北窗侧逆"
+  },
+  {
+   "id": "light_2",
+   "name": "反光板补光",
+   "notes": "补脸"
+  }
+ ],
+ "equipment": [
+  {
+   "id": "eq_mod_1",
+   "category": "modifier",
+   "name": "Godox QR-P90T",
+   "preset_id": "godox-qr-p90t",
+   "shape": "circle",
+   "diameter_cm": 90,
+   "depth_cm": 42.7
+  },
+  {
+   "id": "eq_abs_1",
+   "category": "absorb",
+   "name": "聚苯板 240×120",
+   "preset_id": "polyboard-240x120",
+   "shape": "rect",
+   "width_cm": 240,
+   "height_cm": 120,
+   "thickness_cm": 5
+  },
+  {
+   "id": "eq_head_1",
+   "category": "light_head",
+   "name": "Godox AD600",
+   "preset_id": ""
+  }
+ ],
+ "props": [
+  {
+   "id": "prop_1",
+   "name": "木椅"
+  },
+  {
+   "id": "prop_2",
+   "name": "亚麻布"
+  }
+ ],
+ "site_map": {
+  "mode": "canvas",
+  "description": "入口西侧；北墙整面窗；模特靠窗中段；相机南侧约 2.5m。",
+  "room": {
+   "width_m": 8,
+   "depth_m": 6
+  },
+  "markers": [
+   {
+    "id": "mk_1",
+    "kind": "window",
+    "label": "北窗",
+    "x": 0.5,
+    "y": 0.12,
+    "width_m": 3,
+    "rotation": 0
+   },
+   {
+    "id": "mk_2",
+    "kind": "model",
+    "label": "模特 A",
+    "x": 0.5,
+    "y": 0.42,
+    "rotation": 180
+   },
+   {
+    "id": "mk_3",
+    "kind": "camera",
+    "label": "机位 A",
+    "x": 0.5,
+    "y": 0.78,
+    "focal_length": "85mm",
+    "rotation": 0
+   },
+   {
+    "id": "mk_4",
+    "kind": "light_head",
+    "label": "Godox AD600",
+    "x": 0.28,
+    "y": 0.4,
+    "rotation": 45,
+    "beam_angle": 60
+   },
+   {
+    "id": "mk_5",
+    "kind": "modifier",
+    "label": "QR-P90T",
+    "x": 0.32,
+    "y": 0.4,
+    "rotation": 45,
+    "preset_id": "godox-qr-p90t"
+   },
+   {
+    "id": "mk_6",
+    "kind": "absorb",
+    "label": "聚苯板",
+    "x": 0.78,
+    "y": 0.45,
+    "width_m": 2.4,
+    "depth_m": 0.05,
+    "rotation": 90
+   },
+   {
+    "id": "mk_7",
+    "kind": "light",
+    "label": "反光板补光",
+    "x": 0.72,
+    "y": 0.48,
+    "rotation": 270
+   }
+  ]
+ },
+ "gear": [
+  {
+   "id": "gear_1",
+   "name": "ILCE-1M2",
+   "kind": "机身",
+   "notes": "机位 A"
+  },
+  {
+   "id": "gear_2",
+   "name": "85mm f/1.4",
+   "kind": "镜头",
+   "notes": ""
+  }
+ ],
+ "models": [
+  {
+   "id": "model_1",
+   "name": "模特 A",
+   "wardrobe": "白衬衫",
+   "notes": "到场请提前卸妆"
+  }
+ ],
+ "actions": [
+  {
+   "id": "act_1",
+   "name": "望向窗外",
+   "notes": "肩线放松"
+  },
+  {
+   "id": "act_2",
+   "name": "低头看手",
+   "notes": ""
+  }
+ ],
+ "references": {
+  "query": "window portrait",
+  "items": [
+   {
+    "title": "窗光侧脸",
+    "url": "https://x.com/example/1",
+    "source": "x",
+    "thumb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR42mN4dmkfSYhhVMOohuGrAQATm3YfmR8dvwAAAABJRU5ErkJggg=="
+   },
+   {
+    "title": "白衬衫半身",
+    "url": "https://www.xiaohongshu.com/explore/1",
+    "source": "xhs",
+    "thumb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUCAIAAAALACogAAAAGElEQVR42mM4sW8VSYhhVMOohlENg1kDAE/YvB9C1wEjAAAAAElFTkSuQmCC"
+   }
+  ]
+ },
+ "shots": [
+  {
+   "id": "shot_1",
+   "shot_id": "S01",
+   "title": "窗边半身",
+   "framing": "半身",
+   "focal_length": "85mm",
+   "action_id": "act_1",
+   "action_text": "望向窗外，肩线放松",
+   "light": "北窗侧逆，反光板补脸",
+   "props_text": "木椅",
+   "wardrobe": "白衬衫",
+   "gear_ids": [
+    "gear_1",
+    "gear_2"
+   ],
+   "model_ids": [
+    "model_1"
+   ],
+   "start": "10:00",
+   "end": "10:10",
+   "status": "planned",
+   "started_at": "",
+   "completed_at": "",
+   "notes": "主镜头"
+  },
+  {
+   "id": "shot_2",
+   "shot_id": "S02",
+   "title": "窗边特写",
+   "framing": "特写",
+   "focal_length": "85mm",
+   "action_id": "act_2",
+   "action_text": "低头看手",
+   "light": "北窗侧逆，反光板略收",
+   "props_text": "无",
+   "wardrobe": "白衬衫",
+   "gear_ids": [
+    "gear_1",
+    "gear_2"
+   ],
+   "model_ids": [
+    "model_1"
+   ],
+   "start": "10:11",
+   "end": "10:20",
+   "status": "planned",
+   "started_at": "",
+   "completed_at": "",
+   "notes": "注意眼神"
+  }
+ ],
+ "location_place": {
+  "map": {
+   "query": "上海市 徐汇区"
+  },
+  "screenshot": {
+   "dataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAIAAACDRijCAAAAGklEQVR42mPYcuIOVRDDqEGjBo0aNGoQZQgAYNuELiW4rqMAAAAASUVORK5CYII="
+  }
+ }
+}

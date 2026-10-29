@@ -115,7 +115,10 @@ async function doImport(ctx) {
       report.ok.push(t("proj.importImagesDone", { n: venuePhotos.length + mood.length }));
     }
 
+    // 先刷新背后的项目列表，再弹报告（T11-B8）
     st.list = null;
+    await load(ctx).catch(() => {});
+    ctx.rerender();
     showReport(report, () => { location.hash = `#/p/${created.id}/basics`; });
   } catch (e) {
     toast(t("proj.importFail") + " " + (e.message || e));

@@ -358,3 +358,97 @@ test("light elements reserve measured exitLux / faceLux", () => {
   assert.equal(p.layout.setups[0].elements[0].exitLux, 4200);
   assert.equal(p.layout.setups[0].elements[0].faceLux, 860);
 });
+
+import { toCamera, projectPoint, projectScene } from "../web/js/camview3d.js";
+
+test("3D preview: point straight ahead of the camera lands at screen centre", () => {
+  for (const yaw of [0, 90, 205, 300]) {
+    const cam = { x: 6, z: 4, yaw, pitch: 0, eye: 1.5, hfovDeg: 84 };
+    const a = yaw * Math.PI / 180;
+    const pt = { x: 6 + 3 * Math.cos(a), y: 1.5, z: 4 + 3 * Math.sin(a) };
+    const c = toCamera(pt, cam);
+    assert.ok(Math.abs(c.x) < 1e-9 && Math.abs(c.z - 3) < 1e-9, `yaw ${yaw}: ${JSON.stringify(c)}`);
+    const s = projectPoint(pt, cam, 960, 540);
+    assert.ok(Math.abs(s.x - 480) < 1e-6 && Math.abs(s.y - 270) < 1e-6);
+  }
+});
+
+test("3D preview: plan-right (rot+90°) is screen-right; behind camera is not drawn", () => {
+  const cam = { x: 0, z: 0, yaw: 0, pitch: 0, eye: 1.5, hfovDeg: 84 };
+  const right = projectPoint({ x: 3, y: 1.5, z: 1 }, cam, 960, 540);   // 平面图 +y 一侧
+  assert.ok(right.x > 480);
+  assert.equal(projectPoint({ x: -2, y: 1.5, z: 0 }, cam, 960, 540), null);
+});
+
+test("3D preview: camera inside the room sees walls, floor and the subject", () => {
+  const { p, A } = sample();
+  const camEl = M.newElement("camera", 6, 4); camEl.rot = 200;
+  A.elements.push(camEl, M.newElement("person", 3, 2));
+  const polys = projectScene(buildSceneBoxes(p, A.id), cameraFromElement(camEl), 960, 540);
+  const kinds = new Set(polys.map(f => f.kind));
+  for (const k of ["wall", "floor", "person"]) assert.ok(kinds.has(k), k);
+  assert.ok(polys.findIndex(f => !f.shell) > polys.findLastIndex(f => f.shell), "shell drawn before interior");
+});
+
+// ---------- T11 遗留修复 ----------
+test("T11-A1 Grok modifier marker attaches to the nearest light instead of adding a light", () => {
+  const raw = JSON.parse(readFileSync(FIX, "utf8"));
+  const { project: p, report } = convertGrok(raw);
+  const lights = p.layout.setups[0].elements.filter(e => e.kind === "light");
+  assert.equal(lights.length, 2, "AD600 + 反光板补光，没有多出来的灯");
+  const ad = lights.find(e => e.modifierRef);
+  assert.ok(ad && ad.ref, "修饰器挂在已绑定 AD600 的灯上");
+  assert.ok(!report.check.some(s => /附近没有灯/.test(s)));
+});
+
+test("T11-A1 a modifier far from any light becomes its own light and is reported", () => {
+  const raw = JSON.parse(readFileSync(FIX, "utf8"));
+  raw.site_map.markers.find(m => m.kind === "modifier").x = 0.95;
+  const { project: p, report } = convertGrok(raw);
+  assert.equal(p.layout.setups[0].elements.filter(e => e.kind === "light").length, 3);
+  assert.ok(report.check.some(s => /附近没有灯/.test(s)));
+});
+
+test("T11-A2 started but not completed shot never ends before it starts", () => {
+  const { p } = sample();
+  p.time.date = "2026-11-08"; p.time.timezone = "Asia/Shanghai";
+  const shot = p.shots[0];
+  shot.minutes = 15;
+  shot.startedAt = "2026-11-08T23:30:00+08:00";   // 远晚于计划结束
+  shot.completedAt = "";
+  const w = M.timeWindows(p).windows.find(x => x.start.startsWith("2026-11-08 23:30"));
+  assert.ok(w, "window present");
+  assert.equal(w.end, "2026-11-08 23:45:00");
+  for (const x of M.timeWindows(p).windows) assert.ok(x.end >= x.start, JSON.stringify(x));
+});
+
+test("wallToIso uses the offset of the shoot day (DST aware)", () => {
+  assert.equal(M.wallToIso("2026-11-08", "09:30", "Asia/Shanghai"), "2026-11-08T09:30:00+08:00");
+  assert.equal(M.wallToIso("2026-07-01", "09:30", "Europe/Berlin"), "2026-07-01T09:30:00+02:00");
+  assert.equal(M.wallToIso("2026-12-01", "09:30", "Europe/Berlin"), "2026-12-01T09:30:00+01:00");
+  assert.equal(M.wallAddMin("2026-11-08 23:50:00", 20), "2026-11-09 00:10:00");
+});
+
+test("T11-B1/B2/B3 importer: project timezone, no fake 50mm, absorb by preset id", () => {
+  const raw = JSON.parse(readFileSync(FIX, "utf8"));
+  raw.timezone = "Europe/Berlin";
+  raw.shots[0].started_at = "10:05";
+  delete raw.shots[1].focal_length;
+  raw.equipment.unshift({ id: "eq_abs_0", category: "absorb", name: "V 板", preset_id: "vflat-other", shape: "rect", width_cm: 120, height_cm: 240 });
+  const { project: p } = convertGrok(raw);
+  assert.equal(p.shots[0].startedAt, `${p.time.date}T10:05:00+01:00`);
+  assert.equal(p.shots[1].focal, "");
+  const board = p.layout.setups[0].elements.find(e => e.kind === "board");
+  assert.equal(M.gearByKey(p, board.ref).model, "聚苯板 240×120");
+});
+
+test("T11-C1/C2 fixtures: images and an older minimal Grok file both import", () => {
+  const dir = dirname(FIX);
+  const withImg = convertGrok(JSON.parse(readFileSync(join(dir, "grok-with-images.json"), "utf8")));
+  assert.equal(withImg.images.filter(i => i.role === "venue").length, 1);
+  assert.equal(withImg.images.filter(i => i.role === "mood").length, 2);
+  const min = convertGrok(JSON.parse(readFileSync(join(dir, "grok-minimal.json"), "utf8")));
+  assert.equal(min.project.shots.length, 2);
+  assert.equal(min.project.layout.setups[0].elements.length, 0);
+  assert.ok(min.project.gear.length >= 1, "lights / gear 旧字段仍转成器材");
+});

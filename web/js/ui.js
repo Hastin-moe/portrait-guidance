@@ -104,7 +104,7 @@ export function menu(anchor, items, { multi = false, selected = [], search = fal
       if (it.header) { box.append(h("div.hd", it.header)); continue; }
       if (q && !String(it.label).toLowerCase().includes(q.toLowerCase())) continue;
       const on = sel.has(it.value);
-      box.append(h("button" + (on ? ".on" : ""), { type: "button", disabled: it.disabled, onclick: () => {
+      box.append(h("button" + (on ? ".on" : ""), { type: "button", disabled: it.disabled, title: it.title || null, onclick: () => {
         if (multi) { on ? sel.delete(it.value) : sel.add(it.value); onPick([...sel]); render(); }
         else { close(); onPick(it.value); }
       } }, multi ? (on ? "☑" : "☐") : (on ? "✓" : " "), it.label, it.hint ? h("span.mut.small", it.hint) : null));

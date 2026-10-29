@@ -161,6 +161,24 @@ def main(shots_dir=None):
             }""",
             timeout=15000,
         )
+        # 带图片的 Grok 文件：场地照片和情绪板都要落盘（T11-C1）
+        pg.goto(base + "/#/")
+        pg.wait_for_selector("button:has-text('导入')")
+        with pg.expect_file_chooser() as fc:
+            pg.get_by_role("button", name="导入").click()
+        fc.value.set_files(str(fixture.parent / "grok-with-images.json"))
+        pg.wait_for_selector(".dlg h3:has-text('导入报告')", timeout=15000)
+        assert pg.locator(".plist .proj").count() >= 3, "导入报告弹出时背后的列表已刷新（T11-B8）"
+        pg.locator(".dlg").get_by_role("button", name="关闭").click()
+        pg.wait_for_url("**/basics", timeout=15000)
+        pg.wait_for_timeout(1500)
+        import json as _json
+        pj = [d for d in (Path(tmp.name) / "projects").iterdir() if "带图样例" in (d / "project.json").read_text(encoding="utf-8")]
+        assert pj, "带图样例已建立"
+        data = _json.loads((pj[0] / "project.json").read_text(encoding="utf-8"))
+        assert len(data["venue"]["photos"]) == 1 and len(data["mood"]) == 2, (data["venue"]["photos"], len(data["mood"]))
+        for name in data["venue"]["photos"] + [m["file"] for m in data["mood"]]:
+            assert (pj[0] / "images" / name).exists(), name
         b.close()
     srv.shutdown()
     # 过滤文件选择器等无害噪音

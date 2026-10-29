@@ -131,7 +131,18 @@ export function renderLayout(p, setupId, opts = {}) {
     layer.append(g);
     if (opts.labels !== false && (e.kind === "light" || e.kind === "camera" || e.kind === "person" || e.kind === "prop" || e.kind === "board")) {
       const txt = e.kind === "light" || e.kind === "camera" ? lab.get(e.id) : elementLabel(p, setup, e, lab, opts.lang);
-      layer.append(s("text", { x: e.x, y: e.y + 0.48, "font-size": 0.2, fill: (e.kind === "light" || e.kind === "board") && !e.ref ? C.warn : C.fg, "text-anchor": "middle", opacity: dim(e.id) ? 0.35 : 1, "pointer-events": "none" }, txt));
+      let lx = e.x, ly = e.y + 0.48, anchor = "middle";
+      if (e.kind === "board") {
+        // 吸光板标签放在长边外侧，不压在板上，也不挤到旁边灯的标签（T11-B6）
+        const gear = e.ref && M.gearByKey(p, e.ref), sz = M.boardSizeM(gear);
+        const bh = e.h || sz.h, rad = (Number(e.rot) || 0) * Math.PI / 180;
+        let nx = -Math.sin(rad), ny = Math.cos(rad);
+        if (ny < -0.01 || (Math.abs(ny) <= 0.01 && nx < 0)) { nx = -nx; ny = -ny; }   // 统一朝右下
+        const off = bh / 2 + 0.16;
+        lx = e.x + nx * off; ly = e.y + ny * off + (Math.abs(ny) > 0.7 ? 0.16 : 0.07);
+        anchor = Math.abs(nx) > 0.7 ? "start" : "middle";
+      }
+      layer.append(s("text", { x: lx, y: ly, "font-size": 0.2, fill: (e.kind === "light" || e.kind === "board") && !e.ref ? C.warn : C.fg, "text-anchor": anchor, opacity: dim(e.id) ? 0.35 : 1, "pointer-events": "none" }, txt));
     }
   }
   svg.append(layer);

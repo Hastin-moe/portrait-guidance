@@ -12,9 +12,10 @@ const EQUIP_TYPE = {
 
 function uid() { return M.uid(); }
 
+// 取字符串里的焦距数字；取不到返回 null（不再默认 50，避免没写焦距的镜头被填成 50mm，T11-B2）
 function parseFocal(s) {
   const m = String(s || "").match(/(\d+(\.\d+)?)/);
-  return m ? Number(m[1]) : 50;
+  return m ? Number(m[1]) : null;
 }
 
 function parseHHMM(s) {
@@ -164,9 +165,10 @@ export function convertGrok(raw) {
   const setupA = p.layout.setups[0];
   setupA.name = "A";
   const firstLens = (raw.gear || []).find(g => /镜头/.test(String(g.kind || "")));
-  const defaultFocal = parseFocal(firstLens && firstLens.name);
+  const defaultFocal = parseFocal(firstLens && firstLens.name) || 50;
 
   const catOf = m => m.category || m.kind || "";
+  const pendingMods = [];
   for (const mk of sm.markers || []) {
     const cat = catOf(mk);
     const x = (Number(mk.x) || 0) * roomW;
@@ -198,18 +200,19 @@ export function convertGrok(raw) {
       if (g) e.ref = "o:" + g.id;
       setupA.elements.push(e);
     } else if (cat === "modifier") {
-      const e = M.newElement("light", x, y);
-      e.rot = rot - 90;
-      const g = mk.preset_id && gearByPreset.get(mk.preset_id);
-      if (g) e.modifierRef = "o:" + g.id;
-      setupA.elements.push(e);
+      // Grok 里灯头和修饰器是两个标记；修饰器挂到最近的灯上，不再变成一盏多余的灯（T11-A1）
+      pendingMods.push({ mk, x, y, rot });
     } else if (cat === "absorb") {
       const e = M.newElement("board", x, y);
       e.w = Number(mk.width_m) > 0 ? Number(mk.width_m) : e.w;
       e.h = Math.max(Number(mk.depth_m) || 0, 0.05);
       e.rot = rot;
-      const g = p.gear.find(x => x.type === "absorb");
-      if (g) e.ref = "o:" + g.id;
+      // 先按 preset_id、再按名称对应清单里的吸光板，都找不到才退回第一块（T11-B3）
+      const absorbs = p.gear.filter(x => x.type === "absorb");
+      const g = (mk.preset_id && gearByPreset.get(mk.preset_id))
+        || (mk.label && absorbs.find(x => x.model === mk.label || x.model.includes(mk.label)))
+        || absorbs[0];
+      if (g && g.type === "absorb") e.ref = "o:" + g.id;
       setupA.elements.push(e);
     } else if (cat === "other" || cat) {
       const e = M.newElement("prop", x, y);
@@ -219,6 +222,22 @@ export function convertGrok(raw) {
       setupA.elements.push(e);
     } else {
       report.skip.push(`未知场地图标记：${mk.label || mk.id || "?"}`);
+    }
+  }
+  for (const { mk, x, y, rot } of pendingMods) {
+    const g = mk.preset_id && gearByPreset.get(mk.preset_id);
+    const free = setupA.elements.filter(e => e.kind === "light" && !e.modifierRef);
+    const byLabel = free.find(e => mk.label && e.ref && (p.gear.find(r => "o:" + r.id === e.ref) || {}).model === mk.label);
+    const near = free.map(e => ({ e, d: Math.hypot(e.x - x, e.y - y) })).sort((a, b) => a.d - b.d)[0];
+    const host = byLabel || (near && near.d <= 1.5 ? near.e : null);
+    if (host) {
+      if (g) host.modifierRef = "o:" + g.id; else host.modifier = mk.label || "";
+    } else {
+      const e = M.newElement("light", x, y);
+      e.rot = rot - 90;
+      if (g) e.modifierRef = "o:" + g.id; else e.modifier = mk.label || "";
+      setupA.elements.push(e);
+      report.check.push(`修饰器「${mk.label || mk.preset_id || "?"}」附近没有灯，已单独放一盏未绑定的灯，请人工检查`);
     }
   }
   if ((sm.markers || []).length) report.ok.push(`场地图标记 ${(sm.markers || []).length} 个`);
@@ -247,7 +266,7 @@ export function convertGrok(raw) {
       const size = FRAMING[sh.framing];
       if (size) shot.size = size;
       else if (sh.framing) { notesExtra.push(String(sh.framing)); }
-      shot.focal = parseFocal(sh.focal_length) || "";
+      shot.focal = parseFocal(sh.focal_length) ?? "";
       if (sh.action_id && poseByOldId.has(sh.action_id)) shot.poseId = poseByOldId.get(sh.action_id);
       else if (sh.action_text && poseByName.has(sh.action_text)) shot.poseId = poseByName.get(sh.action_text);
       shot.cue = sh.action_text || "";
@@ -272,12 +291,13 @@ export function convertGrok(raw) {
       if (sh.status) shot.status = sh.status;
       const date = p.time.date || "";
       const tz = p.time.timezone || "Asia/Shanghai";
+      // 「HH:MM」按项目时区和拍摄日期拼成 ISO（T11-B1）
       const stamp = (v) => {
         if (!v) return "";
         if (/T/.test(v) || /^\d{4}-/.test(v)) return v;
         if (/^\d{1,2}:\d{2}/.test(v) && date) {
-          const off = "+08:00"; // 墙钟拼接；normalize 后按项目时区显示
-          return `${date}T${v.length === 5 ? v + ":00" : v}${tz.includes("Shanghai") || tz.includes("Hong_Kong") || tz.includes("Taipei") || tz.includes("Singapore") ? "+08:00" : off}`;
+          const [hh, mm, ss] = v.split(":");
+          return M.wallToIso(date, `${hh.padStart(2, "0")}:${mm}${ss ? ":" + ss : ""}`, tz);
         }
         return v;
       };

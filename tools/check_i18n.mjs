@@ -12,6 +12,8 @@ const used = new Set();
 for (const f of files) {
   const src = fs.readFileSync(f, "utf8");
   for (const m of src.matchAll(/\b[tT]\(\s*"([a-zA-Z0-9_.]+[a-zA-Z0-9_])"\s*[,)]/g)) used.add(m[1]);
+  // 写在数组里再交给 t() 的 key（如表头 ["prop.name", ...]）：只要字面量正好是已有 key 就算用到
+  for (const m of src.matchAll(/"([a-zA-Z0-9_]+\.[a-zA-Z0-9_.]*[a-zA-Z0-9_])"/g)) if (STR[m[1]]) used.add(m[1]);
 }
 const DYN = {
   "step.": ["basics", "site", "models", "poses", "shots", "layout", "schedule", "progress", "export", "gear"],
