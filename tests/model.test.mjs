@@ -540,3 +540,15 @@ test("EX status dot counts measured lights; layout edits are shared with S6", ()
   assert.deepEqual(n.layout.setups[0].ex, { subjectId: "", keyId: "", iso: 100 });
   assert.equal(n.layout.setups[0].elements.find(e => e.id === key.id).faceFstop, 8);
 });
+
+test("T11-C2 Grok's untouched original sample imports cleanly", () => {
+  const raw = JSON.parse(readFileSync(join(dirname(FIX), "grok-original.json"), "utf8"));
+  const { project: p, report } = convertGrok(raw);
+  assert.equal(p.name, "窗边人像试拍 · 样例策划案");
+  assert.equal(p.shots.length, 2);
+  assert.ok(p.layout.base.some(e => e.kind === "window"));
+  const A = p.layout.setups[0];
+  assert.deepEqual(A.elements.map(e => e.kind).sort(), ["camera", "light", "person"]);
+  assert.ok(!report.check.some(s => /附近没有灯/.test(s)));
+  assert.ok(M.checks(p).every(c => c.level !== "error" || c.code !== "venueSize"));
+});
