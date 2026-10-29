@@ -14,8 +14,11 @@ export function render(ctx) {
   const sch = M.schedule(p);
   const calls = M.callTimes(p);
   const nos = M.shotNumbers(p);
-  const startAxis = Math.floor((Math.min(sch.start, ...calls.map(c => c.at)) - 15) / 30) * 30;
-  const endAxis = Math.ceil((Math.max(sch.end, sch.avail.to) + 20) / 30) * 30;
+  // T25：付费模特工作时间背景条（先算，轴要延伸到工时结束）
+  const workBars = M.paidWorkBars(p);
+  const workEnds = workBars.map(w => w.to).filter(v => v != null && isFinite(v));
+  const startAxis = Math.floor((Math.min(sch.start, ...calls.map(c => c.at), ...workBars.map(w => w.from ?? sch.start)) - 15) / 30) * 30;
+  const endAxis = Math.ceil((Math.max(sch.end, sch.avail.to, ...workEnds) + 20) / 30) * 30;
   const PX = 4;                                  // 每分钟 4 像素
   const x = m => (m - startAxis) * PX;
   const width = (endAxis - startAxis) * PX;
@@ -25,23 +28,37 @@ export function render(ctx) {
   const row = (label, bars) => h("div.ln", h("div.lab", { title: typeof label === "string" ? label : "" }, label), h("div.track", { style: { width: width + "px", "--hour": 60 * PX + "px", backgroundPosition: `${x(Math.ceil(startAxis / 60) * 60)}px 0` } },
     bars, h("div.limit", { style: { left: x(sch.avail.to) + "px" }, title: t("sch.availEnd", { t: M.fmtMin(sch.avail.to) }) })));
   const rows = [];
-  // T25：付费模特工作时间背景条
-  const workBars = M.paidWorkBars(p);
   for (const w of workBars) {
     const from = w.from ?? startAxis;
     const to = w.to ?? endAxis;
+    // T26 F11：按可见轴裁剪；被裁一端画 › 表示时间还在继续
+    const cFrom = Math.max(from, startAxis);
+    const cTo = Math.min(to, endAxis);
+    if (cTo <= cFrom) continue;
+    const clipL = from < startAxis;
+    const clipR = to > endAxis;
     const overShots = sch.items.filter(it => it.type === "shot" && it.end > (w.to ?? Infinity)).filter(it => {
       const s = p.shots.find(y => y.id === it.shotId);
       return s && M.resolveShot(p, s).personIds.includes(w.personId);
     });
+    const labelTxt = `${clipL ? "‹ " : ""}${M.fmtMin(from)}–${M.fmtMin(to)}${clipR ? " ›" : ""}`;
     rows.push(row(
       h("span", t("sch.workOf", { name: w.name || personName(p, w.personId) })),
       [
-        h("div.bar.work", {
-          style: { left: x(from) + "px", width: Math.max(8, (to - from) * PX) + "px" },
+        h("div.bar.work" + (clipL || clipR ? ".clipped" : ""), {
+          style: {
+            left: x(cFrom) + "px",
+            width: Math.max(8, (cTo - cFrom) * PX) + "px",
+            maskImage: clipR
+              ? "linear-gradient(90deg, #000 85%, transparent)"
+              : (clipL ? "linear-gradient(90deg, transparent, #000 15%)" : null),
+            WebkitMaskImage: clipR
+              ? "linear-gradient(90deg, #000 85%, transparent)"
+              : (clipL ? "linear-gradient(90deg, transparent, #000 15%)" : null),
+          },
           title: `${M.fmtMin(from)}–${M.fmtMin(to)}`,
-        }, `${M.fmtMin(from)}–${M.fmtMin(to)}`),
-        overShots.length ? h("span.blab.over", { style: { left: (x(w.to) + 6) + "px", color: "var(--y)" } }, t("sch.workOver", { n: overShots.length })) : null,
+        }, labelTxt),
+        overShots.length ? h("span.blab.over", { style: { left: (x(Math.min(w.to, endAxis)) + 6) + "px", color: "var(--y)" } }, t("sch.workOver", { n: overShots.length })) : null,
       ]));
   }
   for (const c of calls) {
